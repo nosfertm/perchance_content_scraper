@@ -1,56 +1,56 @@
 {
   "chat": {
-    "messageId": "67a54176efe5798257d422a6",
-    "time": 1738883446621,
-    "messagesAnalyzed_Total": 5360,
-    "messagesAnalyzed_lastRun": 160,
+    "messageId": "67a53d91efe5798257d41c55",
+    "time": 1738882449123,
+    "messagesAnalyzed_Total": 5200,
+    "messagesAnalyzed_lastRun": 5200,
     "charactersFound_Total": 18,
-    "charactersFound_lastRun": 0,
-    "deltaMinutes": 17
+    "charactersFound_lastRun": 18,
+    "deltaMinutes": 0
   },
   "chill": {
-    "messageId": "67a5413eefe5798257d4224d",
-    "time": 1738883390383,
-    "messagesAnalyzed_Total": 2387,
-    "messagesAnalyzed_lastRun": 1,
+    "messageId": "67a51a6fefe5798257d3e08e",
+    "time": 1738873455373,
+    "messagesAnalyzed_Total": 2386,
+    "messagesAnalyzed_lastRun": 2386,
     "charactersFound_Total": 33,
-    "charactersFound_lastRun": 0,
-    "deltaMinutes": 166
+    "charactersFound_lastRun": 33,
+    "deltaMinutes": 0
   },
   "rp": {
     "messageId": "67a51cb4efe5798257d3e57e",
     "time": 1738874036689,
     "messagesAnalyzed_Total": 5200,
-    "messagesAnalyzed_lastRun": 0,
+    "messagesAnalyzed_lastRun": 5200,
     "charactersFound_Total": 1,
-    "charactersFound_lastRun": 0,
+    "charactersFound_lastRun": 1,
     "deltaMinutes": 0
   },
   "spam": {
     "messageId": "67a53a2aefe5798257d416ea",
     "time": 1738881578060,
     "messagesAnalyzed_Total": 2858,
-    "messagesAnalyzed_lastRun": 0,
+    "messagesAnalyzed_lastRun": 2858,
     "charactersFound_Total": 79,
-    "charactersFound_lastRun": 0,
+    "charactersFound_lastRun": 79,
     "deltaMinutes": 0
   },
   "vent": {
     "messageId": "67a51ae3efe5798257d3e183",
     "time": 1738873571370,
     "messagesAnalyzed_Total": 5200,
-    "messagesAnalyzed_lastRun": 0,
+    "messagesAnalyzed_lastRun": 5200,
     "charactersFound_Total": 4,
-    "charactersFound_lastRun": 0,
+    "charactersFound_lastRun": 4,
     "deltaMinutes": 0
   },
   "share": {
-    "messageId": null,
-    "time": 0,
-    "messagesAnalyzed_Total": 0,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 0,
-    "charactersFound_lastRun": 0,
+    "messageId": "67a51afaefe5798257d3e1b5",
+    "time": 1738873594940,
+    "messagesAnalyzed_Total": 1848,
+    "messagesAnalyzed_lastRun": 1848,
+    "charactersFound_Total": 458,
+    "charactersFound_lastRun": 458,
     "deltaMinutes": 0
   }
 }
