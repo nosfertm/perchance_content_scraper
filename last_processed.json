@@ -1,0 +1,38 @@
+{
+  "chat": {
+    "messageId": "67a4fc20efe5798257d3a758",
+    "time": 1738865696854,
+    "messagesAnalyzed": 5200,
+    "charactersFound": 14
+  },
+  "chill": {
+    "messageId": null,
+    "time": 0,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
+  },
+  "rp": {
+    "messageId": null,
+    "time": 0,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
+  },
+  "spam": {
+    "messageId": null,
+    "time": 0,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
+  },
+  "vent": {
+    "messageId": null,
+    "time": 0,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
+  },
+  "share": {
+    "messageId": null,
+    "time": 0,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
+  }
+}
