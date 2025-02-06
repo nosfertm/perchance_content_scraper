@@ -321,6 +321,8 @@ async function processMessages() {
 
         await saveProcessingState(lastProcessed);
     }
+
+    return lastProcessed;
 }
 
 /**
@@ -329,28 +331,29 @@ async function processMessages() {
  * @returns {Object} Summary of total messages and characters
  */
 function generateProcessingSummary(state) {
-    // Initialize counters for grand totals
+    // Check if state exists
+    if (!state) {
+        console.log('No state available for summary');
+        return;
+    }
+
+    // Initialize counters
     const summary = {
         totalMessagesAnalyzed: 0,
         totalCharactersFound: 0,
         messagesThisRun: 0,
-        charactersThisRun: 0,
-        channelStats: {}
+        charactersThisRun: 0
     };
 
-    // Calculate totals across all channels
-    Object.entries(state).forEach(([channel, stats]) => {
-        // Add to grand totals
-        summary.totalMessagesAnalyzed += stats.messagesAnalyzed_Total || 0;
-        summary.totalCharactersFound += stats.charactersFound_Total || 0;
-        summary.messagesThisRun += stats.messagesAnalyzed_lastRun || 0;
-        summary.charactersThisRun += stats.charactersFound_lastRun || 0;
-
-        // Store per-channel statistics
-        summary.channelStats[channel] = {
-            messages: stats.messagesAnalyzed_lastRun || 0,
-            characters: stats.charactersFound_lastRun || 0
-        };
+    // Process each channel's statistics
+    CONFIG.channels.forEach(channel => {
+        if (state[channel]) {
+            // Add to total counts
+            summary.totalMessagesAnalyzed += state[channel].messagesAnalyzed_Total || 0;
+            summary.totalCharactersFound += state[channel].charactersFound_Total || 0;
+            summary.messagesThisRun += state[channel].messagesAnalyzed_lastRun || 0;
+            summary.charactersThisRun += state[channel].charactersFound_lastRun || 0;
+        }
     });
 
     return summary;
@@ -369,10 +372,13 @@ processMessages()
         console.log(`Messages Analyzed: ${summary.messagesThisRun}`);
         console.log(`Characters Found: ${summary.charactersThisRun}`);
         
+        // Channel-specific statistics
         console.log('\nPer Channel Statistics (This Run):');
-        Object.entries(summary.channelStats).forEach(([channel, stats]) => {
-            if (stats.messages > 0 || stats.characters > 0) {
-                console.log(`${channel}: ${stats.messages} messages, ${stats.characters} characters`);
+        CONFIG.channels.forEach(channel => {
+            if (lastProcessed[channel] && 
+                (lastProcessed[channel].messagesAnalyzed_lastRun > 0 || 
+                 lastProcessed[channel].charactersFound_lastRun > 0)) {
+                console.log(`${channel}: ${lastProcessed[channel].messagesAnalyzed_lastRun} messages, ${lastProcessed[channel].charactersFound_lastRun} characters`);
             }
         });
         
