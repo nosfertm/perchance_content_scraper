@@ -1,14 +1,12 @@
-const { Octokit } = require('@octokit/rest');
-const fetch = require('node-fetch');
-const fs = require('fs').promises;
-const path = require('path');
+import { Octokit } from '@octokit/rest';
+import fetch from 'node-fetch';
+import { promises as fs } from 'fs';
+import path from 'path';
 
-// GitHub configuration
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
 
-// Application configuration
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share"],
     maxMessagesPerChannel: 5200,
@@ -20,14 +18,8 @@ const CONFIG = {
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
 
-// Link pattern for perchance.org character files
 const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
 
-/**
- * Gets file content from GitHub repository
- * @param {string} path - File path
- * @returns {Promise<Object>} File content as JSON
- */
 async function getGithubFile(path) {
     try {
         const response = await octokit.repos.getContent({
@@ -268,7 +260,7 @@ async function processMessages() {
     }
 }
 
-// Execute processing
+// Main execution
 console.log('Starting Perchance Comment Scraper...');
 processMessages()
     .then(() => console.log('Processing completed successfully'))
