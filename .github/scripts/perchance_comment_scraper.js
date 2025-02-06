@@ -1,3 +1,4 @@
+// perchance_comment_scraper.js
 // Scrapes the comment section on perchance
 // Code heavily inspired on VioneT20 code.
 
@@ -31,7 +32,7 @@ async function getGithubFile(path) {
             path: path,
             ref: CONFIG.targetBranch
         });
-        
+
         const content = Buffer.from(response.data.content, 'base64').toString();
         return JSON.parse(content);
     } catch (error) {
@@ -149,11 +150,11 @@ function extractCharacterLinks(message) {
         .map(a => {
             const match = a.match(LINK_PATTERN);
             if (!match) return null;
-            
+
             const fullLink = match[0];
             const data = fullLink.split('data=')[1];
             const [character, fileId] = data.split('~');
-            
+
             return {
                 character: decodeURI(character),
                 fileId: fileId,
@@ -175,11 +176,11 @@ async function saveCharacterData(characterInfo, message) {
     try {
         const dirName = `${CONFIG.outputDir}/${characterInfo.character} by ${message.username || 'unknown'}`;
         const gzPath = `${dirName}/${characterInfo.fileId}`;
-        
+
         // Download .gz file
         console.log(`Downloading: ${characterInfo.link}`);
         const fileContent = await downloadFile(characterInfo.link);
-        
+
         // Save .gz file
         await createOrUpdateFile(
             gzPath,
@@ -217,56 +218,55 @@ async function saveCharacterData(characterInfo, message) {
 async function processMessages() {
     console.log('Starting message processing...');
     const lastProcessed = await getLastProcessedState();
-    
+
     for (const channel of CONFIG.channels) {
         console.log(`\nProcessing channel: ${channel}`);
         let skip = 0;
+        let latestMessage = null;
         let continueProcessing = true;
-        
+
         while (skip < CONFIG.maxMessagesPerChannel && continueProcessing) {
             const url = `${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}&skip=${skip}`;
-            
+
             try {
-                console.log(`Fetching messages: ${url}`);
+                console.log(`   Fetching messages: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-                
+
                 const messages = await response.json();
                 if (messages.length === 0) {
                     console.log(`No more messages in channel: ${channel}`);
                     break;
                 } else {
-                    console.log(`Fetched ${messages.length} messages in channel: ${channel}`);
+                    console.log(`   Fetched ${messages.length} messages in channel: ${channel}`);
                 }
 
                 for (const message of messages) {
                     if (message.time <= lastProcessed[channel].time) {
-                        console.log(`Reached previously processed message in ${channel}`);
-                        console.log("   ", JSON.stringify(lastProcessed[channel]))
+                        console.log(`   Reached previously processed message in ${channel}`);
+                        console.log("   ", JSON.stringify(lastProcessed[channel]));
                         continueProcessing = false;
                         break;
                     }
 
-                    // Count messages
-                    lastProcessed[channel].messagesAnalyzed += 1;
+                    // Set latest message to the latest found in this channel
+                    if (latestMessage === null || message.time > latestMessage.time) {
+                        latestMessage = message;
+                    }
 
                     // Count characters found
                     const characterLinks = extractCharacterLinks(message.message);
                     lastProcessed[channel].charactersFound += characterLinks.length;
-                    
+
                     for (const charInfo of characterLinks) {
                         await saveCharacterData(charInfo, message);
                     }
-
-                    lastProcessed[channel] = {
-                        messageId: message.messageId,
-                        time: message.time,
-                        messagesAnalyzed: lastProcessed[channel].messagesAnalyzed,
-                        charactersFound: lastProcessed[channel].charactersFound
-                    };                    
                 }
 
-                await saveProcessingState(lastProcessed);
+                // Count messages per batch
+                lastProcessed[channel].messagesAnalyzed += messages.length;
+
+                // Skip to the next batch
                 skip += messages.length;
 
             } catch (error) {
@@ -274,6 +274,19 @@ async function processMessages() {
                 break;
             }
         }
+
+        // Check to see if there was any new message
+        // Update the lastProcessed state with the time of the most recent message processed
+        if (latestMessage !== null) {
+            lastProcessed[channel] = {
+                messageId: latestMessage.messageId,
+                time: latestMessage.time,
+                messagesAnalyzed: lastProcessed[channel].messagesAnalyzed,
+                charactersFound: lastProcessed[channel].charactersFound
+            };
+        }
+
+        await saveProcessingState(lastProcessed);
     }
 }
 
