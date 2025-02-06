@@ -1,3 +1,7 @@
+// perchance_comment_scraper.js
+// Scrapes the comment section on perchance
+// Code heavily inspired on VioneT20 code.
+
 import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 import { promises as fs } from 'fs';
@@ -242,7 +246,7 @@ async function processMessages() {
                     }
 
                     // Count messages
-                    lastProcessed[channel].messagesAnalized += 1;
+                    lastProcessed[channel].messagesAnalyzed += 1;
 
                     // Count characters found
                     const characterLinks = extractCharacterLinks(message.message);
@@ -254,8 +258,10 @@ async function processMessages() {
 
                     lastProcessed[channel] = {
                         messageId: message.messageId,
-                        time: message.time
-                    };
+                        time: message.time,
+                        messagesAnalyzed: lastProcessed[channel].messagesAnalyzed,
+                        charactersFound: lastProcessed[channel].charactersFound
+                    };                    
                 }
 
                 await saveProcessingState(lastProcessed);
