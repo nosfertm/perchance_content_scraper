@@ -154,32 +154,42 @@ async function saveProcessingState(state) {
 }
 
 /**
- * Extracts character links from message
- * @param {string} message - Message text
- * @returns {Array} Array of character objects
+ * Extracts character links from a message.
+ * If the message contains "NOSCRAPE", logs a warning and returns null.
+ * @param {string} message - The message text containing links.
+ * @returns {Array|null} Array of unique character objects or null if NOSCRAPE is found.
  */
 function extractCharacterLinks(message) {
+    // Check if the message contains "NOSCRAPE"
+    if (message.includes('NOSCRAPE')) {
+        console.warn('Character links were not processed due to NOSCRAPE restriction.');
+        return null;
+    }
+    // Split the message into segments using spaces and commas as delimiters.
     const links = message
-        .split(/(\s+|(?<=gz),)/gm)
-        .filter(a => a.includes('data='))
+        .split(/(\s+|(?<=gz),)/gm) // Keeps spaces and ",gz" as split points.
+        .filter(a => a.includes('data=')) // Filters out elements that don't contain 'data='.
         .map(a => {
+            // Extracts the link using a predefined pattern.
             const match = a.match(LINK_PATTERN);
             if (!match) return null;
 
-            const fullLink = match[0];
-            const data = fullLink.split('data=')[1];
-            const [character, fileId] = data.split('~');
+            const fullLink = match[0]; // Full matched link.
+            const data = fullLink.split('data=')[1]; // Extracts the data part of the link.
+            const [character, fileId] = data.split('~'); // Splits character name and file ID.
 
             return {
-                character: decodeURI(character),
-                fileId: fileId,
-                link: `https://${fullLink.trim()}`
+                character: decodeURI(character), // Decodes the character name.
+                fileId: fileId, // Stores the file ID.
+                link: `https://${fullLink.trim()}` // Constructs the full HTTPS link.
             };
         })
-        .filter(Boolean);
+        .filter(Boolean); // Removes null values from the array.
 
+    // Removes duplicate objects by converting them to JSON and back.
     return [...new Set(links.map(JSON.stringify))].map(JSON.parse);
 }
+
 
 /**
  * Saves character data
