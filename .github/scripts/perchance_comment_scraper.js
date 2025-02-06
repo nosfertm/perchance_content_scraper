@@ -103,21 +103,38 @@ async function getLastProcessedState() {
     console.log('Reading last processed state...');
     const state = await getGithubFile(CONFIG.timestampFile);
 
+    // Helper function to create a default channel state
+    const createDefaultChannelState = () => ({
+        messageId: null,
+        time: 0,
+        messagesAnalyzed_Total: 0,    // Start from 0 if new
+        messagesAnalyzed_lastRun: 0,
+        charactersFound_Total: 0,      // Start from 0 if new
+        charactersFound_lastRun: 0,
+        deltaTime: 0
+    });
+
     if (!state) {
-        // Initialize state with counters set to 0
+        // If no state exists, create new state for all channels
         return CONFIG.channels.reduce((acc, channel) => {
-            acc[channel] = { 
-                messageId: null,  // ID of the last processed message
-                time: 0,         // Timestamp of the last processed message
-                messagesAnalyzed_Total: 0,    // Cumulative counter across all runs
-                messagesAnalyzed_lastRun: 0,  // Counter for current run only
-                charactersFound_Total: 0,     // Cumulative counter across all runs
-                charactersFound_lastRun: 0,   // Counter for current run only
-                deltaTime: 0     // Time difference in minutes between runs
-            };
+            acc[channel] = createDefaultChannelState();
             return acc;
         }, {});
     }
+
+    // If state exists, ensure all properties exist with correct types
+    CONFIG.channels.forEach(channel => {
+        if (!state[channel]) {
+            state[channel] = createDefaultChannelState();
+        } else {
+            // Ensure numeric properties are initialized properly
+            state[channel].messagesAnalyzed_Total = state[channel].messagesAnalyzed_Total || 0;
+            state[channel].charactersFound_Total = state[channel].charactersFound_Total || 0;
+            state[channel].messagesAnalyzed_lastRun = 0;  // Reset for new run
+            state[channel].charactersFound_lastRun = 0;   // Reset for new run
+            state[channel].deltaTime = state[channel].deltaTime || 0;
+        }
+    });
 
     return state;
 }
@@ -244,36 +261,39 @@ async function processMessages() {
                     console.log(`   Fetched messages in channel ${channel}: ${200+skip}`);
                 }
 
+                
                 for (const message of messages) {
+                    // Store the very first message of this batch as latest
+                    // since messages are returned in reverse chronological order
+                    if (latestMessage === null || message.time > latestMessage.time) {
+                        latestMessage = message;
+                        // Calculate time difference from last run
+                        lastProcessed[channel].deltaTime = lastProcessed[channel].time ? 
+                            (message.time - lastProcessed[channel].time) / (1000 * 60) : 0;
+                    }
+                
+                    // Stop if we reach a message we've already processed
                     if (message.time <= lastProcessed[channel].time) {
                         console.log(`   Reached previously processed message in ${channel}`);
                         continueProcessing = false;
                         break;
                     }
-
-                    // If this is our first message in this run, store it for deltaTime calculation
-                    if (latestMessage === null || message.time > latestMessage.time) {
-                        // Calculate the minutes elapsed between messages
-                        lastProcessed[channel].deltaTime = lastProcessed[channel].time ? (message.time - lastProcessed[channel].time) / (1000 * 60) : 0;
-                        lastProcessed[channel].messageId = message.messageId;
-                        lastProcessed[channel].time =  message.time;
-                        latestMessage = message;
-                    }
-                    
-
-                    // Count messages
+                
+                    // Update counters for this message
                     lastProcessed[channel].messagesAnalyzed_Total += 1;
                     lastProcessed[channel].messagesAnalyzed_lastRun += 1;
-
-                    // Count characters found
+                
+                    // Process character links
                     const characterLinks = extractCharacterLinks(message.message);
                     lastProcessed[channel].charactersFound_Total += characterLinks.length;
                     lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
-
+                
+                    // Process each character found
                     for (const charInfo of characterLinks) {
                         await saveCharacterData(charInfo, message);
                     }
                 }
+                
 
                 // Skip to the next batch
                 skip += messages.length;
@@ -287,17 +307,17 @@ async function processMessages() {
         // Check to see if there was any new message
         // Update the lastProcessed state with the time of the most recent message processed
         if (latestMessage !== null) {
+            // Keep existing totals and update only necessary fields
             lastProcessed[channel] = {
-                ...lastProcessed[channel]
-                // messageId: latestMessage.messageId,
-                // time: latestMessage.time,
-                // messagesAnalyzed_Total: lastProcessed[channel].messagesAnalyzed_Total,
-                // messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
-                // charactersFound_Total: lastProcessed[channel].charactersFound_Total,
-                // charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
-                // deltaTime: lastProcessed[channel].deltaTime
+                messageId: latestMessage.messageId,
+                time: latestMessage.time,
+                messagesAnalyzed_Total: lastProcessed[channel].messagesAnalyzed_Total,
+                messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
+                charactersFound_Total: lastProcessed[channel].charactersFound_Total,
+                charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
+                deltaTime: lastProcessed[channel].deltaTime
             };
-        }
+        }        
 
         await saveProcessingState(lastProcessed);
     }
