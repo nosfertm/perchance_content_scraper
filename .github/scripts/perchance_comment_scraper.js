@@ -1,4 +1,3 @@
-// perchance_comment_scraper.js
 // Scrapes the comment section on perchance
 // Code heavily inspired on VioneT20 code.
 
@@ -220,7 +219,7 @@ async function processMessages() {
     const lastProcessed = await getLastProcessedState();
     
     for (const channel of CONFIG.channels) {
-        console.log(`Processing channel: ${channel}`);
+        console.log(`\nProcessing channel: ${channel}`);
         let skip = 0;
         let continueProcessing = true;
         
@@ -236,11 +235,14 @@ async function processMessages() {
                 if (messages.length === 0) {
                     console.log(`No more messages in channel: ${channel}`);
                     break;
+                } else {
+                    console.log(`Fetched ${messages.length} messages in channel: ${channel}`);
                 }
 
                 for (const message of messages) {
                     if (message.time <= lastProcessed[channel].time) {
                         console.log(`Reached previously processed message in ${channel}`);
+                        console.log("   ", JSON.stringify(lastProcessed[channel]))
                         continueProcessing = false;
                         break;
                     }
