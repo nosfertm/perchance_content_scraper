@@ -42,14 +42,14 @@
     "deltaTime": 0
   },
   "vent": {
-    "messageId": "67a50de0efe5798257d3c6c3",
-    "time": 1738870240490,
+    "messageId": 0,
+    "time": 0,
     "messagesAnalyzed": 5204,
     "charactersFound": 4,
-    "messagesAnalyzed_Total": 0,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 0,
-    "charactersFound_lastRun": 0,
+    "messagesAnalyzed_Total": 5200,
+    "messagesAnalyzed_lastRun": 5200,
+    "charactersFound_Total": 4,
+    "charactersFound_lastRun": 4,
     "deltaTime": 0
   },
   "share": {
