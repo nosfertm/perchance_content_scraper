@@ -1,38 +1,65 @@
 {
   "chat": {
-    "messageId": "67a50e56efe5798257d3c7c0",
-    "time": 1738870358968,
-    "messagesAnalyzed": 5610,
-    "charactersFound": 18
+    "messageId": "67a51397efe5798257d3d2a5",
+    "time": 1738871703778,
+    "messagesAnalyzed_Total": 138,
+    "messagesAnalyzed_lastRun": 138,
+    "charactersFound_Total": 0,
+    "deltaTime": 0
   },
   "chill": {
     "messageId": "67a4340eefe5798257d2b510",
     "time": 1738814478381,
     "messagesAnalyzed": 2385,
-    "charactersFound": 33
+    "charactersFound": 33,
+    "messagesAnalyzed_Total": 0,
+    "messagesAnalyzed_lastRun": 0,
+    "charactersFound_Total": 0,
+    "charactersFound_lastRun": 0,
+    "deltaTime": 0
   },
   "rp": {
     "messageId": "67a50cbfefe5798257d3c463",
     "time": 1738869951539,
     "messagesAnalyzed": 5233,
-    "charactersFound": 1
+    "charactersFound": 1,
+    "messagesAnalyzed_Total": 0,
+    "messagesAnalyzed_lastRun": 0,
+    "charactersFound_Total": 0,
+    "charactersFound_lastRun": 0,
+    "deltaTime": 0
   },
   "spam": {
     "messageId": "67a4323eefe5798257d2b1aa",
     "time": 1738814014536,
     "messagesAnalyzed": 2849,
-    "charactersFound": 79
+    "charactersFound": 79,
+    "messagesAnalyzed_Total": 0,
+    "messagesAnalyzed_lastRun": 0,
+    "charactersFound_Total": 0,
+    "charactersFound_lastRun": 0,
+    "deltaTime": 0
   },
   "vent": {
     "messageId": "67a50de0efe5798257d3c6c3",
     "time": 1738870240490,
     "messagesAnalyzed": 5204,
-    "charactersFound": 4
+    "charactersFound": 4,
+    "messagesAnalyzed_Total": 0,
+    "messagesAnalyzed_lastRun": 0,
+    "charactersFound_Total": 0,
+    "charactersFound_lastRun": 0,
+    "deltaTime": 0
   },
   "share": {
     "messageId": "67a50d64efe5798257d3c5af",
     "time": 1738870116754,
     "messagesAnalyzed": 3253,
-    "charactersFound": 617
+    "charactersFound": 617,
+    "messagesAnalyzed_Total": 0,
+    "messagesAnalyzed_lastRun": 0,
+    "charactersFound_Total": 0,
+    "charactersFound_lastRun": 0,
+    "deltaTime": 0
   }
 }
