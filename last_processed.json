@@ -1,26 +1,36 @@
 {
   "chat": {
-    "messageId": "67a4def2efe5798257d36e0a",
-    "time": 1738858226188
+    "messageId": "67a4ec4fefe5798257d38a34",
+    "time": 1738861647484
   },
   "chill": {
     "messageId": "67a4340eefe5798257d2b510",
-    "time": 1738814478381
+    "time": 1738814478381,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
   },
   "rp": {
     "messageId": "67a4ddb9efe5798257d36b67",
-    "time": 1738857913082
+    "time": 1738857913082,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
   },
   "spam": {
     "messageId": "67a4323eefe5798257d2b1aa",
-    "time": 1738814014536
+    "time": 1738814014536,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
   },
   "vent": {
     "messageId": "67a4d0c9efe5798257d3513c",
-    "time": 1738854601859
+    "time": 1738854601859,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
   },
   "share": {
     "messageId": "67a4c7d3efe5798257d34176",
-    "time": 1738852307319
+    "time": 1738852307319,
+    "messagesAnalyzed": 0,
+    "charactersFound": 0
   }
 }
