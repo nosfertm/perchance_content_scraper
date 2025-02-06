@@ -245,6 +245,8 @@ async function processMessages() {
         let skip = 0;
         let latestMessage = null;
         let continueProcessing = true;
+        lastProcessed[channel].messagesAnalyzed_lastRun = 0;
+        lastProcessed[channel].charactersFound_lastRun = 0;
 
         while (skip < CONFIG.maxMessagesPerChannel && continueProcessing) {
             const url = `${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}&skip=${skip}`;
@@ -272,6 +274,8 @@ async function processMessages() {
                     if (latestMessage === null || message.time > latestMessage.time) {
                         // Calculate the minutes elapsed between messages
                         lastProcessed[channel].deltaTime = latestMessage ? (message.time - latestMessage.time) / (1000 * 60) : 0;
+                        lastProcessed[channel].messageId = latestMessage ? message.messageId : 0;
+                        lastProcessed[channel].time = latestMessage ? message.time : 0;
                         latestMessage = message;
                     }
                     
@@ -303,13 +307,14 @@ async function processMessages() {
         // Update the lastProcessed state with the time of the most recent message processed
         if (latestMessage !== null) {
             lastProcessed[channel] = {
-                messageId: latestMessage.messageId,
-                time: latestMessage.time,
-                messagesAnalyzed_Total: lastProcessed[channel].messagesAnalyzed_Total,
-                messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
-                charactersFound_Total: lastProcessed[channel].charactersFound_Total,
-                charactersFound_Total: lastProcessed[channel].charactersFound_lastRun,
-                deltaTime: lastProcessed[channel].deltaTime
+                ...lastProcessed[channel]
+                // messageId: latestMessage.messageId,
+                // time: latestMessage.time,
+                // messagesAnalyzed_Total: lastProcessed[channel].messagesAnalyzed_Total,
+                // messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
+                // charactersFound_Total: lastProcessed[channel].charactersFound_Total,
+                // charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
+                // deltaTime: lastProcessed[channel].deltaTime
             };
         }
 
