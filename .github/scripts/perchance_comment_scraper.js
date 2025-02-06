@@ -215,16 +215,6 @@ async function saveCharacterData(characterInfo, message) {
 
         // Save metadata
         const metadata = { ...message };
-        // const metadata = {
-        //     folderName: message.folderName,
-        //     message: message.message,
-        //     messageId: message.messageId,
-        //     time: message.time,
-        //     username: message.username,
-        //     userNickname: message.userNickname,
-        //     userAvatarUrl: message.userAvatarUrl,
-        //     publicId: message.publicId
-        // };
 
         await createOrUpdateFile(
             `${dirName}/metadata.json`,
