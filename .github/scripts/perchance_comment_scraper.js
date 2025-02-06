@@ -111,7 +111,7 @@ async function getLastProcessedState() {
         messagesAnalyzed_lastRun: 0,
         charactersFound_Total: 0,      // Start from 0 if new
         charactersFound_lastRun: 0,
-        deltaTime: 0
+        deltaMinutes: 0
     });
 
     if (!state) {
@@ -132,7 +132,7 @@ async function getLastProcessedState() {
             state[channel].charactersFound_Total = state[channel].charactersFound_Total || 0;
             state[channel].messagesAnalyzed_lastRun = 0;  // Reset for new run
             state[channel].charactersFound_lastRun = 0;   // Reset for new run
-            state[channel].deltaTime = state[channel].deltaTime || 0;
+            state[channel].deltaMinutes = state[channel].deltaMinutes || 0;
         }
     });
 
@@ -268,8 +268,8 @@ async function processMessages() {
                     if (latestMessage === null || message.time > latestMessage.time) {
                         latestMessage = message;
                         // Calculate time difference from last run
-                        lastProcessed[channel].deltaTime = lastProcessed[channel].time ? 
-                            (message.time - lastProcessed[channel].time) / (1000 * 60) : 0;
+                        lastProcessed[channel].deltaMinutes = lastProcessed[channel].time ? 
+                            Math.round((message.time - lastProcessed[channel].time) / (1000 * 60)) : 0;
                     }
                 
                     // Stop if we reach a message we've already processed
@@ -315,7 +315,7 @@ async function processMessages() {
                 messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
                 charactersFound_Total: lastProcessed[channel].charactersFound_Total,
                 charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
-                deltaTime: lastProcessed[channel].deltaTime
+                deltaMinutes: lastProcessed[channel].deltaMinutes
             };
         }        
 
@@ -323,10 +323,61 @@ async function processMessages() {
     }
 }
 
+/**
+ * Generates a summary of processing statistics
+ * @param {Object} state - The final processing state
+ * @returns {Object} Summary of total messages and characters
+ */
+function generateProcessingSummary(state) {
+    // Initialize counters for grand totals
+    const summary = {
+        totalMessagesAnalyzed: 0,
+        totalCharactersFound: 0,
+        messagesThisRun: 0,
+        charactersThisRun: 0,
+        channelStats: {}
+    };
+
+    // Calculate totals across all channels
+    Object.entries(state).forEach(([channel, stats]) => {
+        // Add to grand totals
+        summary.totalMessagesAnalyzed += stats.messagesAnalyzed_Total || 0;
+        summary.totalCharactersFound += stats.charactersFound_Total || 0;
+        summary.messagesThisRun += stats.messagesAnalyzed_lastRun || 0;
+        summary.charactersThisRun += stats.charactersFound_lastRun || 0;
+
+        // Store per-channel statistics
+        summary.channelStats[channel] = {
+            messages: stats.messagesAnalyzed_lastRun || 0,
+            characters: stats.charactersFound_lastRun || 0
+        };
+    });
+
+    return summary;
+}
+
 // Main execution
 console.log('Starting Perchance Comment Scraper...');
 processMessages()
-    .then(() => console.log('Processing completed successfully'))
+    .then((lastProcessed) => {
+        const summary = generateProcessingSummary(lastProcessed);
+        
+        console.log('\n=== Processing Summary ===');
+        console.log(`Total Messages Analyzed (All Time): ${summary.totalMessagesAnalyzed}`);
+        console.log(`Total Characters Found (All Time): ${summary.totalCharactersFound}`);
+        console.log('\nThis Run:');
+        console.log(`Messages Analyzed: ${summary.messagesThisRun}`);
+        console.log(`Characters Found: ${summary.charactersThisRun}`);
+        
+        console.log('\nPer Channel Statistics (This Run):');
+        Object.entries(summary.channelStats).forEach(([channel, stats]) => {
+            if (stats.messages > 0 || stats.characters > 0) {
+                console.log(`${channel}: ${stats.messages} messages, ${stats.characters} characters`);
+            }
+        });
+        
+        console.log('\nProcessing completed successfully');
+    })
     .catch(error => {
         console.error('Processing failed:', error);
         process.exit(1);
