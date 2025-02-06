@@ -26,4 +26,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
           TARGET_BRANCH: perchance_comments
-        run: node perchance_comment_scraper.js
+        run: node .github/scripts/perchance_comment_scraper.js
