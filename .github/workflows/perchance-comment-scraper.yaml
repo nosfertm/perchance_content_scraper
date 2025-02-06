@@ -2,7 +2,7 @@ name: Perchance Comment Scraper
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Run hourly
+    - cron: '*/20 * * * *'  # Run hourly
   workflow_dispatch:      # Manual trigger
   
 jobs:
