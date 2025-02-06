@@ -98,11 +98,11 @@ async function downloadFile(url) {
 async function getLastProcessedState() {
     console.log('Reading last processed state...');
     const state = await getGithubFile(CONFIG.timestampFile);
-    
+
     if (!state) {
         // Initialize state for all channels
         return CONFIG.channels.reduce((acc, channel) => {
-            acc[channel] = { messageId: null, time: 0 };
+            acc[channel] = { messageId: null, time: 0, messagesAnalyzed: 0, charactersFound: 0 };
             return acc;
         }, {});
     }
@@ -110,7 +110,10 @@ async function getLastProcessedState() {
     // Ensure all channels exist in state
     CONFIG.channels.forEach(channel => {
         if (!state[channel]) {
-            state[channel] = { messageId: null, time: 0 };
+            state[channel] = { messageId: null, time: 0, messagesAnalyzed: 0, charactersFound: 0 };
+        } else {
+            if (!state[channel].hasOwnProperty('messagesAnalyzed')) state[channel].messagesAnalyzed = 0;
+            if (!state[channel].hasOwnProperty('charactersFound')) state[channel].charactersFound = 0;
         }
     });
 
@@ -238,7 +241,13 @@ async function processMessages() {
                         break;
                     }
 
+                    // Count messages
+                    lastProcessed[channel].messagesAnalized += 1;
+
+                    // Count characters found
                     const characterLinks = extractCharacterLinks(message.message);
+                    lastProcessed[channel].charactersFound += characterLinks.length;
+                    
                     for (const charInfo of characterLinks) {
                         await saveCharacterData(charInfo, message);
                     }
