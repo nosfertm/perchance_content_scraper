@@ -104,41 +104,20 @@ async function getLastProcessedState() {
     const state = await getGithubFile(CONFIG.timestampFile);
 
     if (!state) {
-        // Initialize state for all channels
+        // Initialize state with counters set to 0
         return CONFIG.channels.reduce((acc, channel) => {
             acc[channel] = { 
-                messageId: null, 
-                time: 0, 
-                messagesAnalyzed_Total: 0, 
-                messagesAnalyzed_lastRun: 0, 
-                charactersFound_Total: 0, 
-                charactersFound_lastRun: 0,
-                deltaTime: 0
+                messageId: null,  // ID of the last processed message
+                time: 0,         // Timestamp of the last processed message
+                messagesAnalyzed_Total: 0,    // Cumulative counter across all runs
+                messagesAnalyzed_lastRun: 0,  // Counter for current run only
+                charactersFound_Total: 0,     // Cumulative counter across all runs
+                charactersFound_lastRun: 0,   // Counter for current run only
+                deltaTime: 0     // Time difference in minutes between runs
             };
             return acc;
         }, {});
     }
-
-    // Ensure all channels exist in state
-    CONFIG.channels.forEach(channel => {
-        if (!state[channel]) {
-            state[channel] =  { 
-                messageId: null, 
-                time: 0, 
-                messagesAnalyzed_Total: 0, 
-                messagesAnalyzed_lastRun: 0, 
-                charactersFound_Total: 0, 
-                charactersFound_lastRun: 0,
-                deltaTime: 0
-            };
-        } else {
-            if (!state[channel].hasOwnProperty('messagesAnalyzed_Total')) state[channel].messagesAnalyzed_Total = 0;
-            if (!state[channel].hasOwnProperty('messagesAnalyzed_lastRun')) state[channel].messagesAnalyzed_lastRun = 0;
-            if (!state[channel].hasOwnProperty('charactersFound_Total')) state[channel].charactersFound_Total = 0;
-            if (!state[channel].hasOwnProperty('charactersFound_lastRun')) state[channel].charactersFound_lastRun = 0;
-            if (!state[channel].hasOwnProperty('deltaTime')) state[channel].deltaTime = 0;
-        }
-    });
 
     return state;
 }
@@ -240,11 +219,13 @@ async function processMessages() {
     const lastProcessed = await getLastProcessedState();
 
     for (const channel of CONFIG.channels) {
-        console.log(`\nProcessing channel: ${channel}`);
+        console.log("");
+        console.log(`Processing channel: ${channel}`);
         console.log(`Fetching messages on: ${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}`);
         let skip = 0;
         let latestMessage = null;
         let continueProcessing = true;
+        // Reset lastRun counters at the start of each channel processing
         lastProcessed[channel].messagesAnalyzed_lastRun = 0;
         lastProcessed[channel].charactersFound_lastRun = 0;
 
@@ -270,12 +251,12 @@ async function processMessages() {
                         break;
                     }
 
-                    // Set latest message to the latest found in this channel
+                    // If this is our first message in this run, store it for deltaTime calculation
                     if (latestMessage === null || message.time > latestMessage.time) {
                         // Calculate the minutes elapsed between messages
-                        lastProcessed[channel].deltaTime = latestMessage ? (message.time - latestMessage.time) / (1000 * 60) : 0;
-                        lastProcessed[channel].messageId = latestMessage ? message.messageId : 0;
-                        lastProcessed[channel].time = latestMessage ? message.time : 0;
+                        lastProcessed[channel].deltaTime = lastProcessed[channel].time ? (message.time - lastProcessed[channel].time) / (1000 * 60) : 0;
+                        lastProcessed[channel].messageId = message.messageId;
+                        lastProcessed[channel].time =  message.time;
                         latestMessage = message;
                     }
                     
