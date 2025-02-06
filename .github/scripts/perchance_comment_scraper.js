@@ -17,7 +17,7 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: "characters",
+    outputDir: "ai-character-chat/characters/raw",
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
@@ -50,7 +50,7 @@ async function getGithubFile(path) {
  * @param {string} content - File content
  * @param {string} message - Commit message
  */
-async function createOrUpdateFile(filePath, content, message) {
+async function createOrUpdateFile(filePath, content, message, log = true) {
     try {
         // Check if file exists
         let sha;
@@ -77,7 +77,7 @@ async function createOrUpdateFile(filePath, content, message) {
             sha: sha
         });
 
-        console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
+        if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
     } catch (error) {
         console.error(`         Error creating/updating file ${filePath}:`, error);
         throw error;
@@ -130,11 +130,11 @@ async function getLastProcessedState() {
  */
 async function saveProcessingState(state) {
     console.log('Saving processing state...');
-    console.log(JSON.stringify(state, null, 2),"\n");
     await createOrUpdateFile(
         CONFIG.timestampFile,
         JSON.stringify(state, null, 2),
-        'Update last processed state'
+        'Update last processed state',
+        false
     );
 }
 
@@ -245,7 +245,6 @@ async function processMessages() {
                 for (const message of messages) {
                     if (message.time <= lastProcessed[channel].time) {
                         console.log(`   Reached previously processed message in ${channel}`);
-                        console.log("   ", JSON.stringify(lastProcessed[channel]));
                         continueProcessing = false;
                         break;
                     }
