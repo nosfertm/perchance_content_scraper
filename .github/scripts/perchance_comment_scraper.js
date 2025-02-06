@@ -37,7 +37,7 @@ async function getGithubFile(path) {
         return JSON.parse(content);
     } catch (error) {
         if (error.status === 404) {
-            console.log(`File ${path} not found, creating new...`);
+            console.log(`   File ${path} not found, creating new...`);
             return null;
         }
         throw error;
@@ -174,11 +174,11 @@ function extractCharacterLinks(message) {
 async function saveCharacterData(characterInfo, message) {
     console.log(`       Processing character: ${characterInfo.character}`);
     try {
-        const dirName = `${CONFIG.outputDir}/${characterInfo.character} by ${message.username || 'unknown'}`;
+        const dirName = `${CONFIG.outputDir}/${characterInfo.character} by ${message.username || message.userNickname || message.publicId || 'unknown'}`;
         const gzPath = `${dirName}/${characterInfo.fileId}`;
 
         // Download .gz file
-        console.log(`       Downloading: ${characterInfo.link}`);
+        console.log(`           Downloading: ${characterInfo.link}`);
         const fileContent = await downloadFile(characterInfo.link);
 
         // Save .gz file
@@ -189,16 +189,17 @@ async function saveCharacterData(characterInfo, message) {
         );
 
         // Save metadata
-        const metadata = {
-            folderName: message.folderName,
-            message: message.message,
-            messageId: message.messageId,
-            time: message.time,
-            username: message.username,
-            userNickname: message.userNickname,
-            userAvatarUrl: message.userAvatarUrl,
-            publicId: message.publicId
-        };
+        const metadata = { ...message };
+        // const metadata = {
+        //     folderName: message.folderName,
+        //     message: message.message,
+        //     messageId: message.messageId,
+        //     time: message.time,
+        //     username: message.username,
+        //     userNickname: message.userNickname,
+        //     userAvatarUrl: message.userAvatarUrl,
+        //     publicId: message.publicId
+        // };
 
         await createOrUpdateFile(
             `${dirName}/metadata.json`,
@@ -221,6 +222,7 @@ async function processMessages() {
 
     for (const channel of CONFIG.channels) {
         console.log(`\nProcessing channel: ${channel}`);
+        console.log(`Fetching messages on: ${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}`);
         let skip = 0;
         let latestMessage = null;
         let continueProcessing = true;
@@ -229,7 +231,6 @@ async function processMessages() {
             const url = `${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}&skip=${skip}`;
 
             try {
-                console.log(`   Fetching messages: ${url}`);
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
@@ -238,7 +239,7 @@ async function processMessages() {
                     console.log(`No more messages in channel: ${channel}`);
                     break;
                 } else {
-                    console.log(`   Fetched ${messages.length} messages in channel: ${channel}`);
+                    console.log(`   Fetched messages in channel ${channel}: ${200+skip}`);
                 }
 
                 for (const message of messages) {
@@ -251,10 +252,6 @@ async function processMessages() {
 
                     // Set latest message to the latest found in this channel
                     if (latestMessage === null || message.time > latestMessage.time) {
-                        console.log(`   Latest message updated from:`)
-                        console.log("   ",JSON.stringify(latestMessage));
-                        console.log(`   to`);
-                        console.log("   ",JSON.stringify(message));
                         latestMessage = message;
                     }
 
