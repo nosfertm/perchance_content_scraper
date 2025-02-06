@@ -17,7 +17,7 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: "ai-character-chat/characters/raw",
+    outputDir: "characters",
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
@@ -106,7 +106,15 @@ async function getLastProcessedState() {
     if (!state) {
         // Initialize state for all channels
         return CONFIG.channels.reduce((acc, channel) => {
-            acc[channel] = { messageId: null, time: 0, messagesAnalyzed: 0, charactersFound: 0 };
+            acc[channel] = { 
+                messageId: null, 
+                time: 0, 
+                messagesAnalyzed_Total: 0, 
+                messagesAnalyzed_lastRun: 0, 
+                charactersFound_Total: 0, 
+                charactersFound_lastRun: 0,
+                deltaTime: 0
+            };
             return acc;
         }, {});
     }
@@ -114,10 +122,21 @@ async function getLastProcessedState() {
     // Ensure all channels exist in state
     CONFIG.channels.forEach(channel => {
         if (!state[channel]) {
-            state[channel] = { messageId: null, time: 0, messagesAnalyzed: 0, charactersFound: 0 };
+            state[channel] =  { 
+                messageId: null, 
+                time: 0, 
+                messagesAnalyzed_Total: 0, 
+                messagesAnalyzed_lastRun: 0, 
+                charactersFound_Total: 0, 
+                charactersFound_lastRun: 0,
+                deltaTime: 0
+            };
         } else {
-            if (!state[channel].hasOwnProperty('messagesAnalyzed')) state[channel].messagesAnalyzed = 0;
-            if (!state[channel].hasOwnProperty('charactersFound')) state[channel].charactersFound = 0;
+            if (!state[channel].hasOwnProperty('messagesAnalyzed_Total')) state[channel].messagesAnalyzed_Total = 0;
+            if (!state[channel].hasOwnProperty('messagesAnalyzed_lastRun')) state[channel].messagesAnalyzed_lastRun = 0;
+            if (!state[channel].hasOwnProperty('charactersFound_Total')) state[channel].charactersFound_Total = 0;
+            if (!state[channel].hasOwnProperty('charactersFound_lastRun')) state[channel].charactersFound_lastRun = 0;
+            if (!state[channel].hasOwnProperty('deltaTime')) state[channel].deltaTime = 0;
         }
     });
 
@@ -251,15 +270,20 @@ async function processMessages() {
 
                     // Set latest message to the latest found in this channel
                     if (latestMessage === null || message.time > latestMessage.time) {
+                        // Calculate the minutes elapsed between messages
+                        lastProcessed[channel].deltaTime = latestMessage ? (message.time - latestMessage.time) / (1000 * 60) : 0;
                         latestMessage = message;
                     }
+                    
 
                     // Count messages
-                    lastProcessed[channel].messagesAnalyzed += 1;
+                    lastProcessed[channel].messagesAnalyzed_Total += 1;
+                    lastProcessed[channel].messagesAnalyzed_lastRun += 1;
 
                     // Count characters found
                     const characterLinks = extractCharacterLinks(message.message);
-                    lastProcessed[channel].charactersFound += characterLinks.length;
+                    lastProcessed[channel].charactersFound_Total += characterLinks.length;
+                    lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
                     for (const charInfo of characterLinks) {
                         await saveCharacterData(charInfo, message);
@@ -281,8 +305,11 @@ async function processMessages() {
             lastProcessed[channel] = {
                 messageId: latestMessage.messageId,
                 time: latestMessage.time,
-                messagesAnalyzed: lastProcessed[channel].messagesAnalyzed,
-                charactersFound: lastProcessed[channel].charactersFound
+                messagesAnalyzed_Total: lastProcessed[channel].messagesAnalyzed_Total,
+                messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
+                charactersFound_Total: lastProcessed[channel].charactersFound_Total,
+                charactersFound_Total: lastProcessed[channel].charactersFound_lastRun,
+                deltaTime: lastProcessed[channel].deltaTime
             };
         }
 
