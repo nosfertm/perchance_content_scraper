@@ -77,9 +77,9 @@ async function createOrUpdateFile(filePath, content, message) {
             sha: sha
         });
 
-        console.log(`Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
+        console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
     } catch (error) {
-        console.error(`Error creating/updating file ${filePath}:`, error);
+        console.error(`         Error creating/updating file ${filePath}:`, error);
         throw error;
     }
 }
@@ -130,6 +130,7 @@ async function getLastProcessedState() {
  */
 async function saveProcessingState(state) {
     console.log('Saving processing state...');
+    console.log(JSON.stringify(state, null, 2),"\n");
     await createOrUpdateFile(
         CONFIG.timestampFile,
         JSON.stringify(state, null, 2),
@@ -143,7 +144,6 @@ async function saveProcessingState(state) {
  * @returns {Array} Array of character objects
  */
 function extractCharacterLinks(message) {
-    console.log('Extracting character links from message...');
     const links = message
         .split(/(\s+|(?<=gz),)/gm)
         .filter(a => a.includes('data='))
@@ -172,13 +172,13 @@ function extractCharacterLinks(message) {
  * @param {Object} message - Original message
  */
 async function saveCharacterData(characterInfo, message) {
-    console.log(`Processing character: ${characterInfo.character}`);
+    console.log(`       Processing character: ${characterInfo.character}`);
     try {
         const dirName = `${CONFIG.outputDir}/${characterInfo.character} by ${message.username || 'unknown'}`;
         const gzPath = `${dirName}/${characterInfo.fileId}`;
 
         // Download .gz file
-        console.log(`Downloading: ${characterInfo.link}`);
+        console.log(`       Downloading: ${characterInfo.link}`);
         const fileContent = await downloadFile(characterInfo.link);
 
         // Save .gz file
@@ -251,8 +251,15 @@ async function processMessages() {
 
                     // Set latest message to the latest found in this channel
                     if (latestMessage === null || message.time > latestMessage.time) {
+                        console.log(`   Latest message updated from:`)
+                        console.log("   ",JSON.stringify(latestMessage));
+                        console.log(`   to`);
+                        console.log("   ",JSON.stringify(message));
                         latestMessage = message;
                     }
+
+                    // Count messages
+                    lastProcessed[channel].messagesAnalyzed += 1;
 
                     // Count characters found
                     const characterLinks = extractCharacterLinks(message.message);
@@ -262,9 +269,6 @@ async function processMessages() {
                         await saveCharacterData(charInfo, message);
                     }
                 }
-
-                // Count messages per batch
-                lastProcessed[channel].messagesAnalyzed += messages.length;
 
                 // Skip to the next batch
                 skip += messages.length;
