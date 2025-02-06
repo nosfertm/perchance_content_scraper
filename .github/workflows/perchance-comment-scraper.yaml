@@ -2,8 +2,8 @@ name: Perchance Comment Scraper
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Run hourly
-  workflow_dispatch:      # Manual trigger
+    - cron: '0 * * * *'
+  workflow_dispatch:
   
 jobs:
   scrape:
@@ -14,13 +14,22 @@ jobs:
         with:
           ref: ${{ env.TARGET_BRANCH }}
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           
-      - name: Install Dependencies
-        run: npm install @octokit/rest node-fetch
+      - name: Create package.json
+        run: |
+          echo '{
+            "name": "perchance-scraper",
+            "type": "module",
+            "dependencies": {
+              "@octokit/rest": "^20.0.2",
+              "node-fetch": "^3.3.2"
+            }
+          }' > package.json
+          
+      - run: npm install
         
       - name: Run Scraper
         env:
