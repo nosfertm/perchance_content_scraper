@@ -2,12 +2,18 @@ name: Perchance Comment Scraper
 
 on:
   schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+    # Runs at minute 0 and 30 of every hour (*/30)
+    - cron: '0,30 * * * *'
+  workflow_dispatch:  # Maintains ability to run manually
   
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    
+    # Adds concurrency to prevent simultaneous runs
+    concurrency:
+      group: scrape-comments
+      cancel-in-progress: false    # Prevents new jobs from starting while current one is running
     
     steps:
       - uses: actions/checkout@v4
