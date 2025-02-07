@@ -1,12 +1,14 @@
 {
   "chat": {
-    "messageId": "67a557e2efe5798257d448ed",
-    "time": 1738889186733,
-    "messagesAnalyzed_Total": 6229,
-    "messagesAnalyzed_lastRun": 538,
+    "messageId": "67a5597eefe5798257d44b3a",
+    "time": 1738889598233,
+    "messagesAnalyzed_Total": 6268,
+    "messagesAnalyzed_lastRun": 39,
     "charactersFound_Total": 18,
     "charactersFound_lastRun": 0,
-    "deltaMinutes": 57
+    "charactersIgnored_Total": 0,
+    "charactersIgnored_lastRun": 0,
+    "deltaMinutes": 7
   },
   "chill": {
     "messageId": "67a5413eefe5798257d4224d",
@@ -15,16 +17,20 @@
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 33,
     "charactersFound_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 0,
+    "charactersIgnored_Total": 0,
+    "charactersIgnored_lastRun": 0
   },
   "rp": {
     "messageId": "67a5566aefe5798257d4468f",
     "time": 1738888810489,
     "messagesAnalyzed_Total": 5253,
-    "messagesAnalyzed_lastRun": 45,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 1,
     "charactersFound_lastRun": 0,
-    "deltaMinutes": 55
+    "deltaMinutes": 55,
+    "charactersIgnored_Total": 0,
+    "charactersIgnored_lastRun": 0
   },
   "spam": {
     "messageId": "67a54163efe5798257d42284",
@@ -33,7 +39,9 @@
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 79,
     "charactersFound_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 0,
+    "charactersIgnored_Total": 0,
+    "charactersIgnored_lastRun": 0
   },
   "vent": {
     "messageId": "67a54023efe5798257d42064",
@@ -42,7 +50,9 @@
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 4,
     "charactersFound_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 0,
+    "charactersIgnored_Total": 0,
+    "charactersIgnored_lastRun": 0
   },
   "share": {
     "messageId": "67a54151efe5798257d42269",
@@ -51,6 +61,8 @@
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 0,
     "charactersFound_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 0,
+    "charactersIgnored_Total": 0,
+    "charactersIgnored_lastRun": 0
   }
 }
