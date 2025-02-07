@@ -4,8 +4,6 @@
 
 import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
-import { promises as fs } from 'fs';
-import path from 'path';
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
@@ -111,6 +109,8 @@ async function getLastProcessedState() {
         messagesAnalyzed_lastRun: 0,
         charactersFound_Total: 0,      // Start from 0 if new
         charactersFound_lastRun: 0,
+        charactersIgnored_Total: 0,    // Start from 0 if new
+        charactersIgnored_lastRun: 0,
         deltaMinutes: 0
     });
 
@@ -130,8 +130,10 @@ async function getLastProcessedState() {
             // Ensure numeric properties are initialized properly
             state[channel].messagesAnalyzed_Total = state[channel].messagesAnalyzed_Total || 0;
             state[channel].charactersFound_Total = state[channel].charactersFound_Total || 0;
-            state[channel].messagesAnalyzed_lastRun = 0;  // Reset for new run
-            state[channel].charactersFound_lastRun = 0;   // Reset for new run
+            state[channel].charactersIgnored_Total = state[channel].charactersIgnored_Total || 0;
+            state[channel].messagesAnalyzed_lastRun = 0;
+            state[channel].charactersFound_lastRun = 0;
+            state[channel].charactersIgnored_lastRun = 0;
             state[channel].deltaMinutes = state[channel].deltaMinutes || 0;
         }
     });
@@ -160,11 +162,14 @@ async function saveProcessingState(state) {
  * @returns {Array|null} Array of unique character objects or null if NOSCRAPE is found.
  */
 function extractCharacterLinks(message) {
+
     // Check if the message contains "NOSCRAPE"
-    if (message.includes('NOSCRAPE')) {
+    if (message.toLowerCase().includes('noscrape')) {
         console.warn('Character links were not processed due to NOSCRAPE restriction.');
-        return null;
+        return { links: [], ignored: true };
     }
+
+
     // Split the message into segments using spaces and commas as delimiters.
     const links = message
         .split(/(\s+|(?<=gz),)/gm) // Keeps spaces and ",gz" as split points.
@@ -187,7 +192,10 @@ function extractCharacterLinks(message) {
         .filter(Boolean); // Removes null values from the array.
 
     // Removes duplicate objects by converting them to JSON and back.
-    return [...new Set(links.map(JSON.stringify))].map(JSON.parse);
+    return {
+        links: [...new Set(links.map(JSON.stringify))].map(JSON.parse),
+        ignored: false
+    };
 }
 
 
@@ -258,42 +266,48 @@ async function processMessages() {
                     console.log(`No more messages in channel: ${channel}`);
                     break;
                 } else {
-                    console.log(`   Fetched messages in channel ${channel}: ${200+skip}`);
+                    console.log(`   Fetched messages in channel ${channel}: ${200 + skip}`);
                 }
 
-                
+
                 for (const message of messages) {
                     // Store the very first message of this batch as latest
                     // since messages are returned in reverse chronological order
                     if (latestMessage === null || message.time > latestMessage.time) {
                         latestMessage = message;
                         // Calculate time difference from last run
-                        lastProcessed[channel].deltaMinutes = lastProcessed[channel].time ? 
+                        lastProcessed[channel].deltaMinutes = lastProcessed[channel].time ?
                             Math.round((message.time - lastProcessed[channel].time) / (1000 * 60)) : 0;
                     }
-                
+
                     // Stop if we reach a message we've already processed
                     if (message.time <= lastProcessed[channel].time) {
                         console.log(`   Reached previously processed message in ${channel}`);
                         continueProcessing = false;
                         break;
                     }
-                
+
                     // Update counters for this message
                     lastProcessed[channel].messagesAnalyzed_Total += 1;
                     lastProcessed[channel].messagesAnalyzed_lastRun += 1;
-                
+
                     // Process character links
-                    const characterLinks = extractCharacterLinks(message.message);
-                    lastProcessed[channel].charactersFound_Total += characterLinks.length;
-                    lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
-                
-                    // Process each character found
-                    for (const charInfo of characterLinks) {
-                        await saveCharacterData(charInfo, message);
+                    const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
+
+                    if (ignored) {
+                        lastProcessed[channel].charactersIgnored_Total += 1;
+                        lastProcessed[channel].charactersIgnored_lastRun += 1;
+                    } else {
+                        lastProcessed[channel].charactersFound_Total += characterLinks.length;
+                        lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
+
+                        // Process each character found
+                        for (const charInfo of characterLinks) {
+                            await saveCharacterData(charInfo, message);
+                        }
                     }
+
                 }
-                
 
                 // Skip to the next batch
                 skip += messages.length;
@@ -315,9 +329,11 @@ async function processMessages() {
                 messagesAnalyzed_lastRun: lastProcessed[channel].messagesAnalyzed_lastRun,
                 charactersFound_Total: lastProcessed[channel].charactersFound_Total,
                 charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
+                charactersIgnored_Total: lastProcessed[channel].charactersIgnored_Total,
+                charactersIgnored_lastRun: lastProcessed[channel].charactersIgnored_lastRun,
                 deltaMinutes: lastProcessed[channel].deltaMinutes
             };
-        }        
+        }
 
         await saveProcessingState(lastProcessed);
     }
@@ -331,57 +347,60 @@ async function processMessages() {
  * @returns {Object} Summary of total messages and characters
  */
 function generateProcessingSummary(state) {
-    // Check if state exists
     if (!state) {
         console.log('No state available for summary');
         return;
     }
 
-    // Initialize counters
     const summary = {
         totalMessagesAnalyzed: 0,
         totalCharactersFound: 0,
+        totalCharactersIgnored: 0,
         messagesThisRun: 0,
-        charactersThisRun: 0
+        charactersThisRun: 0,
+        charactersIgnoredThisRun: 0 
     };
 
-    // Process each channel's statistics
     CONFIG.channels.forEach(channel => {
         if (state[channel]) {
-            // Add to total counts
             summary.totalMessagesAnalyzed += state[channel].messagesAnalyzed_Total || 0;
             summary.totalCharactersFound += state[channel].charactersFound_Total || 0;
+            summary.totalCharactersIgnored += state[channel].charactersIgnored_Total || 0;
             summary.messagesThisRun += state[channel].messagesAnalyzed_lastRun || 0;
             summary.charactersThisRun += state[channel].charactersFound_lastRun || 0;
+            summary.charactersIgnoredThisRun += state[channel].charactersIgnored_lastRun || 0;
         }
     });
 
     return summary;
 }
 
+
 // Main execution
 console.log('Starting Perchance Comment Scraper...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
-        
+
         console.log('\n=== Processing Summary ===');
         console.log(`Total Messages Analyzed (All Time): ${summary.totalMessagesAnalyzed}`);
         console.log(`Total Characters Found (All Time): ${summary.totalCharactersFound}`);
+        console.log(`Total Characters Ignored (All Time): ${summary.totalCharactersIgnored}`);
         console.log('\nThis Run:');
         console.log(`Messages Analyzed: ${summary.messagesThisRun}`);
         console.log(`Characters Found: ${summary.charactersThisRun}`);
-        
+        console.log(`Characters Ignored: ${summary.charactersIgnoredThisRun}`);
+
         // Channel-specific statistics
         console.log('\nPer Channel Statistics (This Run):');
         CONFIG.channels.forEach(channel => {
-            if (lastProcessed[channel] && 
-                (lastProcessed[channel].messagesAnalyzed_lastRun > 0 || 
-                 lastProcessed[channel].charactersFound_lastRun > 0)) {
+            if (lastProcessed[channel] &&
+                (lastProcessed[channel].messagesAnalyzed_lastRun > 0 ||
+                    lastProcessed[channel].charactersFound_lastRun > 0)) {
                 console.log(`${channel}: ${lastProcessed[channel].messagesAnalyzed_lastRun} messages, ${lastProcessed[channel].charactersFound_lastRun} characters`);
             }
         });
-        
+
         console.log('\nProcessing completed successfully');
     })
     .catch(error => {
