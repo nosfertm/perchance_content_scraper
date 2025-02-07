@@ -157,20 +157,12 @@ async function saveProcessingState(state) {
 
 /**
  * Extracts character links from a message.
- * If the message contains "NOSCRAPE", logs a warning and returns null.
+ * If a character link is found and the message contains "NOSCRAPE", that character is ignored.
  * @param {string} message - The message text containing links.
- * @returns {Array|null} Array of unique character objects or null if NOSCRAPE is found.
+ * @returns {Object} Object containing links array and ignored status
  */
 function extractCharacterLinks(message) {
-
-    // Check if the message contains "NOSCRAPE"
-    if (message.toLowerCase().includes('noscrape')) {
-        console.warn('Character links were not processed due to NOSCRAPE restriction.');
-        return { links: [], ignored: true };
-    }
-
-
-    // Split the message into segments using spaces and commas as delimiters.
+    // First, extract all potential character links
     const links = message
         .split(/(\s+|(?<=gz),)/gm) // Keeps spaces and ",gz" as split points.
         .filter(a => a.includes('data=')) // Filters out elements that don't contain 'data='.
@@ -191,9 +183,20 @@ function extractCharacterLinks(message) {
         })
         .filter(Boolean); // Removes null values from the array.
 
-    // Removes duplicate objects by converting them to JSON and back.
+    // Remove duplicates
+    const uniqueLinks = [...new Set(links.map(JSON.stringify))].map(JSON.parse);
+
+    // Only check for NOSCRAPE if we actually found character links
+    if (uniqueLinks.length > 0 && message.toLowerCase().includes('noscrape')) {
+        // Log each character being ignored
+        uniqueLinks.forEach(link => {
+            console.log(`       Ignoring character: ${link.character}`);
+        });
+        return { links: [], ignored: true };
+    }
+
     return {
-        links: [...new Set(links.map(JSON.stringify))].map(JSON.parse),
+        links: uniqueLinks,
         ignored: false
     };
 }
