@@ -1,0 +1,32 @@
+name: Sanitize Filenames
+
+on:
+  # Executa manualmente através da interface do GitHub
+  workflow_dispatch:
+
+jobs:
+  sanitize:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: test_processor
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run sanitize script
+        run: node sanitize-filenames.js
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "Sanitize filenames and directories" || echo "No changes to commit"
+          git push
