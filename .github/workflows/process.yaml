@@ -21,19 +21,9 @@ jobs:
         with:
           node-version: '20'
           
-      # - name: Create package.json
-      #   run: |
-      #     echo '{
-      #       "name": "perchance-scraper",
-      #       "type": "module",
-      #       "dependencies": {
-      #         "@octokit/rest": "^20.0.2",
-      #         "node-fetch": "^3.3.2"
-      #       }
-      #     }' > package.json
-          
-      # - run: npm install
-        
+      - name: Debug - List files before running script
+        run: ls -R ai-character-char/characters/scrape/
+
       - name: Run Processor
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
