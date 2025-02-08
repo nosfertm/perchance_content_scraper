@@ -1,4 +1,4 @@
-name: Perchance Comment Scraper
+name: Processor
 
 on:
   workflow_dispatch:  # Maintains ability to run manually
