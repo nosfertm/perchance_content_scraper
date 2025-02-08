@@ -79,9 +79,21 @@ async function processCharacters() {
  * Get list of character folders to process
  */
 async function getCharacterFolders() {
-  const folders = await fs.readdir(CONFIG.SOURCE_PATH);
-  return folders.filter(folder => !folder.startsWith('.'));
+  try {
+    // Read directory contents
+    const folders = await fs.readdir(CONFIG.SOURCE_PATH);
+    
+    // Log found files/folders for debugging
+    console.log("Found files/folders:", folders);
+
+    // Filter out hidden files (starting with '.')
+    return folders.filter(folder => !folder.startsWith('.'));
+  } catch (err) {
+    console.error(`Error reading directory ${CONFIG.SOURCE_PATH}:`, err.message);
+    throw err;
+  }
 }
+
 
 /**
  * Process a single character
