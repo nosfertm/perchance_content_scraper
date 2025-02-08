@@ -1,27 +1,41 @@
-name: Scrape process
+name: Perchance Comment Scraper
 
 on:
-  workflow_dispatch:      # Manual trigger
+  workflow_dispatch:  # Maintains ability to run manually
   
 jobs:
-  scrape:
+  procss:
     runs-on: ubuntu-latest
+    
+    # Adds concurrency to prevent simultaneous runs
+    concurrency:
+      group: scrape-comments
+      cancel-in-progress: false    # Prevents new jobs from starting while current one is running
     
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.TARGET_BRANCH }}
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           
-      - name: Install Dependencies
-        run: npm install @octokit/rest node-fetch
+      # - name: Create package.json
+      #   run: |
+      #     echo '{
+      #       "name": "perchance-scraper",
+      #       "type": "module",
+      #       "dependencies": {
+      #         "@octokit/rest": "^20.0.2",
+      #         "node-fetch": "^3.3.2"
+      #       }
+      #     }' > package.json
+          
+      # - run: npm install
         
-      - name: Run Scraper
+      - name: Run Processor
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
           TARGET_BRANCH: test_processor
-        run: node process.js
+        run: node .github/scripts/process.js
