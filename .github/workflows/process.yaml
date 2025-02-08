@@ -22,8 +22,8 @@ jobs:
         with:
           node-version: '20'
           
-      - name: Debug - List files before running script
-        run: ls -R ai-character-char/characters/scrape/
+      # - name: Debug - List files before running script
+      #   run: ls -R ai-character-char/characters/scrape/
 
       - name: Run Processor
         env:
