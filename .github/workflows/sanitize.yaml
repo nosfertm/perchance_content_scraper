@@ -21,7 +21,7 @@ jobs:
           node-version: '20'
 
       - name: Run sanitize script
-        run: node sanitize-filenames.js
+        run: node .github/scripts/sanitize-filenames.js
 
       - name: Commit changes
         run: |
