@@ -219,13 +219,23 @@ function extractCharacterLinks(message) {
  * @param {Object} message - Original message
  */
 async function saveCharacterData(characterInfo, message) {
-    console.log(`       Processing character: ${characterInfo.character}`);
+    console.log("\n\n");
+    console.log("       --------------------");
+    console.log(`       Processing character!`);
     try {
         const charName = sanitizeString(characterInfo.character);
+        console.log(`           Character's name: ${charName}`);
+
         const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous')
+        console.log(`           Author's name: ${authorName}`);
+
         //const dirName = `${CONFIG.outputDir}/${charName} by ${authorName}`;
         const dirName = path.join(CONFIG.outputDir, `${charName} by ${authorName}`);
-        const gzPath = `${dirName}/${characterInfo.fileId}`;
+        console.log(`           Path: ${dirName}`);
+
+        const fileId = sanitizeString(characterInfo.fileId);
+        console.log(`           fileId: ${fileId}`);
+        const gzPath = `${dirName}/${fileId}`;
 
         // Download .gz file
         console.log(`           Downloading: ${characterInfo.link}`);
@@ -235,7 +245,7 @@ async function saveCharacterData(characterInfo, message) {
         await createOrUpdateFile(
             gzPath,
             fileContent.toString('base64'),
-            `Add character file: ${characterInfo.character}`
+            `Add character file: ${charName}`
         );
 
         // Save metadata
@@ -244,11 +254,11 @@ async function saveCharacterData(characterInfo, message) {
         await createOrUpdateFile(
             `${dirName}/metadata.json`,
             JSON.stringify(metadata, null, 2),
-            `Add metadata for: ${characterInfo.character}`
+            `Add metadata for: ${charName}`
         );
 
     } catch (error) {
-        console.error(`Error saving character data: ${characterInfo.character}`, error);
+        console.error(`Error saving character data: ${charName}`, error);
         throw error;
     }
 }
@@ -261,7 +271,8 @@ async function processMessages() {
     const lastProcessed = await getLastProcessedState();
 
     for (const channel of CONFIG.channels) {
-        console.log("");
+        console.log("\n\n");
+        console.log("-------------");
         console.log(`Processing channel: ${channel}`);
         console.log(`Fetching messages on: ${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}`);
         let skip = 0;
