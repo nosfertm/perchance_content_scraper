@@ -23,15 +23,17 @@ const CONFIG = {
 
 const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
 
-function sanitizeString(str) {
+function sanitizeFilename(str) {
     return str
-        .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')  // Remove emojis
-        .replace(/[^\x00-\x7F]/g, '')            // Remove non-ASCII characters
-        .replace(/[*?"<>|]/g, '_')               // Replace invalid characters
-        .replace(/_{2,}/g, '_')                  // Remove multiple underscores
-        .replace(/^_|_$/g, '')                   // Remove underscores at start and end
-        .toLowerCase();                           // Convert to lower case
+        .normalize('NFKD')             // Normalize Unicode characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
+        .replace(/[^a-zA-Z0-9]/g, '_') // Allow only letters and numbers, replace others with '_'
+        .replace(/_{2,}/g, '_')        // Remove multiple underscores
+        .replace(/^_|_$/g, '')         // Trim leading/trailing underscores
+        .toLowerCase();                // Convert to lowercase
 }
+
 
 async function getGithubFile(path) {
     try {
