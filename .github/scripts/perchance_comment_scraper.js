@@ -4,12 +4,11 @@
 
 import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
+import path from 'path';
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
-
-const path = require('path');
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share"],
@@ -17,7 +16,7 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: "ai-character-char/characters/scrape/perchance_comments",
+    outputDir: path.join("ai-character-char", "characters", "scrape", "perchance_comments"),
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
