@@ -9,6 +9,8 @@ const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
 
+const path = require('path');
+
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share"],
     maxMessagesPerChannel: 5200,
@@ -21,6 +23,16 @@ const CONFIG = {
 };
 
 const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
+
+function sanitizeString(str) {
+    return str
+        .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')  // Remove emojis
+        .replace(/[^\x00-\x7F]/g, '')            // Remove non-ASCII characters
+        .replace(/[*?"<>|]/g, '_')               // Replace invalid characters
+        .replace(/_{2,}/g, '_')                  // Remove multiple underscores
+        .replace(/^_|_$/g, '')                   // Remove underscores at start and end
+        .toLowerCase();                           // Convert to lower case
+}
 
 async function getGithubFile(path) {
     try {
@@ -210,7 +222,10 @@ function extractCharacterLinks(message) {
 async function saveCharacterData(characterInfo, message) {
     console.log(`       Processing character: ${characterInfo.character}`);
     try {
-        const dirName = `${CONFIG.outputDir}/${characterInfo.character} by ${message.username || message.userNickname || message.publicId || 'unknown'}`;
+        const charName = sanitizeString(characterInfo.character);
+        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous')
+        //const dirName = `${CONFIG.outputDir}/${charName} by ${authorName}`;
+        const dirName = path.join(CONFIG.outputDir, `${charName} by ${authorName}`);
         const gzPath = `${dirName}/${characterInfo.fileId}`;
 
         // Download .gz file
@@ -380,7 +395,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper...');
+console.log('Starting Perchance Comment Scraper 1.2...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
