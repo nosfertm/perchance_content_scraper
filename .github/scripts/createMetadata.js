@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { exit } = require('process');
 
 // Defina o diretório base
 const rootDir = 'ai-character-char/characters/scrape/perchance_comments';
@@ -10,23 +9,24 @@ function renameMetadataFile(metadataPath) {
     const newMetadataPath = path.join(path.dirname(metadataPath), 'capturedMessage.json');
     fs.renameSync(metadataPath, newMetadataPath);
     console.log(`Renomeado ${metadataPath} para ${newMetadataPath}`);
+    return newMetadataPath;  // Retorna o novo caminho para o arquivo renomeado
 }
 
-// Função para criar os novos arquivos metadata.json com base nos links extraídos
-function createMetadataForLinks(links, message, metadataPath) {
-    links.forEach(linkData => {
-        const metadata = {
-            characterName: linkData.character,
-            fileId: linkData.fileId,
-            link: linkData.link,
-            authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
-            authorId: message.publicId || 'Unknown'
-        };
+// Função para adicionar entradas no novo arquivo metadata.json
+function addEntriesToNewMetadataFile(metadataPath, links, message) {
+    newMetadataPath = path.join(path.dirname(metadataPath), 'metadata.json');
+    // Cria um array de metadados, um para cada link extraído
+    const metadataArray = links.map(linkData => ({
+        characterName: linkData.character,
+        fileId: linkData.fileId,
+        link: linkData.link,
+        authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
+        authorId: message.publicId || 'Unknown'
+    }));
 
-        const newMetadataPath = path.join(path.dirname(metadataPath), `metadata.json`);
-        fs.writeFileSync(newMetadataPath, JSON.stringify(metadata, null, 2));
-        console.log(`Novo metadata criado: ${newMetadataPath}`);
-    });
+    // Escreve as entradas no novo arquivo metadata.json
+    fs.writeFileSync(newMetadataPath, JSON.stringify(metadataArray, null, 2));
+    console.log(`Novo arquivo metadata.json criado: ${newMetadataPath}`);
 }
 
 // Função para extrair os links
@@ -61,15 +61,7 @@ function extractCharacterLinks(message) {
 }
 
 // Função para processar cada subpasta
-let stopProcessing = false; // Flag para controlar a interrupção
-
-// Função para processar cada subpasta
 function processMetadataInDir(dir) {
-    // Se já decidimos parar, saímos imediatamente da função
-    if (stopProcessing) {
-        return;
-    }
-
     fs.readdirSync(dir).forEach(file => {
         const fullPath = path.join(dir, file);
         const stat = fs.statSync(fullPath);
@@ -85,26 +77,27 @@ function processMetadataInDir(dir) {
                 const metadata = JSON.parse(metadataContent);
 
                 // Renomeia o arquivo metadata.json
-                renameMetadataFile(metadataPath);
+                const newMetadataPath = renameMetadataFile(metadataPath);
 
                 // Extraímos os links da mensagem
                 const { links } = extractCharacterLinks(metadata.message);
 
                 if (links.length > 0) {
-                    createMetadataForLinks(links, metadata, metadataPath);
+                    // Cria um novo arquivo metadata.json com as entradas extraídas
+                    addEntriesToNewMetadataFile(metadataPath, links, metadata);
                 } else {
                     console.log('Nenhum link encontrado na mensagem.');
                 }
 
                 // Marca para parar o processo
-                stopProcessing = true;
-                console.log("Parando a execução após o primeiro arquivo.");
+                stopProcessing = false;
             }
         }
     });
 
     // Se necessário, podemos garantir que o processo seja finalizado
     if (stopProcessing) {
+        console.log("Parando a execução após o primeiro arquivo.");
         process.exit();
     }
 }
