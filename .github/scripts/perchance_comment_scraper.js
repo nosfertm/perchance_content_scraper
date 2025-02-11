@@ -5,6 +5,7 @@
 import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 import path from 'path';
+import * as https from 'https';
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
@@ -98,7 +99,7 @@ async function getGithubFile(path) {
  */
 async function createOrUpdateFile(filePath, content, message, log = true) {
     try {
-        // Check if file exists
+        // Check if file already exists in the repository
         let sha;
         try {
             const file = await octokit.repos.getContent({
@@ -109,22 +110,31 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             });
             sha = file.data.sha;
         } catch (error) {
+            // If file doesn't exist (404 error), continue without sha
+            // Otherwise, throw the error
             if (error.status !== 404) throw error;
         }
 
-        // Create or update file
+        // Create or update the file in the repository
         await octokit.repos.createOrUpdateFileContents({
             owner: CONFIG.owner,
             repo: CONFIG.repo,
             path: filePath,
             message: message,
-            content: Buffer.from(content).toString('base64'),
+            // Convert the buffer content to base64 string
+            content: content.toString('base64'),
             branch: CONFIG.targetBranch,
             sha: sha
         });
 
-        if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
+        // Log the result if logging is enabled
+        if (log) {
+            console.log(
+                `           Successfully ${sha ? 'updated' : 'created'} ${filePath}`
+            );
+        }
     } catch (error) {
+        // Log and re-throw any errors that occur
         console.error(`         Error creating/updating file ${filePath}:`, error);
         throw error;
     }
@@ -136,9 +146,33 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  * @returns {Promise<Buffer>} File content
  */
 async function downloadFile(url) {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Download failed: ${response.status}`);
-    return Buffer.from(await response.arrayBuffer());
+    return new Promise((resolve, reject) => {
+        // Make HTTPS request to download the file
+        https.get(url, (response) => {
+            // Check if the download request was successful
+            if (response.statusCode !== 200) {
+                reject(new Error(`Download failed: ${response.statusCode}`));
+                return;
+            }
+
+            // Initialize arrays to store chunks of data
+            const chunks = [];
+
+            // When receiving data, add it to our chunks array
+            response.on('data', (chunk) => {
+                chunks.push(chunk);
+            });
+
+            // When the download is complete, combine all chunks into one buffer
+            response.on('end', () => {
+                const fileContent = Buffer.concat(chunks);
+                resolve(fileContent);
+            });
+        }).on('error', (error) => {
+            // If there's an error during download, reject the promise
+            reject(error);
+        });
+    });
 }
 
 /**
@@ -282,11 +316,13 @@ async function saveCharacterData(characterInfo, message) {
         console.log(`           fileId: ${fileId}`);
         const gzPath = `${dirName}/${fileId}`;
 
-        // Download .gz file
+        // Log the start of the download
         console.log(`           Downloading: ${characterInfo.link}`);
+        
+        // Download the .gz file content
         const fileContent = await downloadFile(characterInfo.link);
 
-        // Save .gz file
+        // Save the downloaded file to the repository
         await createOrUpdateFile(
             gzPath,
             fileContent,
@@ -467,7 +503,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.6...');
+console.log('Starting Perchance Comment Scraper 1.7...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
