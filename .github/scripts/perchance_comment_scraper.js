@@ -289,7 +289,7 @@ async function saveCharacterData(characterInfo, message) {
         // Save .gz file
         await createOrUpdateFile(
             gzPath,
-            fileContent.toString('base64'),
+            fileContent,
             `Add character file: ${charName}`
         );
 
@@ -467,7 +467,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.5...');
+console.log('Starting Perchance Comment Scraper 1.6...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
