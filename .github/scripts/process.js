@@ -104,15 +104,19 @@ async function processCharacter(folder) {
   
   // Read metadata.json
   const metadata = await readMetadataFile(path.join(CONFIG.SOURCE_PATH, folder));
+  console.log("processCharacter | metadata:",metadata);
   
   // Extract character information from gz file
   const characterData = await extractCharacterData(folder);
+  console.log("processCharacter | characterData:",characterData);
   
   // Call AI for analysis (placeholder for now)
   const aiAnalysis = await analyzeCharacterWithAI(characterData);
+  console.log("processCharacter | aiAnalysis:",aiAnalysis);
   
   // Determine destination based on AI analysis
   const destinationPath = determineDestinationPath(aiAnalysis);
+  console.log("processCharacter | destinationPath:",destinationPath);
   
   // Create character structure in destination
   await createCharacterStructure(folder, metadata, characterData, aiAnalysis, destinationPath);
