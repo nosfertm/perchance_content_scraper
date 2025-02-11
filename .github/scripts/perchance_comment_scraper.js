@@ -30,7 +30,7 @@ const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
  */
 function sanitizeString(str) {
     if (!str) return 'unnamed';
-    
+
     return str
         .normalize('NFKD')                // Normalize Unicode characters
         .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
@@ -50,7 +50,7 @@ function sanitizeFileName(fileName) {
 
     // Split the file name into name and extension using the last '.' as separator
     const lastDotIndex = fileName.lastIndexOf('.');
-    
+
     // If no dot is found, treat the whole filename as the name with no extension
     const name = lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex);
     const extension = lastDotIndex === -1 ? '' : fileName.slice(lastDotIndex);  // Keep the dot with the extension
@@ -251,9 +251,10 @@ function extractCharacterLinks(message) {
 
 
 /**
- * Saves character data
+ * Saves character data and returns information needed for metadata
  * @param {Object} characterInfo - Character information
  * @param {Object} message - Original message
+ * @returns {Object} Directory and character information for metadata
  */
 async function saveCharacterData(characterInfo, message) {
     console.log("\n\n");
@@ -287,19 +288,45 @@ async function saveCharacterData(characterInfo, message) {
             `Add character file: ${charName}`
         );
 
-        // Save metadata
-        const metadata = { ...message };
-
+        // Save the original message
+        const capturedMessage = { ...message };
         await createOrUpdateFile(
-            `${dirName}/metadata.json`,
-            JSON.stringify(metadata, null, 2),
-            `Add metadata for: ${charName}`
+            `${dirName}/capturedMessage.json`,
+            JSON.stringify(capturedMessage, null, 2),
+            `Add capturedMessage for: ${charName}`
         );
+
+        // Return information needed for metadata
+        return { dirName, charName, authorName };
 
     } catch (error) {
         console.error(`Error saving character data: ${charName}`, error);
         throw error;
     }
+}
+
+/**
+ * Saves metadata information for all characters in a message
+ * @param {Array} links - Array of character links from the message
+ * @param {Object} message - The original message
+ * @param {Object} firstCharInfo - Directory information from the first processed character
+ */
+async function saveCharacterMetaData(links, message, firstCharInfo) {
+    // Create metadata array for all characters in the message
+    const metadataArray = links.map(linkData => ({
+        characterName: linkData.character,
+        fileId: linkData.fileId,
+        link: linkData.link,
+        authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
+        authorId: message.publicId || 'Unknown'
+    }));
+
+    // Save single metadata.json file in the first character's directory
+    await createOrUpdateFile(
+        `${firstCharInfo.dirName}/metadata.json`,
+        JSON.stringify(metadataArray, null, 2),
+        `Add metadata for: ${firstCharInfo.charName}`
+    );
 }
 
 /**
@@ -368,10 +395,14 @@ async function processMessages() {
                         lastProcessed[channel].charactersFound_Total += characterLinks.length;
                         lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
-                        // Process each character found
-                        for (const charInfo of characterLinks) {
-                            await saveCharacterData(charInfo, message);
+                        // Process each character and store first character's info
+                        const firstCharInfo = await saveCharacterData(characterLinks[0], message);
+                        for (let i = 1; i < characterLinks.length; i++) {
+                            await saveCharacterData(characterLinks[i], message);
                         }
+
+                        // Save single metadata.json with all characters
+                        await saveCharacterMetaData(characterLinks, message, firstCharInfo);
                     }
 
                 }
@@ -425,7 +456,7 @@ function generateProcessingSummary(state) {
         totalCharactersIgnored: 0,
         messagesThisRun: 0,
         charactersThisRun: 0,
-        charactersIgnoredThisRun: 0 
+        charactersIgnoredThisRun: 0
     };
 
     CONFIG.channels.forEach(channel => {
