@@ -382,7 +382,6 @@ async function processMessages() {
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
 
-
                     if (ignored) {
                         // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
@@ -469,7 +468,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.5...');
+console.log('Starting Perchance Comment Scraper 1.2...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
