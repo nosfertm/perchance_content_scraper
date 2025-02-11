@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { exit } = require('process');
 
 // Defina o diretório base
 const rootDir = 'ai-character-char/characters/scrape/perchance_comments';
@@ -60,7 +61,15 @@ function extractCharacterLinks(message) {
 }
 
 // Função para processar cada subpasta
+let stopProcessing = false; // Flag para controlar a interrupção
+
+// Função para processar cada subpasta
 function processMetadataInDir(dir) {
+    // Se já decidimos parar, saímos imediatamente da função
+    if (stopProcessing) {
+        return;
+    }
+
     fs.readdirSync(dir).forEach(file => {
         const fullPath = path.join(dir, file);
         const stat = fs.statSync(fullPath);
@@ -86,11 +95,18 @@ function processMetadataInDir(dir) {
                 } else {
                     console.log('Nenhum link encontrado na mensagem.');
                 }
+
+                // Marca para parar o processo
+                stopProcessing = true;
+                console.log("Parando a execução após o primeiro arquivo.");
             }
         }
     });
-    console.log("Stoping prematurely");
-    return;
+
+    // Se necessário, podemos garantir que o processo seja finalizado
+    if (stopProcessing) {
+        process.exit();
+    }
 }
 
 // Chama a função para processar todas as subpastas a partir do diretório raiz
