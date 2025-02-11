@@ -303,10 +303,10 @@ async function saveCharacterData(characterInfo, message) {
 
         // Create metadata wrapped in an array for future extensibility
         const metadata = [{
-            characterName: charName,
+            characterName: characterInfo.character || 'Unnamed',
             fileId: fileId,
             link: characterInfo.link,
-            authorName: authorName,
+            authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
             authorId: message.publicId || 'Unknown'
         }];
 
