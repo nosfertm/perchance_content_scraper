@@ -381,13 +381,6 @@ async function processMessages() {
 
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
-<<<<<<< HEAD
-
-
-=======
-                    
-                    
->>>>>>> ce0eabc458a452b98b61aa6c7e96ceb1ce69f1fd
                     if (ignored) {
                         // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
