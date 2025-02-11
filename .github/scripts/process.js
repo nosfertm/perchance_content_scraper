@@ -84,7 +84,7 @@ async function getCharacterFolders() {
     const folders = await fs.readdir(CONFIG.SOURCE_PATH);
     
     // Log found files/folders for debugging
-    console.log("Found files/folders:", folders);
+    console.log("Found files/folders:", folders.length);
 
     // Filter out hidden files (starting with '.')
     return folders.filter(folder => !folder.startsWith('.'));
