@@ -257,7 +257,7 @@ function extractCharacterLinks(message) {
  * @returns {Object} Directory and character information for metadata
  */
 async function saveCharacterData(characterInfo, message) {
-    console.log("\n\n");
+    console.log("\n");
     console.log("       --------------------");
     console.log(`       Processing character!`);
     try {
@@ -337,7 +337,7 @@ async function processMessages() {
     const lastProcessed = await getLastProcessedState();
 
     for (const channel of CONFIG.channels) {
-        console.log("\n\n");
+        console.log("\n");
         console.log("-------------");
         console.log(`Processing channel: ${channel}`);
         console.log(`Fetching messages on: ${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}`);
@@ -387,11 +387,14 @@ async function processMessages() {
 
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
-
+                    
+                    
                     if (ignored) {
+                        // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
                         lastProcessed[channel].charactersIgnored_lastRun += 1;
-                    } else {
+                    } else if (characterLinks.length > 0) {
+                        // Process characters if found any
                         lastProcessed[channel].charactersFound_Total += characterLinks.length;
                         lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
@@ -412,6 +415,7 @@ async function processMessages() {
 
             } catch (error) {
                 console.error(`Error processing ${channel}:`, error);
+                console.error(`Current message ${JSON.stringify(message)}:`, error);
                 break;
             }
         }
@@ -475,7 +479,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.2...');
+console.log('Starting Perchance Comment Scraper 1.4...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
