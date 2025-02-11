@@ -23,15 +23,52 @@ const CONFIG = {
 
 const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
 
+/**
+ * Sanitizes a string while preserving readable characters
+ * @param {string} str - String to sanitize
+ * @returns {string} Sanitized string safe for filesystem use
+ */
 function sanitizeString(str) {
+    if (!str) return 'unnamed';
+
     return str
-        .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')  // Remove emojis
-        .replace(/[^\x00-\x7F]/g, '')            // Remove non-ASCII characters
-        .replace(/[*?"<>|]/g, '_')               // Replace invalid characters
-        .replace(/_{2,}/g, '_')                  // Remove multiple underscores
-        .replace(/^_|_$/g, '')                   // Remove underscores at start and end
-        .toLowerCase();                           // Convert to lower case
+        .normalize('NFKD')                // Normalize Unicode characters
+        .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
+        .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
+        .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
+        .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
+        .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
+        .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
+        .trim();                         // Trim whitespace
 }
+
+function sanitizeFileName(fileName) {
+    if (!fileName) {
+        console.error('Error: File name is empty or null.');
+        return 'unnamed';
+    }
+
+    // Split the file name into name and extension using the last '.' as separator
+    const lastDotIndex = fileName.lastIndexOf('.');
+
+    // If no dot is found, treat the whole filename as the name with no extension
+    const name = lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex);
+    const extension = lastDotIndex === -1 ? '' : fileName.slice(lastDotIndex);  // Keep the dot with the extension
+
+    // Sanitize the name part
+    const sanitizedName = sanitizeString(name);
+
+    // If the sanitized name is empty, log an error and return a default value
+    if (!sanitizedName) {
+        console.error('Error: Sanitized file name is empty.');
+        return 'unnamed' + extension;  // Return default name with the original extension
+    }
+
+    // Recombine sanitized name with the extension
+    return `${sanitizedName}${extension}`;
+}
+
+
 
 async function getGithubFile(path) {
     try {
@@ -214,18 +251,31 @@ function extractCharacterLinks(message) {
 
 
 /**
- * Saves character data
+ * Saves character data and returns information needed for metadata
  * @param {Object} characterInfo - Character information
  * @param {Object} message - Original message
+ * @returns {Object} Directory and character information for metadata
  */
 async function saveCharacterData(characterInfo, message) {
-    console.log(`       Processing character: ${characterInfo.character}`);
+    console.log("\n\n");
+    console.log("       --------------------");
+    console.log(`       Processing character!`);
     try {
+        // Sanitize character and author names for safe filesystem usage
         const charName = sanitizeString(characterInfo.character);
-        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous')
-        //const dirName = `${CONFIG.outputDir}/${charName} by ${authorName}`;
+        console.log(`           Character's name: ${charName}`);
+
+        // Get author name from available fields, fallback to 'Anonymous'
+        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous');
+        console.log(`           Author's name: ${authorName}`);
+
+        // Create directory path using sanitized names
         const dirName = path.join(CONFIG.outputDir, `${charName} by ${authorName}`);
-        const gzPath = `${dirName}/${characterInfo.fileId}`;
+        console.log(`           Path: ${dirName}`);
+
+        const fileId = sanitizeFileName(characterInfo.fileId);
+        console.log(`           fileId: ${fileId}`);
+        const gzPath = `${dirName}/${fileId}`;
 
         // Download .gz file
         console.log(`           Downloading: ${characterInfo.link}`);
@@ -235,22 +285,48 @@ async function saveCharacterData(characterInfo, message) {
         await createOrUpdateFile(
             gzPath,
             fileContent.toString('base64'),
-            `Add character file: ${characterInfo.character}`
+            `Add character file: ${charName}`
         );
 
-        // Save metadata
-        const metadata = { ...message };
-
+        // Save the original message
+        const capturedMessage = { ...message };
         await createOrUpdateFile(
-            `${dirName}/metadata.json`,
-            JSON.stringify(metadata, null, 2),
-            `Add metadata for: ${characterInfo.character}`
+            `${dirName}/capturedMessage.json`,
+            JSON.stringify(capturedMessage, null, 2),
+            `Add capturedMessage for: ${charName}`
         );
+
+        // Return information needed for metadata
+        return { dirName, charName, authorName };
 
     } catch (error) {
-        console.error(`Error saving character data: ${characterInfo.character}`, error);
+        console.error(`Error saving character data: ${charName}`, error);
         throw error;
     }
+}
+
+/**
+ * Saves metadata information for all characters in a message
+ * @param {Array} links - Array of character links from the message
+ * @param {Object} message - The original message
+ * @param {Object} firstCharInfo - Directory information from the first processed character
+ */
+async function saveCharacterMetaData(links, message, firstCharInfo) {
+    // Create metadata array for all characters in the message
+    const metadataArray = links.map(linkData => ({
+        characterName: linkData.character,
+        fileId: linkData.fileId,
+        link: linkData.link,
+        authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
+        authorId: message.publicId || 'Unknown'
+    }));
+
+    // Save single metadata.json file in the first character's directory
+    await createOrUpdateFile(
+        `${firstCharInfo.dirName}/metadata.json`,
+        JSON.stringify(metadataArray, null, 2),
+        `Add metadata for: ${firstCharInfo.charName}`
+    );
 }
 
 /**
@@ -261,7 +337,8 @@ async function processMessages() {
     const lastProcessed = await getLastProcessedState();
 
     for (const channel of CONFIG.channels) {
-        console.log("");
+        console.log("\n\n");
+        console.log("-------------");
         console.log(`Processing channel: ${channel}`);
         console.log(`Fetching messages on: ${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}`);
         let skip = 0;
@@ -318,10 +395,14 @@ async function processMessages() {
                         lastProcessed[channel].charactersFound_Total += characterLinks.length;
                         lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
-                        // Process each character found
-                        for (const charInfo of characterLinks) {
-                            await saveCharacterData(charInfo, message);
+                        // Process each character and store first character's info
+                        const firstCharInfo = await saveCharacterData(characterLinks[0], message);
+                        for (let i = 1; i < characterLinks.length; i++) {
+                            await saveCharacterData(characterLinks[i], message);
                         }
+
+                        // Save single metadata.json with all characters
+                        await saveCharacterMetaData(characterLinks, message, firstCharInfo);
                     }
 
                 }
@@ -375,7 +456,7 @@ function generateProcessingSummary(state) {
         totalCharactersIgnored: 0,
         messagesThisRun: 0,
         charactersThisRun: 0,
-        charactersIgnoredThisRun: 0 
+        charactersIgnoredThisRun: 0
     };
 
     CONFIG.channels.forEach(channel => {
