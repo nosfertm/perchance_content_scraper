@@ -256,8 +256,13 @@ function extractCharacterLinks(message) {
  * @param {Object} message - Original message
  * @returns {Object} Directory and character information for metadata
  */
+/**
+ * Saves character data, including the .gz file, message capture, and metadata
+ * @param {Object} characterInfo - Character information (name, fileId, link)
+ * @param {Object} message - Original message containing the character
+ */
 async function saveCharacterData(characterInfo, message) {
-    console.log("\n\n");
+    console.log("\n");
     console.log("       --------------------");
     console.log(`       Processing character!`);
     try {
@@ -296,37 +301,26 @@ async function saveCharacterData(characterInfo, message) {
             `Add capturedMessage for: ${charName}`
         );
 
-        // Return information needed for metadata
-        return { dirName, charName, authorName };
+        // Create metadata wrapped in an array for future extensibility
+        const metadata = [{
+            characterName: charName,
+            fileId: fileId,
+            link: characterInfo.link,
+            authorName: authorName,
+            authorId: message.publicId || 'Unknown'
+        }];
+
+        // Save metadata.json file in the character's directory
+        await createOrUpdateFile(
+            `${dirName}/metadata.json`,
+            JSON.stringify(metadata, null, 2),
+            `Add metadata for: ${charName}`
+        );
 
     } catch (error) {
         console.error(`Error saving character data: ${charName}`, error);
         throw error;
     }
-}
-
-/**
- * Saves metadata information for all characters in a message
- * @param {Array} links - Array of character links from the message
- * @param {Object} message - The original message
- * @param {Object} firstCharInfo - Directory information from the first processed character
- */
-async function saveCharacterMetaData(links, message, firstCharInfo) {
-    // Create metadata array for all characters in the message
-    const metadataArray = links.map(linkData => ({
-        characterName: linkData.character,
-        fileId: linkData.fileId,
-        link: linkData.link,
-        authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
-        authorId: message.publicId || 'Unknown'
-    }));
-
-    // Save single metadata.json file in the first character's directory
-    await createOrUpdateFile(
-        `${firstCharInfo.dirName}/metadata.json`,
-        JSON.stringify(metadataArray, null, 2),
-        `Add metadata for: ${firstCharInfo.charName}`
-    );
 }
 
 /**
@@ -337,7 +331,7 @@ async function processMessages() {
     const lastProcessed = await getLastProcessedState();
 
     for (const channel of CONFIG.channels) {
-        console.log("\n\n");
+        console.log("\n");
         console.log("-------------");
         console.log(`Processing channel: ${channel}`);
         console.log(`Fetching messages on: ${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}`);
@@ -388,21 +382,20 @@ async function processMessages() {
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
 
+
                     if (ignored) {
+                        // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
                         lastProcessed[channel].charactersIgnored_lastRun += 1;
-                    } else {
+                    } else if (characterLinks.length > 0) {
+                        // Process characters if found any
                         lastProcessed[channel].charactersFound_Total += characterLinks.length;
                         lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
-                        // Process each character and store first character's info
-                        const firstCharInfo = await saveCharacterData(characterLinks[0], message);
-                        for (let i = 1; i < characterLinks.length; i++) {
-                            await saveCharacterData(characterLinks[i], message);
+                        // Process each character found - now passing all characterLinks to the function
+                        for (const charInfo of characterLinks) {
+                            await saveCharacterData(charInfo, message);
                         }
-
-                        // Save single metadata.json with all characters
-                        await saveCharacterMetaData(characterLinks, message, firstCharInfo);
                     }
 
                 }
@@ -412,6 +405,7 @@ async function processMessages() {
 
             } catch (error) {
                 console.error(`Error processing ${channel}:`, error);
+                console.error(`Current message ${JSON.stringify(message)}:`, error);
                 break;
             }
         }
@@ -475,7 +469,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.2...');
+console.log('Starting Perchance Comment Scraper 1.5...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
