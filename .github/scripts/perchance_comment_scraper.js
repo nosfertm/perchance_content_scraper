@@ -24,7 +24,7 @@ const CONFIG = {
 const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
 
 /**
- * Sanitizes a string while preserving more readable characters
+ * Sanitizes a string while preserving readable characters
  * @param {string} str - String to sanitize
  * @returns {string} Sanitized string safe for filesystem use
  */
@@ -35,7 +35,7 @@ function sanitizeString(str) {
         .normalize('NFKD')                // Normalize Unicode characters
         .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
         .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
-        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')  // Replace unsafe filesystem characters
+        .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
         .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
         .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
         .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
