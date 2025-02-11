@@ -99,7 +99,7 @@ async function getGithubFile(path) {
  */
 async function createOrUpdateFile(filePath, content, message, log = true) {
     try {
-        // Check if file already exists in the repository
+        // Check if file exists
         let sha;
         try {
             const file = await octokit.repos.getContent({
@@ -110,35 +110,27 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             });
             sha = file.data.sha;
         } catch (error) {
-            // If file doesn't exist (404 error), continue without sha
-            // Otherwise, throw the error
             if (error.status !== 404) throw error;
         }
 
-        // Create or update the file in the repository
+        // Create or update file
         await octokit.repos.createOrUpdateFileContents({
             owner: CONFIG.owner,
             repo: CONFIG.repo,
             path: filePath,
             message: message,
-            // Convert the buffer content to base64 string
-            content: content.toString('base64'),
+            content: Buffer.from(content).toString('base64'),
             branch: CONFIG.targetBranch,
             sha: sha
         });
 
-        // Log the result if logging is enabled
-        if (log) {
-            console.log(
-                `           Successfully ${sha ? 'updated' : 'created'} ${filePath}`
-            );
-        }
+        if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
     } catch (error) {
-        // Log and re-throw any errors that occur
-        console.error(`         Error creating/updating file ${filePath}:`, error);
+        console.error(         `Error creating/updating file ${filePath}:`, error);
         throw error;
     }
 }
+
 
 /**
  * Downloads file from URL
