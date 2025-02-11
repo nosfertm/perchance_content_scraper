@@ -1,22 +1,22 @@
 {
   "chat": {
-    "messageId": "67ab61873400e30ae25ef0a9",
-    "time": 1739284871247,
-    "messagesAnalyzed_Total": 58753,
-    "messagesAnalyzed_lastRun": 5200,
+    "messageId": "67ab6bea3400e30ae25f0247",
+    "time": 1739287530306,
+    "messagesAnalyzed_Total": 59084,
+    "messagesAnalyzed_lastRun": 331,
     "charactersFound_Total": 69,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
     "charactersIgnored_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 44
   },
   "chill": {
     "messageId": "67aabde93400e30ae25e3e6b",
     "time": 1739242985836,
     "messagesAnalyzed_Total": 4946,
-    "messagesAnalyzed_lastRun": 2473,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 66,
-    "charactersFound_lastRun": 33,
+    "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "deltaMinutes": 0
@@ -25,7 +25,7 @@
     "messageId": "67ab5da13400e30ae25eea9e",
     "time": 1739283873768,
     "messagesAnalyzed_Total": 15269,
-    "messagesAnalyzed_lastRun": 5200,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 1,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -36,9 +36,9 @@
     "messageId": "67ab5b473400e30ae25ee724",
     "time": 1739283271340,
     "messagesAnalyzed_Total": 6012,
-    "messagesAnalyzed_lastRun": 3004,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 176,
-    "charactersFound_lastRun": 86,
+    "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "deltaMinutes": 0
@@ -47,9 +47,9 @@
     "messageId": "67ab62503400e30ae25ef1ff",
     "time": 1739285072272,
     "messagesAnalyzed_Total": 11381,
-    "messagesAnalyzed_lastRun": 5200,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 8,
-    "charactersFound_lastRun": 3,
+    "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "deltaMinutes": 0
@@ -58,11 +58,11 @@
     "messageId": "67ab29483400e30ae25eb8e5",
     "time": 1739270472084,
     "messagesAnalyzed_Total": 6674,
-    "messagesAnalyzed_lastRun": 3337,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 1260,
-    "charactersFound_lastRun": 631,
+    "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 7,
-    "charactersIgnored_lastRun": 3,
+    "charactersIgnored_lastRun": 0,
     "deltaMinutes": 0
   }
 }
