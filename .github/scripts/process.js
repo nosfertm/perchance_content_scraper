@@ -100,14 +100,15 @@ async function getCharacterFolders() {
  * @param {string} folder - Character folder name
  */
 async function processCharacter(folder) {
-  console.log(`Processing character: ${folder}`);
+  console.log(`Processing character: '${folder}'`);
   
   // Read metadata.json
   const metadata = await readMetadataFile(path.join(CONFIG.SOURCE_PATH, folder));
   console.log("processCharacter | metadata:",metadata);
+  console.log("processCharacter | metadata.fileId:",metadata[0].fileId);
   
   // Extract character information from gz file
-  const characterData = await extractCharacterData(folder);
+  const characterData = await extractCharacterData(folder, metadata[0].fileId);
   console.log("processCharacter | characterData:",characterData);
   
   // Call AI for analysis (placeholder for now)
@@ -157,8 +158,12 @@ async function readMetadataFile(folderPath) {
  * Extract character data from gz file
  * @param {string} folder - Character folder name
  */
-async function extractCharacterData(folder) {
-  const gzPath = path.join(CONFIG.SOURCE_PATH, folder, CONFIG.CHARACTER_FILE);
+async function extractCharacterData(folder, file) {
+  console.log("\n\nextractCharacterData | folder:", folder)
+  console.log("extractCharacterData | file:", file)
+  console.log("extractCharacterData | CONFIG.SOURCE_PATH:", CONFIG.SOURCE_PATH)
+  const gzPath = path.join(CONFIG.SOURCE_PATH, folder, file);
+  console.log("gzPath", gzPath)
   const gzBuffer = await fs.readFile(gzPath);
   const unzipped = await util.promisify(gunzip)(gzBuffer);
   return JSON.parse(unzipped.toString());
