@@ -42,6 +42,33 @@ function sanitizeString(str) {
         .trim();                         // Trim whitespace
 }
 
+function sanitizeFileName(fileName) {
+    if (!fileName) {
+        console.error('Error: File name is empty or null.');
+        return 'unnamed';
+    }
+
+    // Split the file name into name and extension using the last '.' as separator
+    const lastDotIndex = fileName.lastIndexOf('.');
+    
+    // If no dot is found, treat the whole filename as the name with no extension
+    const name = lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex);
+    const extension = lastDotIndex === -1 ? '' : fileName.slice(lastDotIndex);  // Keep the dot with the extension
+
+    // Sanitize the name part
+    const sanitizedName = sanitizeString(name);
+
+    // If the sanitized name is empty, log an error and return a default value
+    if (!sanitizedName) {
+        console.error('Error: Sanitized file name is empty.');
+        return 'unnamed' + extension;  // Return default name with the original extension
+    }
+
+    // Recombine sanitized name with the extension
+    return `${sanitizedName}${extension}`;
+}
+
+
 
 async function getGithubFile(path) {
     try {
@@ -245,7 +272,7 @@ async function saveCharacterData(characterInfo, message) {
         const dirName = path.join(CONFIG.outputDir, `${charName} by ${authorName}`);
         console.log(`           Path: ${dirName}`);
 
-        const fileId = sanitizeString(characterInfo.fileId);
+        const fileId = sanitizeFileName(characterInfo.fileId);
         console.log(`           fileId: ${fileId}`);
         const gzPath = `${dirName}/${fileId}`;
 
