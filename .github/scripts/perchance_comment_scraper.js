@@ -23,15 +23,23 @@ const CONFIG = {
 
 const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
 
-function sanitizeFilename(str) {
+/**
+ * Sanitizes a string while preserving more readable characters
+ * @param {string} str - String to sanitize
+ * @returns {string} Sanitized string safe for filesystem use
+ */
+function sanitizeString(str) {
+    if (!str) return 'unnamed';
+    
     return str
-        .normalize('NFKD')             // Normalize Unicode characters
-        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .normalize('NFKD')                // Normalize Unicode characters
+        .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
         .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
-        .replace(/[^a-zA-Z0-9]/g, '_') // Allow only letters and numbers, replace others with '_'
-        .replace(/_{2,}/g, '_')        // Remove multiple underscores
-        .replace(/^_|_$/g, '')         // Trim leading/trailing underscores
-        .toLowerCase();                // Convert to lowercase
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '_')  // Replace unsafe filesystem characters
+        .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
+        .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
+        .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
+        .trim();                         // Trim whitespace
 }
 
 
@@ -225,13 +233,15 @@ async function saveCharacterData(characterInfo, message) {
     console.log("       --------------------");
     console.log(`       Processing character!`);
     try {
+        // Sanitize character and author names for safe filesystem usage
         const charName = sanitizeString(characterInfo.character);
         console.log(`           Character's name: ${charName}`);
 
-        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous')
+        // Get author name from available fields, fallback to 'Anonymous'
+        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous');
         console.log(`           Author's name: ${authorName}`);
 
-        //const dirName = `${CONFIG.outputDir}/${charName} by ${authorName}`;
+        // Create directory path using sanitized names
         const dirName = path.join(CONFIG.outputDir, `${charName} by ${authorName}`);
         console.log(`           Path: ${dirName}`);
 
