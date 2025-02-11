@@ -23,7 +23,7 @@ function createMetadataForLinks(links, message, metadataPath) {
             authorId: message.publicId || 'Unknown'
         };
 
-        const newMetadataPath = path.join(path.dirname(metadataPath), `metadata_${linkData.fileId}.json`);
+        const newMetadataPath = path.join(path.dirname(metadataPath), `metadata.json`);
         fs.writeFileSync(newMetadataPath, JSON.stringify(metadata, null, 2));
         console.log(`Novo metadata criado: ${newMetadataPath}`);
     });
