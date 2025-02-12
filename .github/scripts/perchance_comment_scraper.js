@@ -113,10 +113,20 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             if (error.status !== 404) throw error;
         }
 
-        // If content is a Buffer, convert it to base64 directly
-        // Otherwise, create Buffer from string first
-        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
-        const contentBase64 = contentBuffer.toString('base64');
+        let contentBase64; // Declare a variable to store the base64-encoded content
+
+        // Check if the content is a Buffer (binary data)
+        if (Buffer.isBuffer(content)) {
+            // If the content is a Buffer, convert it to base64 using arrayBufferToBase64
+            contentBase64 = arrayBufferToBase64(content);
+        } else { //if (typeof content === 'string')
+            // If the content is a string (like JSON or plain text), convert it to base64 directly
+            contentBase64 = Buffer.from(content).toString('base64');
+        } 
+        // else {
+        //     // If the content is neither a Buffer nor a string, throw an error (or handle accordingly)
+        //     throw new Error("Unsupported content type");
+        // }
 
         // Create or update file
         await octokit.repos.createOrUpdateFileContents({
@@ -131,7 +141,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
 
         if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
     } catch (error) {
-        console.error(         `Error creating/updating file ${filePath}:`, error);
+        console.error(`Error creating/updating file ${filePath}:`, error);
         throw error;
     }
 }
@@ -154,10 +164,8 @@ async function downloadFile(url) {
             // Create array to store binary data chunks
             const chunks = [];
 
-            // Handle binary data correctly by using Buffer
-            response.on('data', (chunk) => {
-                chunks.push(Buffer.from(chunk));
-            });
+            // Handle binary data
+            response.on('data', (chunk) => chunks.push(chunk));
 
             // Concatenate all chunks into a single Buffer
             response.on('end', () => {
@@ -312,7 +320,7 @@ async function saveCharacterData(characterInfo, message) {
 
         // Log the start of the download
         console.log(`           Downloading: ${characterInfo.link}`);
-        
+
         // Download the .gz file content
         const fileContent = await downloadFile(characterInfo.link);
 
@@ -497,7 +505,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.8...');
+console.log('Starting Perchance Comment Scraper 1.9...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
