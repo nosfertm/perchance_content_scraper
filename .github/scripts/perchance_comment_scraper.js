@@ -96,9 +96,8 @@ async function getGithubFile(path) {
  * @param {string} filePath - Path to file
  * @param {string} content - File content
  * @param {string} message - Commit message
- * @param {boolean} b64 - If content is already base64
  */
-async function createOrUpdateFile(filePath, content, message, b64 = false, log = true) {
+async function createOrUpdateFile(filePath, content, message, log = true) {
     try {
         // Check if file exists
         let sha;
@@ -114,14 +113,10 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
             if (error.status !== 404) throw error;
         }
 
-        let contentBase64; // Declare a variable to store the base64-encoded content
-
-        // Check if content needs conversion to base64
-        if (b64) {
-            contentBase64 = content
-        } else {
-            contentBase64 = content.toString('base64');
-        }
+        // If content is a Buffer, convert it to base64 directly
+        // Otherwise, create Buffer from string first
+        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        const contentBase64 = contentBuffer.toString('base64');
 
         // Create or update file
         await octokit.repos.createOrUpdateFileContents({
@@ -164,8 +159,7 @@ async function downloadFile(url) {
 
             // Concatenate all chunks into a single Buffer
             response.on('end', () => {
-                const buffer = Buffer.concat(chunks);
-                resolve(arrayBufferToBase64(buffer));
+                resolve(Buffer.concat(chunks));
             });
         }).on('error', (error) => {
             reject(error);
@@ -324,8 +318,7 @@ async function saveCharacterData(characterInfo, message) {
         await createOrUpdateFile(
             gzPath,
             fileContent,
-            `Add character file: ${charName}`,
-            true
+            `Add character file: ${charName}`
         );
 
         // Save the original message
@@ -502,7 +495,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.9...');
+console.log('Starting Perchance Comment Scraper 2.0...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
