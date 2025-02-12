@@ -301,7 +301,7 @@ async function saveCharacterData(characterInfo, message) {
     console.log(`       Processing character!`);
     try {
         // Sanitize character and author names for safe filesystem usage
-        const charName = sanitizeString(characterInfo.character);
+        const charName = sanitizeString(characterInfo.character || 'Unnamed');
         console.log(`           Character's name: ${charName}`);
 
         // Get author name from available fields, fallback to 'Anonymous'
