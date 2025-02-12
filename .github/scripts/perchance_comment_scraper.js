@@ -120,7 +120,7 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
         if (b64) {
             contentBase64 = content
         } else {
-            contentBase64 = contentBuffer.toString('base64');
+            contentBase64 = content.toString('base64');
         }
 
         // Create or update file
