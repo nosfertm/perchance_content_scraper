@@ -121,12 +121,14 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
 
         if (b64) {
             contentBase64 = Buffer.from(content).toString('base64')
+            console.log("\n\n------------------\nBUFFER")
         } else {
-            contentBase64 = content.toString('base64');
+            contentBase64 = content.toString('base64');            
+            console.log("\n\n------------------\B64")
         }
 
         // Create or update file
-        await octokit.repos.createOrUpdateFileContents({
+        const result = await octokit.repos.createOrUpdateFileContents({
             owner: CONFIG.owner,
             repo: CONFIG.repo,
             path: filePath,
@@ -137,6 +139,7 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
         });
 
         if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
+        if (log) console.log(`           RESULT: ${result}`);
     } catch (error) {
         console.error(`Error creating/updating file ${filePath}:`, error);
         throw error;
@@ -255,7 +258,7 @@ function extractCharacterLinks(message) {
             const [character, fileId] = data.split('~'); // Splits character name and file ID.
 
             return {
-                character: decodeURI(character), // Decodes the character name.
+                character: decodeURI(character) || 'Unnamed', // Decodes the character name.
                 fileId: fileId, // Stores the file ID.
                 link: `https://${fullLink.trim()}` // Constructs the full HTTPS link.
             };
