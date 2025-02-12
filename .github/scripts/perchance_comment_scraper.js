@@ -157,7 +157,7 @@ async function downloadFile(url) {
                 response.on('data', chunk => chunks.push(chunk));
                 response.on('end', () => {
                     // Combine chunks
-                    resolve(BufferBuffer.concat(chunks));
+                    resolve(Buffer.concat(chunks));
                 });
             }).on('error', reject);
         });
