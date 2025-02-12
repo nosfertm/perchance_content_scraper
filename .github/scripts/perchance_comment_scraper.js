@@ -97,7 +97,7 @@ async function getGithubFile(path) {
  * @param {string} content - File content
  * @param {string} message - Commit message
  */
-async function createOrUpdateFile(filePath, content, message, b64 = false, log = true) {
+async function createOrUpdateFile(filePath, content, message, log = true) {
     try {
         // Check if file exists
         let sha;
@@ -117,15 +117,17 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
         // const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
         // const contentBase64 = contentBuffer.toString('base64');
 
-        let contentBase64
+        // let contentBase64
 
-        if (b64) {
-            contentBase64 = Buffer.from(content).toString('base64')
-            console.log("\n\n------------------\nBUFFER")
-        } else {
-            contentBase64 = content.toString('base64');
-            console.log("\n\n------------------\B64")
-        }
+        // if (b64) {
+        //     contentBase64 = Buffer.from(content).toString('base64')
+        //     console.log("\n\n------------------\nBUFFER")
+        // } else {
+        //     contentBase64 = content.toString('base64');
+        //     console.log("\n\n------------------\B64")
+        // }
+
+        const contentBase64 = content.toString('base64');
 
         // Create or update file
         const result = await octokit.repos.createOrUpdateFileContents({
@@ -168,13 +170,13 @@ async function downloadFile(url) {
                 response.on('end', () => {
                     // Combina todos os chunks e converte para base64
                     const buffer = Buffer.concat(chunks);
-                    resolve(buffer);
+                    resolve(Buffer.from(buffer).toString('base64'));
                 });
             }).on('error', reject);
         });
 
         return fileData
-        
+
     } catch (error) {
         console.error('Erro ao baixar e processar o arquivo:', error.message);
         throw error;
@@ -329,23 +331,19 @@ async function saveCharacterData(characterInfo, message) {
         const fileContent = await downloadFile(characterInfo.link);
 
         // Save the downloaded file to the repository
-        console.log(`           About to save gz file: ${gzPath}`);
         await createOrUpdateFile(
             gzPath,
             fileContent,
             `Add character file: ${charName}`
         );
-        console.log(`           gz file saved successfully.`);
 
         // Save the original message
-        console.log(`           About to save capturedMessage: ${dirName}/capturedMessage.json`);
         const capturedMessage = { ...message };
         await createOrUpdateFile(
             `${dirName}/capturedMessage.json`,
             JSON.stringify(capturedMessage, null, 2),
             `Add capturedMessage for: ${charName}`
         );
-        console.log(`           capturedMessage saved successfully.`);
 
         // Create metadata wrapped in an array for future extensibility
         const metadata = [{
@@ -513,7 +511,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.2...');
+console.log('Starting Perchance Comment Scraper 2.3...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
