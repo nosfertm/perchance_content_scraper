@@ -323,19 +323,23 @@ async function saveCharacterData(characterInfo, message) {
         const fileContent = await downloadFile(characterInfo.link);
 
         // Save the downloaded file to the repository
+        console.log(`           About to save gz file: ${gzPath}`);
         await createOrUpdateFile(
             gzPath,
             fileContent,
             `Add character file: ${charName}`
         );
+        console.log(`           gz file saved successfully.`);
 
         // Save the original message
+        console.log(`           About to save capturedMessage: ${dirName}/capturedMessage.json`);
         const capturedMessage = { ...message };
         await createOrUpdateFile(
             `${dirName}/capturedMessage.json`,
             JSON.stringify(capturedMessage, null, 2),
             `Add capturedMessage for: ${charName}`
         );
+        console.log(`           capturedMessage saved successfully.`);
 
         // Create metadata wrapped in an array for future extensibility
         const metadata = [{
