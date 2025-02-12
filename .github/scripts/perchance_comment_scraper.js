@@ -97,7 +97,7 @@ async function getGithubFile(path) {
  * @param {string} content - File content
  * @param {string} message - Commit message
  */
-async function createOrUpdateFile(filePath, content, message, log = true) {
+async function createOrUpdateFile(filePath, content, message, b64 = false, log = true) {
     try {
         // Check if file exists
         let sha;
@@ -114,8 +114,16 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
         }
 
         // Convert content to base64, handling both Buffer and string inputs
-        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
-        const contentBase64 = contentBuffer.toString('base64');
+        // const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        // const contentBase64 = contentBuffer.toString('base64');
+
+        let contentBase64
+
+        if (b64) {
+            contentBase64 = Buffer.from(content).toString('base64')
+        } else {
+            contentBase64 = content.toString('base64');
+        }
 
         // Create or update file
         await octokit.repos.createOrUpdateFileContents({
@@ -130,7 +138,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
 
         if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
     } catch (error) {
-        console.error(         `Error creating/updating file ${filePath}:`, error);
+        console.error(`Error creating/updating file ${filePath}:`, error);
         throw error;
     }
 }
@@ -142,29 +150,26 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  * @returns {Promise<Buffer>} File content as Buffer
  */
 async function downloadFile(url) {
-    return await new Promise((resolve, reject) => {
-        https.get(url, (response) => {
+    const fileData = await new Promise((resolve, reject) => {
+        https.get(downloadUrl, (response) => {
             // Check if download was successful
             if (response.statusCode !== 200) {
-                reject(new Error(`Download failed: ${response.statusCode}`));
+                reject(new Error(`Download falhou: ${response.statusCode}`));
                 return;
             }
 
-            // Create array to store binary data chunks
+            // Create store file data 
             const chunks = [];
-
-            // Handle binary data with correct encoding
             response.on('data', chunk => chunks.push(chunk));
-
-            // Concatenate all chunks into a single Buffer
             response.on('end', () => {
+                // Combina todos os chunks e converte para base64
                 const buffer = Buffer.concat(chunks);
                 resolve(buffer);
             });
-        }).on('error', (error) => {
-            reject(error);
-        });
+        }).on('error', reject);
     });
+
+    return fileData
 }
 
 /**
@@ -310,7 +315,7 @@ async function saveCharacterData(characterInfo, message) {
 
         // Log the start of the download
         console.log(`           Downloading: ${characterInfo.link}`);
-        
+
         // Download the .gz file content
         const fileContent = await downloadFile(characterInfo.link);
 
@@ -495,7 +500,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.0...');
+console.log('Starting Perchance Comment Scraper 2.1...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
