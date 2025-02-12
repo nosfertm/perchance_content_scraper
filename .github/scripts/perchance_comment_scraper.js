@@ -114,20 +114,8 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
         }
 
         // Convert content to base64, handling both Buffer and string inputs
-        // const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
-        // const contentBase64 = contentBuffer.toString('base64');
-
-        // let contentBase64
-
-        // if (b64) {
-        //     contentBase64 = Buffer.from(content).toString('base64')
-        //     console.log("\n\n------------------\nBUFFER")
-        // } else {
-        //     contentBase64 = content.toString('base64');
-        //     console.log("\n\n------------------\B64")
-        // }
-
-        const contentBase64 = content.toString('base64');
+        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        const contentBase64 = contentBuffer.toString('base64');
 
         // Create or update file
         const result = await octokit.repos.createOrUpdateFileContents({
