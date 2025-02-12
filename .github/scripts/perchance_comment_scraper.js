@@ -123,7 +123,7 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
             contentBase64 = Buffer.from(content).toString('base64')
             console.log("\n\n------------------\nBUFFER")
         } else {
-            contentBase64 = content.toString('base64');            
+            contentBase64 = content.toString('base64');
             console.log("\n\n------------------\B64")
         }
 
@@ -153,26 +153,32 @@ async function createOrUpdateFile(filePath, content, message, b64 = false, log =
  * @returns {Promise<Buffer>} File content as Buffer
  */
 async function downloadFile(url) {
-    const fileData = await new Promise((resolve, reject) => {
-        https.get(downloadUrl, (response) => {
-            // Check if download was successful
-            if (response.statusCode !== 200) {
-                reject(new Error(`Download falhou: ${response.statusCode}`));
-                return;
-            }
+    try {
+        const fileData = await new Promise((resolve, reject) => {
+            https.get(url, (response) => {
+                // Check if download was successful
+                if (response.statusCode !== 200) {
+                    reject(new Error(`Download falhou: ${response.statusCode}`));
+                    return;
+                }
 
-            // Create store file data 
-            const chunks = [];
-            response.on('data', chunk => chunks.push(chunk));
-            response.on('end', () => {
-                // Combina todos os chunks e converte para base64
-                const buffer = Buffer.concat(chunks);
-                resolve(buffer);
-            });
-        }).on('error', reject);
-    });
+                // Create store file data 
+                const chunks = [];
+                response.on('data', chunk => chunks.push(chunk));
+                response.on('end', () => {
+                    // Combina todos os chunks e converte para base64
+                    const buffer = Buffer.concat(chunks);
+                    resolve(buffer);
+                });
+            }).on('error', reject);
+        });
 
-    return fileData
+        return fileData
+        
+    } catch (error) {
+        console.error('Erro ao baixar e processar o arquivo:', error.message);
+        throw error;
+    }
 }
 
 /**
