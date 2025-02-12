@@ -113,8 +113,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             if (error.status !== 404) throw error;
         }
 
-        // If content is a Buffer, convert it to base64 directly
-        // Otherwise, create Buffer from string first
+        // Convert content to base64, handling both Buffer and string inputs
         const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
         const contentBase64 = contentBuffer.toString('base64');
 
@@ -143,7 +142,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  * @returns {Promise<Buffer>} File content as Buffer
  */
 async function downloadFile(url) {
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
         https.get(url, (response) => {
             // Check if download was successful
             if (response.statusCode !== 200) {
@@ -154,12 +153,13 @@ async function downloadFile(url) {
             // Create array to store binary data chunks
             const chunks = [];
 
-            // Handle binary data
+            // Handle binary data with correct encoding
             response.on('data', chunk => chunks.push(chunk));
 
             // Concatenate all chunks into a single Buffer
             response.on('end', () => {
-                resolve(Buffer.concat(chunks));
+                const buffer = Buffer.concat(chunks);
+                resolve(buffer);
             });
         }).on('error', (error) => {
             reject(error);
