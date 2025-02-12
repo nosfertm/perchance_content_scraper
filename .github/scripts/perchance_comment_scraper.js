@@ -113,13 +113,18 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             if (error.status !== 404) throw error;
         }
 
+        // If content is a Buffer, convert it to base64 directly
+        // Otherwise, create Buffer from string first
+        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        const contentBase64 = contentBuffer.toString('base64');
+
         // Create or update file
         await octokit.repos.createOrUpdateFileContents({
             owner: CONFIG.owner,
             repo: CONFIG.repo,
             path: filePath,
             message: message,
-            content: Buffer.from(content).toString('base64'),
+            content: contentBase64,
             branch: CONFIG.targetBranch,
             sha: sha
         });
@@ -133,35 +138,32 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
 
 
 /**
- * Downloads file from URL
+ * Downloads file from URL and returns it as a Buffer
  * @param {string} url - URL to download from
- * @returns {Promise<Buffer>} File content
+ * @returns {Promise<Buffer>} File content as Buffer
  */
 async function downloadFile(url) {
     return new Promise((resolve, reject) => {
-        // Make HTTPS request to download the file
         https.get(url, (response) => {
-            // Check if the download request was successful
+            // Check if download was successful
             if (response.statusCode !== 200) {
                 reject(new Error(`Download failed: ${response.statusCode}`));
                 return;
             }
 
-            // Initialize arrays to store chunks of data
+            // Create array to store binary data chunks
             const chunks = [];
 
-            // When receiving data, add it to our chunks array
+            // Handle binary data correctly by using Buffer
             response.on('data', (chunk) => {
-                chunks.push(chunk);
+                chunks.push(Buffer.from(chunk));
             });
 
-            // When the download is complete, combine all chunks into one buffer
+            // Concatenate all chunks into a single Buffer
             response.on('end', () => {
-                const fileContent = Buffer.concat(chunks);
-                resolve(fileContent);
+                resolve(Buffer.concat(chunks));
             });
         }).on('error', (error) => {
-            // If there's an error during download, reject the promise
             reject(error);
         });
     });
@@ -495,7 +497,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.7...');
+console.log('Starting Perchance Comment Scraper 1.8...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
