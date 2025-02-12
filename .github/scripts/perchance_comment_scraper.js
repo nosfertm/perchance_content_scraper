@@ -156,9 +156,8 @@ async function downloadFile(url) {
                 const chunks = [];
                 response.on('data', chunk => chunks.push(chunk));
                 response.on('end', () => {
-                    // Combina todos os chunks e converte para base64
-                    const buffer = Buffer.concat(chunks);
-                    resolve(Buffer.from(buffer).toString('base64'));
+                    // Combine chunks
+                    resolve(BufferBuffer.concat(chunks));
                 });
             }).on('error', reject);
         });
@@ -166,7 +165,7 @@ async function downloadFile(url) {
         return fileData
 
     } catch (error) {
-        console.error('Erro ao baixar e processar o arquivo:', error.message);
+        console.error('Failed to download and process file:', error.message);
         throw error;
     }
 }
@@ -499,7 +498,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.3...');
+console.log('Starting Perchance Comment Scraper 2.4...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
