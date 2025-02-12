@@ -96,8 +96,9 @@ async function getGithubFile(path) {
  * @param {string} filePath - Path to file
  * @param {string} content - File content
  * @param {string} message - Commit message
+ * @param {boolean} b64 - If content is already base64
  */
-async function createOrUpdateFile(filePath, content, message, log = true) {
+async function createOrUpdateFile(filePath, content, message, b64 = false, log = true) {
     try {
         // Check if file exists
         let sha;
@@ -113,10 +114,14 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             if (error.status !== 404) throw error;
         }
 
-        // If content is a Buffer, convert it to base64 directly
-        // Otherwise, create Buffer from string first
-        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
-        const contentBase64 = contentBuffer.toString('base64');
+        let contentBase64; // Declare a variable to store the base64-encoded content
+
+        // Check if content needs conversion to base64
+        if (b64) {
+            contentBase64 = content
+        } else {
+            contentBase64 = contentBuffer.toString('base64');
+        }
 
         // Create or update file
         await octokit.repos.createOrUpdateFileContents({
@@ -155,11 +160,12 @@ async function downloadFile(url) {
             const chunks = [];
 
             // Handle binary data
-            response.on('data', (chunk) => chunks.push(chunk));
+            response.on('data', chunk => chunks.push(chunk));
 
             // Concatenate all chunks into a single Buffer
             response.on('end', () => {
-                resolve(Buffer.concat(chunks));
+                const buffer = Buffer.concat(chunks);
+                resolve(arrayBufferToBase64(buffer));
             });
         }).on('error', (error) => {
             reject(error);
@@ -318,7 +324,8 @@ async function saveCharacterData(characterInfo, message) {
         await createOrUpdateFile(
             gzPath,
             fileContent,
-            `Add character file: ${charName}`
+            `Add character file: ${charName}`,
+            true
         );
 
         // Save the original message
@@ -495,7 +502,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.8...');
+console.log('Starting Perchance Comment Scraper 1.9...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
