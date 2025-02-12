@@ -258,7 +258,7 @@ function extractCharacterLinks(message) {
             const [character, fileId] = data.split('~'); // Splits character name and file ID.
 
             return {
-                character: decodeURI(character) || 'Unnamed', // Decodes the character name.
+                character: character && decodeURI(character).trim() ? decodeURI(character).trim() : 'Unnamed', // Decodes the character name.
                 fileId: fileId, // Stores the file ID.
                 link: `https://${fullLink.trim()}` // Constructs the full HTTPS link.
             };
