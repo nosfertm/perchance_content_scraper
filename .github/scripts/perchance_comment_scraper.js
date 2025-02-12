@@ -30,7 +30,7 @@ const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
  * @returns {string} Sanitized string safe for filesystem use
  */
 function sanitizeString(str) {
-    if (!str) return 'unnamed';
+    if (!str.trim()) return 'unnamed';
 
     return str
         .normalize('NFKD')                // Normalize Unicode characters
@@ -301,7 +301,7 @@ async function saveCharacterData(characterInfo, message) {
     console.log(`       Processing character!`);
     try {
         // Sanitize character and author names for safe filesystem usage
-        const charName = sanitizeString(characterInfo.character || 'Unnamed');
+        const charName = sanitizeString(characterInfo.character) || 'Unnamed';
         console.log(`           Character's name: ${charName}`);
 
         // Get author name from available fields, fallback to 'Anonymous'
