@@ -6,7 +6,6 @@ import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 import path from 'path';
 import * as https from 'https';
-import * as https from 'https';
 import * as zlib from 'zlib';
 import { promisify } from 'util';
 
