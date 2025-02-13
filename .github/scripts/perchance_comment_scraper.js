@@ -27,7 +27,7 @@ const CONFIG = {
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
 
-const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?\.]+)\.gz/;
+const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?]+\.gz)/;
 
 /**
  * Sanitizes a string while preserving readable characters
