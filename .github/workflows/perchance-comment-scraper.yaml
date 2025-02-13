@@ -3,7 +3,7 @@ name: Perchance Comment Scraper
 on:
   schedule:
     # Runs at minute 0 and 30 of every hour (*/30)
-    - cron: '0 * * * *'
+    - cron: '* 13,22 * * *'
   workflow_dispatch:  # Maintains ability to run manually
   
 jobs:
