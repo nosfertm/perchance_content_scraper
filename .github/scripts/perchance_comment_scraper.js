@@ -147,7 +147,9 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  */
 async function downloadFile(url) {
     try {
-        const response = await fetch(url);
+        download_url = `https://user-uploads.perchance.org/file/${url}`
+        console.log(`           Downloading: ${download_url}`);
+        const response = await fetch(download_url);
         
         // Check if download was successful
         if (!response.ok) {
@@ -463,8 +465,7 @@ async function saveCharacterData(characterInfo, message) {
         // );
 
         try {
-            console.log(`           Downloading: ${characterInfo.link}`);
-            const fileBuffer = await downloadFile(characterInfo.link);
+            const fileBuffer = await downloadFile(characterInfo.fileId);
             const files = await processCharacterFile(fileBuffer, dirName);
             
             // Now you can use the files object with your createOrUpdateFile function
@@ -658,7 +659,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.6...');
+console.log('Starting Perchance Comment Scraper 2.7...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
