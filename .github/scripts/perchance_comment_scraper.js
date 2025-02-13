@@ -21,7 +21,8 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: path.join("ai-character-char", "characters", "scrape", "perchance_comments"),
+    outputDir: path.join("ai-character-chat", "characters", "scrape", "perchance_comments"),
+    targetDir: path.join("ai-character-chat", "characters"),
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
@@ -150,7 +151,7 @@ async function downloadFile(url) {
         const download_url = `https://user-uploads.perchance.org/file/${url}`
         console.log(`           Downloading: ${download_url}`);
         const response = await fetch(download_url);
-        
+
         // Check if download was successful
         if (!response.ok) {
             throw new Error(`Download failed: ${response.status}`);
@@ -170,32 +171,33 @@ async function downloadFile(url) {
  * Process downloaded character file and extract content
  * @param {Buffer} fileBuffer - Downloaded file content as Buffer
  * @param {string} dirName - Directory name for the character files
+ * @param {string} fileName - A name for files, in a pattern 'Character by Author'
  * @returns {Promise<Object>} Parsed character information
  */
-async function processCharacterFile(fileBuffer, dirName) {
+async function processCharacterFile(fileBuffer, dirName, fileName) {
     console.log('           Processing character file...');
     console.log(`           Buffer size: ${fileBuffer.length} bytes`);
-    
+
     try {
-        // Try to parse as JSON first in case it's not compressed
-        try {
-            const characterData = JSON.parse(fileBuffer.toString('utf-8'));
-            console.log('           File was not compressed, parsed as JSON');
-            const characterInfo = characterData.addCharacter || {};
-            return createCharacterFiles(characterInfo, dirName);
-        } catch (jsonError) {
-            console.log('           Not valid JSON, trying to decompress...');
-        }
+        // // Try to parse as JSON first in case it's not compressed
+        // try {
+        //     const characterData = JSON.parse(fileBuffer.toString('utf-8'));
+        //     console.log('           File was not compressed, parsed as JSON');
+        //     const characterInfo = characterData.addCharacter || {};
+        //     return createCharacterFiles(characterInfo, dirName, fileName);
+        // } catch (jsonError) {
+        //     console.log('           Not valid JSON, trying to decompress...');
+        // }
 
         // If JSON parsing failed, try to decompress
         const decompressedContent = await gunzip(fileBuffer);
         console.log('           Successfully decompressed content');
-        
+
         const characterData = JSON.parse(decompressedContent.toString('utf-8'));
         const characterInfo = characterData.addCharacter || {};
         console.log('           Successfully parsed character data');
-        
-        return createCharacterFiles(characterInfo, dirName);
+
+        return createCharacterFiles(characterInfo, dirName, fileName);
     } catch (error) {
         console.error('Failed to process character file:', error);
         // Log the first few bytes of the buffer for debugging
@@ -208,9 +210,10 @@ async function processCharacterFile(fileBuffer, dirName) {
  * Create individual files for each character attribute and zip file
  * @param {Object} characterInfo - Dictionary containing character information
  * @param {string} dirName - Directory name for the character files
+ * @param {string} fileName - A name for files, in a pattern 'Character by Author'
  * @returns {Promise<Object>} Dictionary of created files and their content
  */
-async function createCharacterFiles(characterInfo, dirName) {
+async function createCharacterFiles(characterInfo, dirName, fileName) {
     console.log('           Creating character files...');
     const files = {};
 
@@ -304,8 +307,8 @@ async function createCharacterFiles(characterInfo, dirName) {
     // Compress the export data
     const jsonString = JSON.stringify(exportData, null, 2);
     const compressedData = await gzip(Buffer.from(jsonString, 'utf-8'));
-    files[path.join(dirName, 'character.gz')] = compressedData;
-    console.log('           Successfully created character.gz');
+    files[path.join(dirName, `${fileName}.gz`)] = compressedData;
+    console.log(`           Successfully created ${fileName}.gz`);
 
     return files;
 }
@@ -379,7 +382,19 @@ async function saveProcessingState(state) {
  * @returns {Object} Object containing links array and ignored status
  */
 function extractCharacterLinks(message) {
-    // First, extract all potential character links
+    // Safe URI decoding function
+    const safeDecode = (str) => {
+        try {
+            return decodeURIComponent(str).trim();
+        } catch (e) {
+            console.warn(`Decoding failed for: ${str}, using sanitizeString()`);
+            sntStr = sanitizeString(str);
+            console.warn(`Sanitized result: ${sntStr}`);
+            return sntStr; // Use sanitized fallback
+        }
+    };
+
+    // Extract all potential character links
     const links = message
         .split(/(\s+|(?<=gz),)/gm) // Keeps spaces and ",gz" as split points.
         .filter(a => a.includes('data=')) // Filters out elements that don't contain 'data='.
@@ -393,7 +408,7 @@ function extractCharacterLinks(message) {
             const [character, fileId] = data.split('~'); // Splits character name and file ID.
 
             return {
-                character: character && decodeURI(character).trim() ? decodeURI(character).trim() : 'Unnamed', // Decodes the character name.
+                character: safeDecode(character), // Decodes character name safely.
                 fileId: fileId, // Stores the file ID.
                 link: `https://${fullLink.trim()}` // Constructs the full HTTPS link.
             };
@@ -444,36 +459,23 @@ async function saveCharacterData(characterInfo, message) {
         console.log(`           Author's name: ${authorName}`);
 
         // Create directory path using sanitized names
-        const dirName = path.join(CONFIG.outputDir, `${charName} by ${authorName}`);
+        const folderName = path.join(`${charName} by ${authorName}`);
+        const dirName = path.join(CONFIG.outputDir, folderName);
         console.log(`           Path: ${dirName}`);
 
         const fileId = sanitizeFileName(characterInfo.fileId);
         console.log(`           fileId: ${fileId}`);
-        //const gzPath = `${dirName}/${fileId}`;
-
-        // // Log the start of the download
-        // console.log(`           Downloading: ${characterInfo.link}`);
-
-        // // Download the .gz file content
-        // const fileContent = await downloadFile(characterInfo.link);
-
-        // // Save the downloaded file to the repository
-        // await createOrUpdateFile(
-        //     gzPath,
-        //     fileContent,
-        //     `Add character file: ${charName}`
-        // );
 
         try {
             const fileBuffer = await downloadFile(characterInfo.fileId);
-            const files = await processCharacterFile(fileBuffer, dirName);
-            
+            const files = await processCharacterFile(fileBuffer, dirName, folderName);
+
             // Now you can use the files object with your createOrUpdateFile function
             for (const [filePath, content] of Object.entries(files)) {
                 const commitMessage = `Update character files: ${characterInfo.name || 'unnamed character'}`; //TODO FIX
                 await createOrUpdateFile(
-                    filePath, 
-                    content, 
+                    filePath,
+                    content,
                     commitMessage
                 );
             }
@@ -508,6 +510,62 @@ async function saveCharacterData(characterInfo, message) {
             JSON.stringify(metadata, null, 2),
             `Add metadata for: ${charName}`
         );
+
+        // Create manifest
+        const manifest = {
+            name: characterInfo.name || 'Unnamed',
+            description: '', //TODO FILL WITH AI
+            author: message.username || message.userNickname || message.publicId || 'Anonymous',
+            authorId: message.publicId || 'Anonymous',
+            source: 'Scraped from perchance comments',
+            imageUrl: '', //TODO EXTRACT FROM CHARACTER OR GENERATE ONE
+            shareUrl: characterInfo.link || '',
+            downloadPath: path.join(CONFIG.targetDir, dirName, `${folderName}.gz`),
+            shapeShifter_Pulls: 0,
+            galleryChat_Clicks: 0,
+            galleryDownload_Clicks: 0,
+            groupSettings: {
+                requires: [],
+                recommends: []
+            },
+            features: {
+                customCode: files[path.join(dirName, 'src', 'customCode.js')] ?
+                    [path.join(CONFIG.targetDir, dirName, 'src', 'customCode.js')] : [],
+                assets: []
+            },
+            categories: []
+        };
+
+        // Save manifest.json file in the character's directory
+        await createOrUpdateFile(
+            `${dirName}/manifest.json`,
+            JSON.stringify(manifest, null, 2),
+            `Add metadata for: ${charName}`
+        );
+
+        // Create changelog
+        const now = new Date().toISOString();
+        const changelog = {
+            currentVersion: '1.0.0',
+            created: now,
+            lastUpdated: now,
+            history: [
+                {
+                    version: '1.0.0',
+                    date: now,
+                    type: 'initial',
+                    changes: ['Captured from perchance']
+                }
+            ]
+        };
+
+        // Save changelog.json file in the character's directory
+        await createOrUpdateFile(
+            `${dirName}/changelog.json`,
+            JSON.stringify(changelog, null, 2),
+            `Add metadata for: ${charName}`
+        );
+
 
     } catch (error) {
         console.error(`Error saving character data: ${charName}`, error);
@@ -659,7 +717,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.7...');
+console.log('Starting Perchance Comment Scraper 2.8...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
