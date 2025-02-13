@@ -402,25 +402,31 @@ function extractCharacterLinks(message) {
 
     // Extract all potential character links
     const links = message
-    .split(/\s+/) // Split the message by spaces
-    .filter(a => a.includes('data=') && a.includes('~')) // Filter out parts that don't contain 'data=' and '~'
-    .map(a => {
-        // Extracts the link using the updated pattern
-        const match = a.match(LINK_PATTERN);
-        if (!match || !isValidLink(a)) return null; // If there's no match or invalid link, ignore this part
+        .split(/\s+/) // Split the message by spaces
+        .filter(a => a.includes('data=') && a.includes('~')) // Filter out parts that don't contain 'data=' and '~'
+        .map(a => {
+            // First, check if the link itself is valid before trying to decode
+            if (!isValidLink(a)) {
+                console.warn(`Invalid link skipped: ${a}`);
+                return null; // Skip invalid links
+            }
 
-        const fullLink = match[0]; // Full matched link
-        const character = match[2]; // Extracts the character name from the match
-        const fileId = match[3]; // Extracts the file ID from the match
-        console.log(`FULL LINK: https://${fullLink.trim()}`)
+            // Extracts the link using the updated pattern
+            const match = a.match(LINK_PATTERN);
+            if (!match) return null; // If there's no match, ignore this part
 
-        return {
-            character: safeDecode(character), // Decode character name safely
-            fileId: fileId, // File ID
-            link: `https://${fullLink.trim()}` // Full HTTPS link
-        };
-    })
-    .filter(Boolean); // Removes null values from the array
+            const fullLink = match[0]; // Full matched link
+            const character = match[2]; // Extracts the character name from the match
+            const fileId = match[3]; // Extracts the file ID from the match
+            console.log(`FULL LINK: https://${fullLink.trim()}`)
+
+            return {
+                character: safeDecode(character), // Decode character name safely
+                fileId: fileId, // File ID
+                link: `https://${fullLink.trim()}` // Full HTTPS link
+            };
+        })
+        .filter(Boolean); // Removes null values from the array
 
     // Remove duplicates
     const uniqueLinks = [...new Set(links.map(JSON.stringify))].map(JSON.parse);
