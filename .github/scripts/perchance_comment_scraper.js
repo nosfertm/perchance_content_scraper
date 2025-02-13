@@ -406,6 +406,7 @@ function extractCharacterLinks(message) {
         const fullLink = match[0]; // Full matched link
         const character = match[2]; // Extracts the character name from the match
         const fileId = match[3]; // Extracts the file ID from the match
+        console.log(`FULL LINK: https://${fullLink.trim()}`)
 
         return {
             character: safeDecode(character), // Decode character name safely
