@@ -396,6 +396,7 @@ function extractCharacterLinks(message) {
 
     // Validate if the link is in a correct format
     const isValidLink = (link) => {
+        console.log(`Checking link validity for link: ${link}`)
         // Define the pattern for a single valid link
         const linkPattern = /perchance\.org\/ai-character-chat\?data=([^~]+)~([^?]+\.gz)/;
 
@@ -409,7 +410,9 @@ function extractCharacterLinks(message) {
         }
 
         // Check if the link matches the basic pattern
-        return linkPattern.test(link);
+        const test = linkPattern.test(link);
+        console.log(`test result: ${test}`)
+        return test
     };
 
     // Extract all potential character links
