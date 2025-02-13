@@ -396,7 +396,19 @@ function extractCharacterLinks(message) {
 
     // Validate if the link is in a correct format
     const isValidLink = (link) => {
+        // Define the pattern for a single valid link
         const linkPattern = /perchance\.org\/ai-character-chat\?data=([^~]+)~([^?]+\.gz)/;
+
+        // Count how many times the pattern appears in the link
+        const matches = link.match(new RegExp(linkPattern.source, 'g'));
+
+        // If we found more than one match, it means the link is duplicated
+        if (matches && matches.length > 1) {
+            console.warn('Duplicate link pattern detected in URL');
+            return false;
+        }
+
+        // Check if the link matches the basic pattern
         return linkPattern.test(link);
     };
 
