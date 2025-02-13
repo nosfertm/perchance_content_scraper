@@ -6,13 +6,12 @@ import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 import path from 'path';
 import * as https from 'https';
+import * as https from 'https';
+import * as zlib from 'zlib';
+import { promisify } from 'util';
 
-const https = require('https');
-const zlib = require('zlib');
-const { promisify } = require('util');
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
-
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
