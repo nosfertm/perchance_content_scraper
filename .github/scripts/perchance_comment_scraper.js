@@ -147,7 +147,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  */
 async function downloadFile(url) {
     try {
-        download_url = `https://user-uploads.perchance.org/file/${url}`
+        const download_url = `https://user-uploads.perchance.org/file/${url}`
         console.log(`           Downloading: ${download_url}`);
         const response = await fetch(download_url);
         
