@@ -394,6 +394,12 @@ function extractCharacterLinks(message) {
         }
     };
 
+    // Validate if the link is in a correct format
+    const isValidLink = (link) => {
+        const linkPattern = /perchance\.org\/ai-character-chat\?data=([^~]+)~([^?]+\.gz)/;
+        return linkPattern.test(link);
+    };
+
     // Extract all potential character links
     const links = message
     .split(/\s+/) // Split the message by spaces
@@ -401,7 +407,7 @@ function extractCharacterLinks(message) {
     .map(a => {
         // Extracts the link using the updated pattern
         const match = a.match(LINK_PATTERN);
-        if (!match) return null; // If there's no match, ignore this part
+        if (!match || !isValidLink(a)) return null; // If there's no match or invalid link, ignore this part
 
         const fullLink = match[0]; // Full matched link
         const character = match[2]; // Extracts the character name from the match
