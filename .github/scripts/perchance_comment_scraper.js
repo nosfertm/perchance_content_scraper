@@ -147,29 +147,19 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  */
 async function downloadFile(url) {
     try {
-        console.log(`           Downloading: ${url}`);
-        const fileData = await new Promise((resolve, reject) => {
-            https.get(url, (response) => {
-                // Check if download was successful
-                if (response.statusCode !== 200) {
-                    reject(new Error(`Download falhou: ${response.statusCode}`));
-                    return;
-                }
+        const response = await fetch(url);
+        
+        // Check if download was successful
+        if (!response.ok) {
+            throw new Error(`Download failed: ${response.status}`);
+        }
 
-                // Create store file data 
-                const chunks = [];
-                response.on('data', chunk => chunks.push(chunk));
-                response.on('end', () => {
-                    // Combine chunks
-                    resolve(Buffer.concat(chunks));
-                });
-            }).on('error', reject);
-        });
-
-        return fileData
+        // Get the raw buffer
+        const fileData = await response.arrayBuffer();
+        return Buffer.from(fileData);
 
     } catch (error) {
-        console.error('Failed to download and process file:', error.message);
+        console.error('Failed to download file:', error.message);
         throw error;
     }
 }
@@ -182,19 +172,32 @@ async function downloadFile(url) {
  */
 async function processCharacterFile(fileBuffer, dirName) {
     console.log('           Processing character file...');
+    console.log(`           Buffer size: ${fileBuffer.length} bytes`);
+    
     try {
-        // Decompress gzip content
+        // Try to parse as JSON first in case it's not compressed
+        try {
+            const characterData = JSON.parse(fileBuffer.toString('utf-8'));
+            console.log('           File was not compressed, parsed as JSON');
+            const characterInfo = characterData.addCharacter || {};
+            return createCharacterFiles(characterInfo, dirName);
+        } catch (jsonError) {
+            console.log('           Not valid JSON, trying to decompress...');
+        }
+
+        // If JSON parsing failed, try to decompress
         const decompressedContent = await gunzip(fileBuffer);
         console.log('           Successfully decompressed content');
-
-        // Parse JSON content
+        
         const characterData = JSON.parse(decompressedContent.toString('utf-8'));
         const characterInfo = characterData.addCharacter || {};
         console.log('           Successfully parsed character data');
-
+        
         return createCharacterFiles(characterInfo, dirName);
     } catch (error) {
         console.error('Failed to process character file:', error);
+        // Log the first few bytes of the buffer for debugging
+        console.log('           First bytes of file:', fileBuffer.slice(0, 20));
         throw error;
     }
 }
@@ -460,20 +463,24 @@ async function saveCharacterData(characterInfo, message) {
         // );
 
         try {
+            console.log(`           Downloading: ${characterInfo.link}`);
             const fileBuffer = await downloadFile(characterInfo.link);
             const files = await processCharacterFile(fileBuffer, dirName);
-
-            // Create files
+            
+            // Now you can use the files object with your createOrUpdateFile function
             for (const [filePath, content] of Object.entries(files)) {
+                const commitMessage = `Update character files: ${characterInfo.name || 'unnamed character'}`; //TODO FIX
                 await createOrUpdateFile(
-                    filePath,
-                    content,
-                    `Update character files: ${charName}`
+                    filePath, 
+                    content, 
+                    commitMessage
                 );
             }
             console.log('           Successfully processed all character files');
         } catch (error) {
             console.error('Error processing character:', error);
+            // Log the character info for debugging
+            console.log('           Character info:', JSON.stringify(characterInfo, null, 2));
             throw error;
         }
 
@@ -651,7 +658,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.5...');
+console.log('Starting Perchance Comment Scraper 2.6...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
