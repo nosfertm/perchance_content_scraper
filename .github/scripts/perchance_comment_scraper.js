@@ -7,6 +7,12 @@ import fetch from 'node-fetch';
 import path from 'path';
 import * as https from 'https';
 
+const https = require('https');
+const zlib = require('zlib');
+const { promisify } = require('util');
+const gzip = promisify(zlib.gzip);
+const gunzip = promisify(zlib.gunzip);
+
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
@@ -118,7 +124,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
         const contentBase64 = contentBuffer.toString('base64');
 
         // Create or update file
-        const result = await octokit.repos.createOrUpdateFileContents({
+        await octokit.repos.createOrUpdateFileContents({
             owner: CONFIG.owner,
             repo: CONFIG.repo,
             path: filePath,
@@ -129,7 +135,6 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
         });
 
         if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
-        if (log) console.log(`           RESULT: ${result}`);
     } catch (error) {
         console.error(`Error creating/updating file ${filePath}:`, error);
         throw error;
@@ -144,6 +149,7 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
  */
 async function downloadFile(url) {
     try {
+        console.log(`           Downloading: ${url}`);
         const fileData = await new Promise((resolve, reject) => {
             https.get(url, (response) => {
                 // Check if download was successful
@@ -168,6 +174,137 @@ async function downloadFile(url) {
         console.error('Failed to download and process file:', error.message);
         throw error;
     }
+}
+
+/**
+ * Process downloaded character file and extract content
+ * @param {Buffer} fileBuffer - Downloaded file content as Buffer
+ * @param {string} dirName - Directory name for the character files
+ * @returns {Promise<Object>} Parsed character information
+ */
+async function processCharacterFile(fileBuffer, dirName) {
+    console.log('           Processing character file...');
+    try {
+        // Decompress gzip content
+        const decompressedContent = await gunzip(fileBuffer);
+        console.log('           Successfully decompressed content');
+
+        // Parse JSON content
+        const characterData = JSON.parse(decompressedContent.toString('utf-8'));
+        const characterInfo = characterData.addCharacter || {};
+        console.log('           Successfully parsed character data');
+
+        return createCharacterFiles(characterInfo, dirName);
+    } catch (error) {
+        console.error('Failed to process character file:', error);
+        throw error;
+    }
+}
+
+/**
+ * Create individual files for each character attribute and zip file
+ * @param {Object} characterInfo - Dictionary containing character information
+ * @param {string} dirName - Directory name for the character files
+ * @returns {Promise<Object>} Dictionary of created files and their content
+ */
+async function createCharacterFiles(characterInfo, dirName) {
+    console.log('           Creating character files...');
+    const files = {};
+
+    // Define fields and their corresponding file formats
+    const fieldFormats = {
+        name: 'txt',
+        roleInstruction: 'txt',
+        reminderMessage: 'txt',
+        customCode: 'js',
+        imagePromptPrefix: 'txt',
+        imagePromptSuffix: 'txt',
+        imagePromptTriggers: 'txt',
+        initialMessages: 'json',
+        loreBookUrls: 'json',
+        avatar: 'json',
+        scene: 'json',
+        userCharacter: 'json',
+        systemCharacter: 'json'
+    };
+
+    // Create individual files based on format
+    for (const [field, formatType] of Object.entries(fieldFormats)) {
+        if (characterInfo[field]) {
+            let content = characterInfo[field];
+            if (formatType === 'json' || typeof content === 'object') {
+                content = JSON.stringify(content, null, 2);
+            }
+            const sanitizedField = sanitizeFileName(field);
+            const filePath = path.join(dirName, 'src', `${sanitizedField}.${formatType}`);
+            files[filePath] = content;
+            console.log(`           Created ${sanitizedField}.${formatType}`);
+        }
+    }
+
+    // Create character.gz containing the original data
+    const exportData = {
+        formatName: "dexie",
+        formatVersion: 1,
+        data: {
+            databaseName: "chatbot-ui-v1",
+            databaseVersion: 90,
+            tables: [
+                {
+                    name: "characters",
+                    schema: "++id,modelName,fitMessagesInContextMethod,uuid,creationTime,lastMessageTime",
+                    rowCount: 1
+                },
+                // Empty tables with rowCount 0
+                { name: "threads", schema: "++id,name,characterId,creationTime,lastMessageTime,lastViewTime", rowCount: 0 },
+                { name: "messages", schema: "++id,threadId,characterId,creationTime,order", rowCount: 0 },
+                { name: "misc", schema: "key", rowCount: 0 },
+                { name: "summaries", schema: "hash,threadId", rowCount: 0 },
+                { name: "memories", schema: "++id,[summaryHash+threadId],[characterId+status],[threadId+status],[threadId+index],threadId", rowCount: 0 },
+                { name: "lore", schema: "++id,bookId,bookUrl", rowCount: 0 },
+                { name: "textEmbeddingCache", schema: "++id,textHash,&[textHash+modelName]", rowCount: 0 },
+                { name: "textCompressionCache", schema: "++id,uncompressedTextHash,&[uncompressedTextHash+modelName+tokenLimit]", rowCount: 0 },
+                { name: "usageStats", schema: "[dateHour+threadId+modelName],threadId,characterId,dateHour", rowCount: 0 }
+            ],
+            data: [
+                {
+                    tableName: "characters",
+                    inbound: true,
+                    rows: [{
+                        ...characterInfo,
+                        id: 1,
+                        creationTime: Date.now(),
+                        lastMessageTime: Date.now(),
+                        $types: {
+                            maxParagraphCountPerMessage: "undef",
+                            initialMessages: "arrayNonindexKeys",
+                            shortcutButtons: "arrayNonindexKeys",
+                            loreBookUrls: "arrayNonindexKeys"
+                        }
+                    }]
+                },
+                // Empty tables
+                { tableName: "threads", inbound: true, rows: [] },
+                { tableName: "messages", inbound: true, rows: [] },
+                { tableName: "misc", inbound: true, rows: [] },
+                { tableName: "summaries", inbound: true, rows: [] },
+                { tableName: "memories", inbound: true, rows: [] },
+                { tableName: "lore", inbound: true, rows: [] },
+                { tableName: "textEmbeddingCache", inbound: true, rows: [] },
+                { tableName: "textCompressionCache", inbound: true, rows: [] },
+                { tableName: "usageStats", inbound: true, rows: [] }
+            ]
+        }
+    };
+
+    console.log('           Creating character.gz file...');
+    // Compress the export data
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const compressedData = await gzip(Buffer.from(jsonString, 'utf-8'));
+    files[path.join(dirName, 'character.gz')] = compressedData;
+    console.log('           Successfully created character.gz');
+
+    return files;
 }
 
 /**
@@ -309,20 +446,38 @@ async function saveCharacterData(characterInfo, message) {
 
         const fileId = sanitizeFileName(characterInfo.fileId);
         console.log(`           fileId: ${fileId}`);
-        const gzPath = `${dirName}/${fileId}`;
+        //const gzPath = `${dirName}/${fileId}`;
 
-        // Log the start of the download
-        console.log(`           Downloading: ${characterInfo.link}`);
+        // // Log the start of the download
+        // console.log(`           Downloading: ${characterInfo.link}`);
 
-        // Download the .gz file content
-        const fileContent = await downloadFile(characterInfo.link);
+        // // Download the .gz file content
+        // const fileContent = await downloadFile(characterInfo.link);
 
-        // Save the downloaded file to the repository
-        await createOrUpdateFile(
-            gzPath,
-            fileContent,
-            `Add character file: ${charName}`
-        );
+        // // Save the downloaded file to the repository
+        // await createOrUpdateFile(
+        //     gzPath,
+        //     fileContent,
+        //     `Add character file: ${charName}`
+        // );
+
+        try {
+            const fileBuffer = await downloadFile(characterInfo.link);
+            const files = await processCharacterFile(fileBuffer, dirName);
+
+            // Create files
+            for (const [filePath, content] of Object.entries(files)) {
+                await createOrUpdateFile(
+                    filePath,
+                    content,
+                    `Update character files: ${charName}`
+                );
+            }
+            console.log('           Successfully processed all character files');
+        } catch (error) {
+            console.error('Error processing character:', error);
+            throw error;
+        }
 
         // Save the original message
         const capturedMessage = { ...message };
@@ -498,7 +653,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.4...');
+console.log('Starting Perchance Comment Scraper 2.5...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
