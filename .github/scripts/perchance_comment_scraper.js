@@ -27,7 +27,7 @@ const CONFIG = {
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
 
-const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
+const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?\.]+)\.gz/;
 
 /**
  * Sanitizes a string while preserving readable characters
@@ -388,7 +388,7 @@ function extractCharacterLinks(message) {
             return decodeURIComponent(str).trim();
         } catch (e) {
             console.warn(`Decoding failed for: ${str}, using sanitizeString()`);
-            sntStr = sanitizeString(str);
+            const sntStr = sanitizeString(str);
             console.warn(`Sanitized result: ${sntStr}`);
             return sntStr; // Use sanitized fallback
         }
@@ -396,24 +396,24 @@ function extractCharacterLinks(message) {
 
     // Extract all potential character links
     const links = message
-        .split(/(\s+|(?<=gz),)/gm) // Keeps spaces and ",gz" as split points.
-        .filter(a => a.includes('data=')) // Filters out elements that don't contain 'data='.
-        .map(a => {
-            // Extracts the link using a predefined pattern.
-            const match = a.match(LINK_PATTERN);
-            if (!match) return null;
+    .split(/\s+/) // Split the message by spaces
+    .filter(a => a.includes('data=') && a.includes('~')) // Filter out parts that don't contain 'data=' and '~'
+    .map(a => {
+        // Extracts the link using the updated pattern
+        const match = a.match(LINK_PATTERN);
+        if (!match) return null; // If there's no match, ignore this part
 
-            const fullLink = match[0]; // Full matched link.
-            const data = fullLink.split('data=')[1]; // Extracts the data part of the link.
-            const [character, fileId] = data.split('~'); // Splits character name and file ID.
+        const fullLink = match[0]; // Full matched link
+        const character = match[2]; // Extracts the character name from the match
+        const fileId = match[3]; // Extracts the file ID from the match
 
-            return {
-                character: safeDecode(character), // Decodes character name safely.
-                fileId: fileId, // Stores the file ID.
-                link: `https://${fullLink.trim()}` // Constructs the full HTTPS link.
-            };
-        })
-        .filter(Boolean); // Removes null values from the array.
+        return {
+            character: safeDecode(character), // Decode character name safely
+            fileId: fileId, // File ID
+            link: `https://${fullLink.trim()}` // Full HTTPS link
+        };
+    })
+    .filter(Boolean); // Removes null values from the array
 
     // Remove duplicates
     const uniqueLinks = [...new Set(links.map(JSON.stringify))].map(JSON.parse);
@@ -717,7 +717,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.8...');
+console.log('Starting Perchance Comment Scraper 2.9...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
