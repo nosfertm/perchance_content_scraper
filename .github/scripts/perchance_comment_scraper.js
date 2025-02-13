@@ -387,9 +387,8 @@ function extractCharacterLinks(message) {
         try {
             return decodeURIComponent(str).trim();
         } catch (e) {
-            console.warn(`Decoding failed for: ${str}, using sanitizeString()`);
             const sntStr = sanitizeString(str);
-            console.warn(`Sanitized result: ${sntStr}`);
+            console.warn(`  Decoding failed for: ${str}, Sanitized result: ${sntStr}`);
             return sntStr; // Use sanitized fallback
         }
     };
@@ -410,16 +409,14 @@ function extractCharacterLinks(message) {
         for (const component of keyComponents) {
             const count = (link.match(new RegExp(component, 'g')) || []).length;
             if (count > 1) {
-                console.warn(`Multiple occurrences of ${component} found in URL`);
+                console.warn(`  Multiple occurrences of ${component} found in URL`);
                 return false;
             }
         }
 
         // If we got here, check the basic pattern
         const linkPattern = /perchance\.org\/ai-character-chat\?data=([^~]+)~([^?]+\.gz)/;
-        const test = linkPattern.test(link);
-        console.log(`test result: ${test}`);
-        return test;
+        return linkPattern.test(link);
     };
 
     // Extract all potential character links
@@ -468,86 +465,27 @@ function extractCharacterLinks(message) {
     };
 }
 
-
-/**
- * Saves character data and returns information needed for metadata
- * @param {Object} characterInfo - Character information
- * @param {Object} message - Original message
- * @returns {Object} Directory and character information for metadata
- */
-/**
- * Saves character data, including the .gz file, message capture, and metadata
- * @param {Object} characterInfo - Character information (name, fileId, link)
- * @param {Object} message - Original message containing the character
- */
-async function saveCharacterData(characterInfo, message) {
-    console.log("\n");
-    console.log("       --------------------");
-    console.log(`       Processing character!`);
+// Function to create metadata file content
+async function createMetadata(characterInfo, message, fileId) {
     try {
-        // Sanitize character and author names for safe filesystem usage
-        const charName = sanitizeString(characterInfo.character) || 'Unnamed';
-        console.log(`           Character's name: ${charName}`);
-
-        // Get author name from available fields, fallback to 'Anonymous'
-        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous');
-        console.log(`           Author's name: ${authorName}`);
-
-        // Create directory path using sanitized names
-        const folderName = path.join(`${charName} by ${authorName}`);
-        const dirName = path.join(CONFIG.outputDir, folderName);
-        console.log(`           Path: ${dirName}`);
-
-        const fileId = sanitizeFileName(characterInfo.fileId);
-        console.log(`           fileId: ${fileId}`);
-
-        try {
-            const fileBuffer = await downloadFile(characterInfo.fileId);
-            const files = await processCharacterFile(fileBuffer, dirName, folderName);
-
-            // Now you can use the files object with your createOrUpdateFile function
-            for (const [filePath, content] of Object.entries(files)) {
-                const commitMessage = `Update character files: ${characterInfo.name || 'unnamed character'}`; //TODO FIX
-                await createOrUpdateFile(
-                    filePath,
-                    content,
-                    commitMessage
-                );
-            }
-            console.log('           Successfully processed all character files');
-        } catch (error) {
-            console.error('Error processing character:', error);
-            // Log the character info for debugging
-            console.log('           Character info:', JSON.stringify(characterInfo, null, 2));
-            throw error;
-        }
-
-        // Save the original message
-        const capturedMessage = { ...message };
-        await createOrUpdateFile(
-            `${dirName}/capturedMessage.json`,
-            JSON.stringify(capturedMessage, null, 2),
-            `Add capturedMessage for: ${charName}`
-        );
-
         // Create metadata wrapped in an array for future extensibility
-        const metadata = [{
+        return [{
             characterName: characterInfo.character || 'Unnamed',
             fileId: fileId,
             link: characterInfo.link,
             authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
             authorId: message.publicId || 'Unknown'
         }];
+    } catch (error) {
+        console.error('Error creating metadata:', error);
+        throw error;
+    }
+}
 
-        // Save metadata.json file in the character's directory
-        await createOrUpdateFile(
-            `${dirName}/metadata.json`,
-            JSON.stringify(metadata, null, 2),
-            `Add metadata for: ${charName}`
-        );
-
-        // Create manifest
-        const manifest = {
+// Function to create manifest file content
+async function createManifest(characterInfo, message, dirName, files, folderName) {
+    try {
+        return {
             name: characterInfo.name || 'Unnamed',
             description: '', //TODO FILL WITH AI
             author: message.username || message.userNickname || message.publicId || 'Anonymous',
@@ -570,17 +508,17 @@ async function saveCharacterData(characterInfo, message) {
             },
             categories: []
         };
+    } catch (error) {
+        console.error('Error creating manifest:', error);
+        throw error;
+    }
+}
 
-        // Save manifest.json file in the character's directory
-        await createOrUpdateFile(
-            `${dirName}/manifest.json`,
-            JSON.stringify(manifest, null, 2),
-            `Add metadata for: ${charName}`
-        );
-
-        // Create changelog
+// Function to create changelog file content
+async function createChangelog() {
+    try {
         const now = new Date().toISOString();
-        const changelog = {
+        return {
             currentVersion: '1.0.0',
             created: now,
             lastUpdated: now,
@@ -593,20 +531,104 @@ async function saveCharacterData(characterInfo, message) {
                 }
             ]
         };
-
-        // Save changelog.json file in the character's directory
-        await createOrUpdateFile(
-            `${dirName}/changelog.json`,
-            JSON.stringify(changelog, null, 2),
-            `Add metadata for: ${charName}`
-        );
+    } catch (error) {
+        console.error('Error creating changelog:', error);
+        throw error;
+    }
+}
 
 
+/**
+ * Saves character data and returns information needed for metadata
+ * @param {Object} characterInfo - Character information
+ * @param {Object} message - Original message
+ * @returns {Object} Directory and character information for metadata
+ */
+async function saveCharacterData(characterInfo, message) {
+    console.log("\n");
+    console.log("       --------------------");
+    console.log(`       Processing character!`);
+    
+    // Object to store all files that need to be created/updated
+    const filesToCreate = {};
+    
+    try {
+        // Sanitize character and author names for safe filesystem usage
+        const charName = sanitizeString(characterInfo.character) || 'Unnamed';
+        console.log(`           Character's name: ${charName}`);
+
+        const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous');
+        console.log(`           Author's name: ${authorName}`);
+
+        // Create directory path using sanitized names
+        const folderName = path.join(`${charName} by ${authorName}`);
+        const dirName = path.join(CONFIG.outputDir, folderName);
+        console.log(`           Path: ${dirName}`);
+
+        const fileId = sanitizeFileName(characterInfo.fileId);
+        console.log(`           fileId: ${fileId}`);
+
+        try {
+            // Download and process character file
+            const fileBuffer = await downloadFile(characterInfo.fileId);
+            const files = await processCharacterFile(fileBuffer, dirName, folderName);
+            
+            // Add processed files to our collection
+            Object.entries(files).forEach(([filePath, content]) => {
+                filesToCreate[filePath] = {
+                    content,
+                    commitMessage: `Update character files: ${charName}`
+                };
+            });
+
+            // Save the original message
+            filesToCreate[`${dirName}/capturedMessage.json`] = {
+                content: JSON.stringify({ ...message }, null, 2),
+                commitMessage: `Add capturedMessage for: ${charName}`
+            };
+
+            // Create and save metadata
+            const metadata = await createMetadata(characterInfo, message, fileId);
+            filesToCreate[`${dirName}/metadata.json`] = {
+                content: JSON.stringify(metadata, null, 2),
+                commitMessage: `Add metadata for: ${charName}`
+            };
+
+            // Create and save manifest
+            const manifest = await createManifest(characterInfo, message, dirName, files, folderName);
+            filesToCreate[`${dirName}/manifest.json`] = {
+                content: JSON.stringify(manifest, null, 2),
+                commitMessage: `Add manifest for: ${charName}`
+            };
+
+            // Create and save changelog
+            const changelog = await createChangelog();
+            filesToCreate[`${dirName}/changelog.json`] = {
+                content: JSON.stringify(changelog, null, 2),
+                commitMessage: `Add changelog for: ${charName}`
+            };
+
+            // Create/update all files at once
+            for (const [filePath, fileInfo] of Object.entries(filesToCreate)) {
+                await createOrUpdateFile(
+                    filePath,
+                    fileInfo.content,
+                    fileInfo.commitMessage
+                );
+            }
+
+            console.log('           Successfully processed all character files');
+        } catch (error) {
+            console.error('Error processing character:', error);
+            console.log('           Character info:', JSON.stringify(characterInfo, null, 2));
+            throw error;
+        }
     } catch (error) {
         console.error(`Error saving character data: ${charName}`, error);
         throw error;
     }
 }
+
 
 /**
  * Main message processing function
@@ -666,6 +688,7 @@ async function processMessages() {
 
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
+                    console.log(`LINKS: ${JSON.stringify(characterLinks)}`);
                     if (ignored) {
                         // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
@@ -752,7 +775,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 2.9...');
+console.log('Starting Perchance Comment Scraper 3.0...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
