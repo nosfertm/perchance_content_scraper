@@ -5,12 +5,12 @@
 import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 import path from 'path';
-import * as https from 'https';
-import * as zlib from 'zlib';
-import { promisify } from 'util';
+//import * as https from 'https';
+// import * as zlib from 'zlib';
+// import { promisify } from 'util';
 
-const gzip = promisify(zlib.gzip);
-const gunzip = promisify(zlib.gunzip);
+// const gzip = promisify(zlib.gzip);
+// const gunzip = promisify(zlib.gunzip);
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
@@ -21,7 +21,7 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: path.join("ai-character-chat", "characters", "scrape", "perchance_comments"),
+    outputDir: path.join("ai-character-char", "characters", "scrape", "perchance_comments"),
     targetDir: path.join("ai-character-chat", "characters"),
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
@@ -168,152 +168,6 @@ async function downloadFile(url) {
 }
 
 /**
- * Process downloaded character file and extract content
- * @param {Buffer} fileBuffer - Downloaded file content as Buffer
- * @param {string} dirName - Directory name for the character files
- * @param {string} fileName - A name for files, in a pattern 'Character by Author'
- * @returns {Promise<Object>} Parsed character information
- */
-async function processCharacterFile(fileBuffer, dirName, fileName) {
-    console.log('           Processing character file...');
-    console.log(`           Buffer size: ${fileBuffer.length} bytes`);
-
-    try {
-        // // Try to parse as JSON first in case it's not compressed
-        // try {
-        //     const characterData = JSON.parse(fileBuffer.toString('utf-8'));
-        //     console.log('           File was not compressed, parsed as JSON');
-        //     const characterInfo = characterData.addCharacter || {};
-        //     return createCharacterFiles(characterInfo, dirName, fileName);
-        // } catch (jsonError) {
-        //     console.log('           Not valid JSON, trying to decompress...');
-        // }
-
-        // If JSON parsing failed, try to decompress
-        const decompressedContent = await gunzip(fileBuffer);
-        console.log('           Successfully decompressed content');
-
-        const characterData = JSON.parse(decompressedContent.toString('utf-8'));
-        const characterInfo = characterData.addCharacter || {};
-        console.log('           Successfully parsed character data');
-
-        return createCharacterFiles(characterInfo, dirName, fileName);
-    } catch (error) {
-        console.error('Failed to process character file:', error);
-        // Log the first few bytes of the buffer for debugging
-        console.log('           First bytes of file:', fileBuffer.slice(0, 20));
-        throw error;
-    }
-}
-
-/**
- * Create individual files for each character attribute and zip file
- * @param {Object} characterInfo - Dictionary containing character information
- * @param {string} dirName - Directory name for the character files
- * @param {string} fileName - A name for files, in a pattern 'Character by Author'
- * @returns {Promise<Object>} Dictionary of created files and their content
- */
-async function createCharacterFiles(characterInfo, dirName, fileName) {
-    console.log('           Creating character files...');
-    const files = {};
-
-    // Define fields and their corresponding file formats
-    const fieldFormats = {
-        name: 'txt',
-        roleInstruction: 'txt',
-        reminderMessage: 'txt',
-        customCode: 'js',
-        imagePromptPrefix: 'txt',
-        imagePromptSuffix: 'txt',
-        imagePromptTriggers: 'txt',
-        initialMessages: 'json',
-        loreBookUrls: 'json',
-        avatar: 'json',
-        scene: 'json',
-        userCharacter: 'json',
-        systemCharacter: 'json'
-    };
-
-    // Create individual files based on format
-    for (const [field, formatType] of Object.entries(fieldFormats)) {
-        if (characterInfo[field]) {
-            let content = characterInfo[field];
-            if (formatType === 'json' || typeof content === 'object') {
-                content = JSON.stringify(content, null, 2);
-            }
-            const sanitizedField = sanitizeFileName(field);
-            const filePath = path.join(dirName, 'src', `${sanitizedField}.${formatType}`);
-            files[filePath] = content;
-            console.log(`           Created ${sanitizedField}.${formatType}`);
-        }
-    }
-
-    // Create character.gz containing the original data
-    const exportData = {
-        formatName: "dexie",
-        formatVersion: 1,
-        data: {
-            databaseName: "chatbot-ui-v1",
-            databaseVersion: 90,
-            tables: [
-                {
-                    name: "characters",
-                    schema: "++id,modelName,fitMessagesInContextMethod,uuid,creationTime,lastMessageTime",
-                    rowCount: 1
-                },
-                // Empty tables with rowCount 0
-                { name: "threads", schema: "++id,name,characterId,creationTime,lastMessageTime,lastViewTime", rowCount: 0 },
-                { name: "messages", schema: "++id,threadId,characterId,creationTime,order", rowCount: 0 },
-                { name: "misc", schema: "key", rowCount: 0 },
-                { name: "summaries", schema: "hash,threadId", rowCount: 0 },
-                { name: "memories", schema: "++id,[summaryHash+threadId],[characterId+status],[threadId+status],[threadId+index],threadId", rowCount: 0 },
-                { name: "lore", schema: "++id,bookId,bookUrl", rowCount: 0 },
-                { name: "textEmbeddingCache", schema: "++id,textHash,&[textHash+modelName]", rowCount: 0 },
-                { name: "textCompressionCache", schema: "++id,uncompressedTextHash,&[uncompressedTextHash+modelName+tokenLimit]", rowCount: 0 },
-                { name: "usageStats", schema: "[dateHour+threadId+modelName],threadId,characterId,dateHour", rowCount: 0 }
-            ],
-            data: [
-                {
-                    tableName: "characters",
-                    inbound: true,
-                    rows: [{
-                        ...characterInfo,
-                        id: 1,
-                        creationTime: Date.now(),
-                        lastMessageTime: Date.now(),
-                        $types: {
-                            maxParagraphCountPerMessage: "undef",
-                            initialMessages: "arrayNonindexKeys",
-                            shortcutButtons: "arrayNonindexKeys",
-                            loreBookUrls: "arrayNonindexKeys"
-                        }
-                    }]
-                },
-                // Empty tables
-                { tableName: "threads", inbound: true, rows: [] },
-                { tableName: "messages", inbound: true, rows: [] },
-                { tableName: "misc", inbound: true, rows: [] },
-                { tableName: "summaries", inbound: true, rows: [] },
-                { tableName: "memories", inbound: true, rows: [] },
-                { tableName: "lore", inbound: true, rows: [] },
-                { tableName: "textEmbeddingCache", inbound: true, rows: [] },
-                { tableName: "textCompressionCache", inbound: true, rows: [] },
-                { tableName: "usageStats", inbound: true, rows: [] }
-            ]
-        }
-    };
-
-    console.log('           Creating character.gz file...');
-    // Compress the export data
-    const jsonString = JSON.stringify(exportData, null, 2);
-    const compressedData = await gzip(Buffer.from(jsonString, 'utf-8'));
-    files[path.join(dirName, `${fileName}.gz`)] = compressedData;
-    console.log(`           Successfully created ${fileName}.gz`);
-
-    return files;
-}
-
-/**
  * Reads the last processed state
  * @returns {Promise<Object>} Channel processing states
  */
@@ -395,8 +249,6 @@ function extractCharacterLinks(message) {
 
     // Validate if the link is in a correct format
     const isValidLink = (link) => {
-        console.log(`Checking link validity for link: ${link}`);
-
         // Check for duplicate occurrences of key URL components
         const keyComponents = [
             'https://',
@@ -409,7 +261,7 @@ function extractCharacterLinks(message) {
         for (const component of keyComponents) {
             const count = (link.match(new RegExp(component, 'g')) || []).length;
             if (count > 1) {
-                console.warn(`  Multiple occurrences of ${component} found in URL`);
+                console.warn(`  Skipping URL: multiple occurrences of ${component} found.\n${link}`);
                 return false;
             }
         }
@@ -426,7 +278,6 @@ function extractCharacterLinks(message) {
         .map(a => {
             // First, check if the link itself is valid before trying to decode
             if (!isValidLink(a)) {
-                console.warn(`Invalid link skipped: ${a}`);
                 return null; // Skip invalid links
             }
 
@@ -465,11 +316,12 @@ function extractCharacterLinks(message) {
 }
 
 // Function to create metadata file content
-async function createMetadata(characterInfo, message, fileId) {
+async function createMetadata(characterInfo, message, fileId, charName, folderName) {
     try {
         // Create metadata wrapped in an array for future extensibility
         return [{
-            characterName: characterInfo.character || 'Unnamed',
+            folderName: folderName,
+            characterName: charName,
             fileId: fileId,
             link: characterInfo.link,
             authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
@@ -480,62 +332,6 @@ async function createMetadata(characterInfo, message, fileId) {
         throw error;
     }
 }
-
-// Function to create manifest file content
-async function createManifest(characterInfo, message, dirName, files, folderName) {
-    try {
-        return {
-            name: characterInfo.name || 'Unnamed',
-            description: '', //TODO FILL WITH AI
-            author: message.username || message.userNickname || message.publicId || 'Anonymous',
-            authorId: message.publicId || 'Anonymous',
-            source: 'Scraped from perchance comments',
-            imageUrl: '', //TODO EXTRACT FROM CHARACTER OR GENERATE ONE
-            shareUrl: characterInfo.link || '',
-            downloadPath: path.join(CONFIG.targetDir, dirName, `${folderName}.gz`),
-            shapeShifter_Pulls: 0,
-            galleryChat_Clicks: 0,
-            galleryDownload_Clicks: 0,
-            groupSettings: {
-                requires: [],
-                recommends: []
-            },
-            features: {
-                customCode: files[path.join(dirName, 'src', 'customCode.js')] ?
-                    [path.join(CONFIG.targetDir, dirName, 'src', 'customCode.js')] : [],
-                assets: []
-            },
-            categories: []
-        };
-    } catch (error) {
-        console.error('Error creating manifest:', error);
-        throw error;
-    }
-}
-
-// Function to create changelog file content
-async function createChangelog() {
-    try {
-        const now = new Date().toISOString();
-        return {
-            currentVersion: '1.0.0',
-            created: now,
-            lastUpdated: now,
-            history: [
-                {
-                    version: '1.0.0',
-                    date: now,
-                    type: 'initial',
-                    changes: ['Captured from perchance']
-                }
-            ]
-        };
-    } catch (error) {
-        console.error('Error creating changelog:', error);
-        throw error;
-    }
-}
-
 
 /**
  * Saves character data and returns information needed for metadata
@@ -568,43 +364,25 @@ async function saveCharacterData(characterInfo, message) {
         console.log(`           fileId: ${fileId}`);
 
         try {
-            // Download and process character file
-            const fileBuffer = await downloadFile(characterInfo.fileId);
-            const files = await processCharacterFile(fileBuffer, dirName, folderName);
-            
-            // Add processed files to our collection
-            Object.entries(files).forEach(([filePath, content]) => {
-                filesToCreate[filePath] = {
-                    content,
-                    commitMessage: `Update character files: ${charName}`
-                };
-            });
 
-            // Save the original message
+            // Create a json to save the original message
             filesToCreate[`${dirName}/capturedMessage.json`] = {
                 content: JSON.stringify({ ...message }, null, 2),
                 commitMessage: `Add capturedMessage for: ${charName}`
             };
 
-            // Create and save metadata
-            const metadata = await createMetadata(characterInfo, message, fileId);
+            // Create a json to save metadata
+            const metadata = await createMetadata(characterInfo, message, fileId, charName, folderName);
             filesToCreate[`${dirName}/metadata.json`] = {
                 content: JSON.stringify(metadata, null, 2),
                 commitMessage: `Add metadata for: ${charName}`
             };
 
-            // Create and save manifest
-            const manifest = await createManifest(characterInfo, message, dirName, files, folderName);
-            filesToCreate[`${dirName}/manifest.json`] = {
-                content: JSON.stringify(manifest, null, 2),
-                commitMessage: `Add manifest for: ${charName}`
-            };
-
-            // Create and save changelog
-            const changelog = await createChangelog();
-            filesToCreate[`${dirName}/changelog.json`] = {
-                content: JSON.stringify(changelog, null, 2),
-                commitMessage: `Add changelog for: ${charName}`
+            // Download and save character file
+            const fileBuffer = await downloadFile(characterInfo.fileId);
+            filesToCreate[`${dirName}/${fileId}`] = {
+                content: fileBuffer,
+                commitMessage: `Add share file for: ${charName}`
             };
 
             // Create/update all files at once
@@ -687,7 +465,10 @@ async function processMessages() {
 
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
-                    
+
+                    // Example of characterLinks content:
+                    // [{"character":"Lissa","fileId":"1f8092b94bb0fd4c43cd5d0141dee24e.gz","link":"https://perchance.org/ai-character-chat?data=Lissa~1f8092b94bb0fd4c43cd5d0141dee24e.gz"}]
+
                     if (ignored) {
                         // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
@@ -774,7 +555,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 3.0...');
+console.log('Starting Perchance Comment Scraper 3.1...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
