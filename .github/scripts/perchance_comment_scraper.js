@@ -21,8 +21,7 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: path.join("ai-character-char", "characters", "scrape", "perchance_comments"),
-    targetDir: path.join("ai-character-chat", "characters"),
+    outputDir: path.join("ai-character-chat", "characters", "scrape", "perchance_comments"),
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
@@ -321,7 +320,8 @@ async function createMetadata(characterInfo, message, fileId, charName, folderNa
         // Create metadata wrapped in an array for future extensibility
         return [{
             folderName: folderName,
-            characterName: charName,
+            characterName: characterInfo.character,
+            characterName_Sanitized: charName,
             fileId: fileId,
             link: characterInfo.link,
             authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
