@@ -437,7 +437,6 @@ function extractCharacterLinks(message) {
             const fullLink = match[0]; // Full matched link
             const character = match[2]; // Extracts the character name from the match
             const fileId = match[3]; // Extracts the file ID from the match
-            console.log(`FULL LINK: https://${fullLink.trim()}`)
 
             return {
                 character: safeDecode(character), // Decode character name safely
@@ -688,7 +687,7 @@ async function processMessages() {
 
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
-                    console.log(`LINKS: ${JSON.stringify(characterLinks)}`);
+                    
                     if (ignored) {
                         // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
