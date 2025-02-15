@@ -454,7 +454,7 @@ async function processMessages() {
 
                     // Stop if we reach a message we've already processed
                     if (message.time <= lastProcessed[channel].time) {
-                        console.log(`   Reached previously processed message in ${channel}`);
+                        console.log(`   Reached previously processed message in ${channel}. Time:${lastProcessed[channel].time}`);
                         continueProcessing = false;
                         break;
                     }
@@ -555,7 +555,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 3.1...');
+console.log('Starting Perchance Comment Scraper 3.0...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
