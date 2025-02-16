@@ -1,11 +1,13 @@
+// TODO - ADD tokens, and API CONFIGS (RATE LIMIT, MAX CALLS...)
+
 // Configuration variables
 const CONFIG = {
   // Paths
   BASE_PATH: "ai-character-chat/characters",
   SOURCE_PATH: "ai-character-char/characters/scrape/perchance_comments",
   PATHS: {
-    VALIDATED_SFW: "validated/sfw",
-    VALIDATED_NSFW: "validated/nsfw",
+    VALIDATED_SFW: "sfw",
+    VALIDATED_NSFW: "nsfw",
     MANUAL_REVIEW: "Manual Review",
     QUARANTINE: "Quarantine",
     DISCARDED_INVALID: "Discarded/Invalid",
@@ -14,11 +16,10 @@ const CONFIG = {
   
   // Processing limits
   MAX_CHARACTERS_PER_RUN: 4,  // Maximum number of characters to process in one run
-  BATCH_SIZE_FOR_PR: 2,        // Number of characters to include in one PR
   
   // File patterns
   METADATA_FILE: "metadata.json",
-  CHARACTER_FILE: "character.gz"
+  MESSAGE_FILE: "capturedMessage.json"
 }
 
 // Import required modules
@@ -52,8 +53,10 @@ async function processCharacters() {
     // Get list of character folders to process
     const characterFolders = await getCharacterFolders();
     console.log(`Found ${characterFolders.length} characters to process`);
+
+    // TODO (CLAUDE) - SHUFFLE characterFolders order form random process rather than alphabetical
     
-    // Process only up to MAX_CHARACTERS_PER_RUN
+    // Process only up to MAX_CHARACTERS_PER_RUN (Shuffled)
     const foldersToProcess = characterFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
     
     // Process each character
@@ -82,12 +85,15 @@ async function getCharacterFolders() {
   try {
     // Read directory contents
     const folders = await fs.readdir(CONFIG.SOURCE_PATH);
-    
-    // Log found files/folders for debugging
-    console.log("Found files/folders:", folders);
 
     // Filter out hidden files (starting with '.')
-    return folders.filter(folder => !folder.startsWith('.'));
+    const filter = folders.filter(folder => !folder.startsWith('.'));
+    
+    // Log found files/folders for debugging
+    console.log("Found files/folders:", filter);
+
+    return filter;
+
   } catch (err) {
     console.error(`Error reading directory ${CONFIG.SOURCE_PATH}:`, err.message);
     throw err;
@@ -103,13 +109,26 @@ async function processCharacter(folder) {
   console.log(`Processing character: ${folder}`);
   
   // Read metadata.json
-  const metadata = await readMetadataFile(path.join(CONFIG.SOURCE_PATH, folder));
+  const metadata = await readJsonFile(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE));
+
+  // Read quota
+  //const apiQuota = await readJsonFile(path.join(CONFIG...));
+
+  // TODO (CLAUDE) - Create mock function to check if this character/files already exists on the output directory, if so, move it to the duplicated folder, create a simple file referring to the content already existing, go to the next execution.
+
+  // TODO (CLAUDE) - Check if file fileID exist, if it doesn't download it (create a mock function for download)
+  gzFile = metadata.fileId;
   
   // Extract character information from gz file
-  const characterData = await extractCharacterData(folder);
+  const characterData = await extractCharacterData(folder, metadata.fileId);
   
-  // Call AI for analysis (placeholder for now)
+  // Call AI for analysis (placeholder for now) 
+  // TODO (CLAUDE) If there's no quota, decide whether or not to halt and exit execution
   const aiAnalysis = await analyzeCharacterWithAI(characterData);
+
+  // TODO (CLAUDE) - Create mock function to call pigimage API and generate new image if the character doesn't have one
+
+  // TODO (CLAUDE) - Create mock function to call freeimage API and upload the image.
   
   // Determine destination based on AI analysis
   const destinationPath = determineDestinationPath(aiAnalysis);
@@ -135,26 +154,28 @@ async function analyzeCharacterWithAI(characterData) {
     categories: ['cat1', 'cat2'],
     description: 'A placeholder description',
     readmeContent: 'A placeholder README content',
-    needsManualReview: false
+    needsManualReview: false,
+    charState: 'valid'  // valid, quarantine, invalid
   };
 }
 
 /**
  * Read and parse metadata.json file
- * @param {string} folderPath - Path to character folder
+ * @param {string} filePath - Path to json file
  */
-async function readMetadataFile(folderPath) {
-  const metadataPath = path.join(folderPath, CONFIG.METADATA_FILE);
-  const data = await fs.readFile(metadataPath, 'utf8');
+async function readJsonFile(filePath) {
+  const jsonPath = path.join(filePath);
+  const data = await fs.readFile(jsonPath, 'utf8');
   return JSON.parse(data);
 }
 
 /**
  * Extract character data from gz file
  * @param {string} folder - Character folder name
+ * @param {string} fileName - File name
  */
-async function extractCharacterData(folder) {
-  const gzPath = path.join(CONFIG.SOURCE_PATH, folder, CONFIG.CHARACTER_FILE);
+async function extractCharacterData(folder, fileName) {
+  const gzPath = path.join(CONFIG.SOURCE_PATH, folder, fileName);
   const gzBuffer = await fs.readFile(gzPath);
   const unzipped = await util.promisify(gunzip)(gzBuffer);
   return JSON.parse(unzipped.toString());
@@ -172,6 +193,8 @@ function determineDestinationPath(aiAnalysis) {
   return aiAnalysis.rating === 'sfw' 
     ? CONFIG.PATHS.VALIDATED_SFW 
     : CONFIG.PATHS.VALIDATED_NSFW;
+
+  // TODO (CLAUDE) - Treat AI response for quarantine, broken and troll characters accordingly
 }
 
 /**
@@ -194,7 +217,7 @@ async function createCharacterStructure(folder, metadata, characterData, aiAnaly
     'manifest.json': JSON.stringify(manifest, null, 2),
     'changelog.json': JSON.stringify(changelog, null, 2),
     'README.md': aiAnalysis.readmeContent,
-    'character.gz': await util.promisify(gzip)(JSON.stringify(characterData))
+    'character.gz': await util.promisify(gzip)(JSON.stringify(characterData)) //TODO - Change name to folderName.gz
   };
   
   // Write files to destination
@@ -223,7 +246,7 @@ function createManifest(metadata, characterData, aiAnalysis) {
     authorId: metadata.userId,
     source: 'SCRAPER',
     imageUrl: characterData.avatar?.url || '',
-    shareUrl: extractShareUrl(metadata.message),
+    shareUrl: 'LINK', //TODO ADD LINK
     shapeShifter_Pulls: 0,
     galleryChat_Clicks: 0,
     galleryDownload_Clicks: 0,
@@ -333,16 +356,6 @@ function printStats() {
       console.log(`- ${error.folder}: ${error.error}`);
     });
   }
-}
-
-/**
- * Extract share URL from metadata message
- * @param {string} message - Message content from metadata
- */
-function extractShareUrl(message) {
-  const urlPattern = /https:\/\/perchance\.org\/ai-character-chat\?data=[^)\s]+/;
-  const match = message.match(urlPattern);
-  return match ? match[0] : '';
 }
 
 // Start processing
