@@ -9,7 +9,7 @@ const scriptVersion = '1.0';
 const CONFIG = {
     // Paths
     BASE_PATH: "ai-character-chat/characters",
-    SOURCE_PATH: "ai-character-char/characters/scrape/perchance_comments",
+    SOURCE_PATH: "ai-character-chat/characters/scrape/perchance_comments",
     PATHS: {
         VALIDATED_SFW: "sfw",
         VALIDATED_NSFW: "nsfw",
