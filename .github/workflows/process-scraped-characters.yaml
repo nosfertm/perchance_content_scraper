@@ -21,6 +21,7 @@ jobs:
         with:
           ref: test_processor
           token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -60,19 +61,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
+      - name: Fetch all branches
+        run: |
+          git fetch origin perchance_comments
+          git fetch origin test_processor
+
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
         run: |
-          # Check if there is difference between branches
-          if ! git diff --quiet origin/perchance_comments...origin/test_processor; then
-            # Create PR if there is any difference
+          if git diff --quiet origin/perchance_comments origin/test_processor; then
+            echo "No differences found between branches. Skipping PR creation."
+          else
             gh pr create \
               --base perchance_comments \
               --head test_processor \
               --title "Automated PR - Updated generated files" \
               --body "This PR contains automatically generated updates." \
               --label "automated-pr"
-          else
-            echo "No differences found between branches. Skipping PR creation."
           fi
