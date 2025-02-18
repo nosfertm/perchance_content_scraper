@@ -29,9 +29,6 @@ jobs:
       - name: Install dependencies manually
         run: |
           npm install @google/generative-ai
-          npm install zlib
-          npm install util
-          npm install path
 
       - name: Set environment variables
         env:
