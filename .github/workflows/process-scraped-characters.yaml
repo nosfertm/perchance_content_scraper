@@ -44,13 +44,13 @@ jobs:
         run: |
           git add .
           git diff --quiet && git diff --staged --quiet || git commit -m "Update generated files"
-          git push origin my-feature-branch  # Push changes to the working branch
+          git push origin test_processor  # Push changes to the working branch
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: my-feature-branch
-          base: main  # Change this to the branch you want to merge into
+          branch: test_processor
+          base: perchance_comments  # Change this to the branch you want to merge into
           title: "Automated PR - Updated generated files"
           body: "This PR contains automatically generated updates."
           labels: automated-pr
