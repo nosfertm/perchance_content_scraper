@@ -63,9 +63,9 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
           branch: test_processor
-          base: perchance_comments  # Change this to the branch you want to merge into
+          base: perchance_comments
           title: "Automated PR - Updated generated files"
           body: "This PR contains automatically generated updates."
           labels: automated-pr
-          reviewers: your-username  # Optional: specify reviewers
