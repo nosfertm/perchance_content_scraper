@@ -52,8 +52,11 @@ jobs:
 
       - name: Configure Git for PAT
         run: |
+          git config user.name "GitHub Actions"  # Definindo nome para o repositório atual
+          git config user.email "actions@github.com"  # Definindo e-mail para o repositório atual
           git config --global credential.helper "store"
           echo "https://${{ secrets.PAT_GITHUB_ACTIONS }}:x-oauth-basic@github.com" > ~/.git-credentials
+
 
       - name: Commit changes
         run: |
