@@ -1,0 +1,57 @@
+name: Run Script and Create PR
+
+on:
+  schedule:
+    - cron: "0 12 * * *"  # Runs daily at 12:00 UTC
+  workflow_dispatch:  # Allows manual execution
+  workflow_call:  # Allows being triggered by another workflow
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    
+    # Adds concurrency to prevent simultaneous runs
+    concurrency:
+      group: processing-scraped
+      cancel-in-progress: false    # Prevents new jobs from starting while current one is running
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: test_processor
+
+      - name: Set environment variables
+        env:
+          GEMINI_TOKEN: ${{ secrets.GEMINI_TOKEN }}
+          PIGIMAGE_TOKEN: ${{ secrets.PIGIMAGE_TOKEN }}
+          FREEIMAGE_TOKEN: ${{ secrets.FREEIMAGE_TOKEN }}
+        run: echo "Environment variables set"
+
+      - name: Run script
+        env:
+          GEMINI_TOKEN: ${{ secrets.GEMINI_TOKEN }}
+          PIGIMAGE_TOKEN: ${{ secrets.PIGIMAGE_TOKEN }}
+          FREEIMAGE_TOKEN: ${{ secrets.FREEIMAGE_TOKEN }}
+        run: node .github/scripts/process_scraped_characters.js  # Adjust the script name as needed
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        run: |
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update generated files"
+          git push origin my-feature-branch  # Push changes to the working branch
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: my-feature-branch
+          base: main  # Change this to the branch you want to merge into
+          title: "Automated PR - Updated generated files"
+          body: "This PR contains automatically generated updates."
+          labels: automated-pr
+          reviewers: your-username  # Optional: specify reviewers
