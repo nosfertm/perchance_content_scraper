@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 2,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -1277,6 +1277,11 @@ async function processCharacter(folder) {
             // Upload the generated image
             if (generatedImage) {
                 finalImage = await uploadImage(generatedImage);
+            } else {
+                errMsg = 'Image was not generated. Skipping character.'
+                console.error(errMsg)
+                stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
+                return;
             }
 
         }

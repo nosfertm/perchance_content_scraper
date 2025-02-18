@@ -19,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: test_processor
+          ref: perchance_comments
           token: ${{ secrets.PAT_GITHUB_ACTIONS }}
           fetch-depth: 0
 
@@ -52,7 +52,7 @@ jobs:
           rm -f package-lock.json  # Remove file
           rm -f package.json
 
-      - name: Commit and push changes
+      - name: Commit and push changes to the working branch
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
@@ -61,22 +61,61 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
-      - name: Fetch all branches
+      - name: Remove unwanted files from the machine to create PR
         run: |
-          git fetch origin perchance_comments
-          git fetch origin test_processor
+          rm -rf characters
+          rm -rf ai-character-char
+          rm -rf ai-character-chat/characters/scrape
+
+      - name: Debug - List remaining files before creating the new branch
+        run: ls -R
+
+      # First, save the files we want to keep in a temporary location
+      - name: Save processed files to temporary location
+        run: |
+          # Create a temporary directory to store our processed files
+          mkdir -p /tmp/processed_files
+          # Copy all files we want to keep to the temporary directory
+          cp -r ai-character-chat /tmp/processed_files/
+
+      # Now create and switch to the new branch
+      - name: Create and checkout new branch from main
+        run: |
+          # Fetch and checkout main branch
+          git fetch origin main:main
+          # Create and checkout new branch
+          git checkout -b processed-batch1 main
+
+      # Restore our saved files
+      - name: Restore processed files
+        run: |
+          # Copy the files back from temporary location
+          cp -r /tmp/processed_files/ai-character-chat ./
+          # Remove temporary directory
+          rm -rf /tmp/processed_files
+
+      - name: Debug - List restored files
+        run: ls -R
+
+      - name: Commit and push changes to the new branch
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update processed files" && git push origin processed-batch1)
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
       - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
         run: |
-          if git diff --quiet origin/perchance_comments origin/test_processor; then
+          if git diff --quiet origin/main origin/processed-batch1; then
             echo "No differences found between branches. Skipping PR creation."
           else
-            gh label create "automated-pr" --color 1D76DB --description "Automatic PR generated for adding content to the DB" || echo "Label 'automated-pr' already exist or can't be created."
             gh pr create \
-              --base perchance_comments \
-              --head test_processor \
+              --base main \
+              --head processed-batch1 \
               --title "Automated PR - Updated generated files" \
               --body "This PR contains automatically generated updates." \
               --label "automated-pr"
