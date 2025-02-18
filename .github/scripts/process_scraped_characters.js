@@ -9,7 +9,7 @@ const scriptVersion = '1.0';
 const CONFIG = {
     // Paths
     BASE_PATH: "ai-character-chat/characters",
-    SOURCE_PATH: "ai-character-chat/characters/scrape/perchance_comments",
+    SOURCE_PATH: "ai-character-char/characters/scrape/perchance_comments",
     PATHS: {
         VALIDATED_SFW: "sfw",
         VALIDATED_NSFW: "nsfw",
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 2,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -32,9 +32,9 @@ const CONFIG = {
 const API_CONFIG = {
     gemini: {
         token: process.env.GEMINI_TOKEN,
-        model: 'gemini-2.0-flash',
-        rateLimit: 15,  // Calls per minute
-        maxCalls: 1500, // Maximum calls per day
+        model: 'gemini-1.5-flash',
+        rateLimit: 60,  // Calls per minute
+        maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
         timeBetweenRetries: 3000, // Time in ms between retries
         endExecutionOnFail: true  // Whether to stop execution if API fails
@@ -1277,6 +1277,11 @@ async function processCharacter(folder) {
             // Upload the generated image
             if (generatedImage) {
                 finalImage = await uploadImage(generatedImage);
+            } else {
+                errMsg = 'Image was not generated. Skipping character.'
+                console.error(errMsg)
+                stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
+                return;
             }
 
         }
