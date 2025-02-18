@@ -44,10 +44,18 @@ jobs:
           FREEIMAGE_TOKEN: ${{ secrets.FREEIMAGE_TOKEN }}
         run: node .github/scripts/process_scraped_characters.js  # Adjust the script name as needed
 
-      - name: Configure Git
+      - name: Remove node_modules and package-lock.json
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          rm -rf node_modules  # Remove node_modules folder
+          rm -f package-lock.json  # Remove file
+          rm -f package.json
+
+      - name: Configure Git for PAT
+        run: |
+          git config --global user.name "your-github-username"  # Replace with your GitHub username
+          git config --global user.email "your-email@example.com"  # Replace with your email
+          git config --global credential.helper "store"
+          echo "https://${{ secrets.PAT_GITHUB_ACTIONS }}:x-oauth-basic@github.com" > ~/.git-credentials
 
       - name: Commit changes
         run: |
