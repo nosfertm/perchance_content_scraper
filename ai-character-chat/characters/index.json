@@ -1,5 +1,604 @@
 [
   {
+    "path": "sfw/Ike by Perchance",
+    "manifest": {
+      "name": "Ike",
+      "description": "Ike Okunera, 23, is your childhood best friend and secret admirer, known for his bubbly personality and affection towards you. Despite being emotionally intelligent, he hides his love for you out of fear of ruining your friendship, and has been deeply attached to you since childhood.",
+      "author": "Perchance",
+      "authorId": 193018966,
+      "imageUrl": "https://user-uploads.perchance.org/file/1fc3053449b3899638f4328eec5817a8.jpeg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Ike~d1ad478c0beadb6481d8b7baf58e521b.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/Ike by Perchance/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Male"
+        ],
+        "genre": [
+          "Romance",
+          "Slice of Life",
+          "Friendship"
+        ],
+        "source": [
+          "Perchance"
+        ],
+        "role": [
+          "Best friend"
+        ],
+        "personality": [
+          "Friendly",
+          "Playful",
+          "Affectionate"
+        ]
+      }
+    }
+  },
+  {
+    "path": "sfw/Chloe by Perchance",
+    "manifest": {
+      "name": "Chloe",
+      "description": "Chloe is a versatile in-person personal assistant who combines the mystique of a mage with the knowledge of a librarian.",
+      "author": "Perchance",
+      "authorId": 193018966,
+      "imageUrl": "https://user-uploads.perchance.org/file/f97d49e4231d6b90d83a37f12ca95c52.jpeg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Chloe~764d8d6af616e292d43678b8540ff085.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/Chloe by Perchance/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female"
+        ],
+        "genre": [
+          "Slice of Life",
+          "Adventure"
+        ],
+        "source": [
+          "Perchance"
+        ],
+        "role": [
+          "Assistant"
+        ],
+        "personality": [
+          "Cheerful",
+          "Friendly"
+        ]
+      }
+    }
+  },
+  {
+    "path": "nsfw/Sadie by chewyio @ Discord",
+    "manifest": {
+      "name": "Sadie",
+      "description": "A subordinate you manage that will do anything to impress you.",
+      "author": "chewyio @ Discord",
+      "authorId": 197813346,
+      "imageUrl": "https://user-uploads.perchance.org/file/4f81686f8e8508d1750e0bdfee39b0da.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Sadie~6c4246010cde6d761f68dbfddc4c484b.gz",
+      "downloadPath": "ai-character-chat/characters/nsfw/Sadie by chewyio @ Discord/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "nsfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female"
+        ],
+        "genre": [
+          "Sexual Roleplay"
+        ],
+        "source": [
+          "Original"
+        ],
+        "role": [
+          "Assistant",
+          "Artist",
+          "Professional",
+          "Servant"
+        ],
+        "personality": [
+          "Affectionate",
+          "Caring",
+          "Playful",
+          "Submissive"
+        ]
+      }
+    }
+  },
+  {
+    "path": "sfw/Yumi by Wren",
+    "manifest": {
+      "name": "Yumi",
+      "description": "Yumi holds a dark secret, kept even from herself, and she has her eye on you. A Yandere tale with a twist.",
+      "author": "Wren",
+      "authorId": 191031092,
+      "imageUrl": "https://user-uploads.perchance.org/file/ed32e93b72f4db388515d01e98020071.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Yumi_Tanaka~29c3b3ada45de8e40146e0fdeef96a1e.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/Yumi by Wren/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female"
+        ],
+        "genre": [
+          "Adult Drama",
+          "Dark Romance",
+          "Psychological",
+          "Thriller",
+          "Supernatural"
+        ],
+        "source": [
+          "Original",
+          "Book"
+        ],
+        "role": [
+          "LI (Love Interest)",
+          "Professional",
+          "Scientist"
+        ],
+        "personality": [
+          "Shy",
+          "Obsessive",
+          "Deceptive",
+          "Violent"
+        ],
+        "setting": [
+          "Contemporary",
+          "Modern",
+          "Urban"
+        ]
+      }
+    }
+  },
+  {
+    "path": "nsfw/Petie by satray",
+    "manifest": {
+      "name": "Petie",
+      "description": "a lusty femboy golden retriever in collage",
+      "author": "satray",
+      "authorId": 76542287,
+      "imageUrl": "https://cdn.tupperbox.app/pfp/355808531930284034/YZcEdamcSu6x8E4E.webp",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Petie~8391daf89864959fa09371cb9865d7ee.gz",
+      "downloadPath": "ai-character-chat/characters/nsfw/Petie by satray/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "nsfw",
+        "gender": [
+          "Genderfluid",
+          "Male",
+          "Androgynous",
+          "Gender Non-Conforming"
+        ],
+        "genre": [
+          "Erotic",
+          "Friendship",
+          "RPG",
+          "Romance",
+          "School Life",
+          "Sexual Roleplay",
+          "Slice of Life"
+        ],
+        "role": [
+          "Friend",
+          "LI (Love Interest)",
+          "Best friend"
+        ],
+        "personality": [
+          "Teasing",
+          "Submissive",
+          "Seductive",
+          "Protective",
+          "Playful",
+          "Lustful",
+          "Loyal",
+          "Honest",
+          "Friendly",
+          "Forgiving",
+          "Cheerful",
+          "Caring"
+        ],
+        "setting": [
+          "Modern",
+          "School"
+        ]
+      }
+    }
+  },
+  {
+    "path": "sfw/General TAGAI by TKDB",
+    "manifest": {
+      "name": "General TAGAI",
+      "description": "An AI general for Totally Accurate Battle Simulator (TABS)",
+      "author": "TKDB",
+      "authorId": 8163698,
+      "imageUrl": "https://user-uploads.perchance.org/file/7a00ba24ad3b4905ca4dd85e8c201578.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=General_TAGAI~c708f3b5d065652ee1faeae716e36ece.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/General TAGAI by TKDB/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "Unspecified",
+          "Human"
+        ],
+        "gender": [
+          "Male"
+        ],
+        "genre": [
+          "Comedy",
+          "Military"
+        ],
+        "source": [
+          "Game"
+        ],
+        "role": [
+          "Assistant",
+          "Leader",
+          "Soldier"
+        ],
+        "personality": [
+          "Confident",
+          "Analytical",
+          "Ambitious"
+        ]
+      }
+    }
+  },
+  {
+    "path": "sfw/Pyra by MASTER\ud83d\udc51",
+    "manifest": {
+      "name": "Pyra",
+      "description": "She is the Aegis, a Legendary Blade who can grant tremendous fire-elemental power to her Driver, [Your Face Here!]. Pyra and [Your Face Here!] embark on a journey to search for Elysium, and [Your Face Here!] is devoted to protecting her. Due to sharing her life force with [Your Face Here!], Pyra is not able to recover from injuries like other Blades, and is as vulnerable to damage as any other human. If either of the two were to die, the other would follow.",
+      "author": "MASTER\ud83d\udc51",
+      "authorId": 194161506,
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS20DNpFRRLeAPpqlDaJqMCMPFdctbwHMkZ_9wiIn3H2Qs9TzeWTGyzqx7WsxdrUpIjCXM&usqp=CAU",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Pyra~64e110b5aa51b10ed6d02b7c8b210878.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/Pyra by MASTER\ud83d\udc51/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "Human",
+          "Deity"
+        ],
+        "genre": [
+          "Post-apocalyptic",
+          "Action",
+          "Fantasy",
+          "Supernatural"
+        ],
+        "source": [
+          "Game",
+          "Anime",
+          "Comic",
+          "Adult Game"
+        ],
+        "role": [
+          "Adventurer",
+          "Deity",
+          "Friend",
+          "Healer",
+          "Hero",
+          "LI (Love Interest)"
+        ],
+        "setting": [
+          "Wilderness",
+          "Fantasy World",
+          "Post-Apocalyptic",
+          "Parallel Universe"
+        ]
+      }
+    }
+  },
+  {
+    "path": "nsfw/Mad Moxxi by CycloneJack1988",
+    "manifest": {
+      "name": "Mad Moxxi",
+      "description": "The gun totin, alcohol slingin, drink mixin, spit talkin, Hottie with the voluptuous body. Mad Moxxi",
+      "author": "CycloneJack1988",
+      "authorId": 79110569,
+      "imageUrl": "https://user-uploads.perchance.org/file/227d50b8ae14822ba8c31d5b8cbcc545.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Mad_Moxxi~ccce24a23a184ad1c1d4af6e1b190dc1.gz",
+      "downloadPath": "ai-character-chat/characters/nsfw/Mad Moxxi by CycloneJack1988/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "nsfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female"
+        ],
+        "genre": [
+          "Sci-Fi",
+          "Dark Romance"
+        ],
+        "source": [
+          "Game"
+        ],
+        "role": [
+          "LI (Love Interest)"
+        ],
+        "personality": [
+          "Playful",
+          "Affectionate",
+          "Rebellious"
+        ],
+        "setting": [
+          "Adult Club",
+          "Future"
+        ]
+      }
+    }
+  },
+  {
+    "path": "nsfw/Suspected Spy by Aurelie Catena",
+    "manifest": {
+      "name": "Suspected Spy",
+      "description": "You are an interrogator, a vital cog in the oppressive machinery of a totalitarian regime that governs with an iron fist. Your mission is to extract the truth from the lips of those who dare to threaten the regime's power.",
+      "author": "Aurelie Catena",
+      "authorId": 151034684,
+      "imageUrl": "https://generated-images.perchance.org/image/930fb551a01c762f45650bc0358615e121ffb8a849665440f191c099981ad068.jpeg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Suspected_spy~65317a412fb2039b941172e51e8094b2.gz",
+      "downloadPath": "ai-character-chat/characters/nsfw/Suspected Spy by Aurelie Catena/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "nsfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female"
+        ],
+        "genre": [
+          "Thriller"
+        ],
+        "personality": [
+          "Deceptive"
+        ],
+        "fetishes": [
+          "Bondage",
+          "BDSM"
+        ],
+        "setting": [
+          "Contemporary"
+        ]
+      }
+    }
+  },
+  {
+    "path": "sfw/Velocity by Anarky AKA Mr. Death",
+    "manifest": {
+      "name": "Velocity",
+      "description": "He is a Speedster from another universe, or your own universe",
+      "author": "Anarky AKA Mr. Death",
+      "authorId": 197961067,
+      "imageUrl": "https://user-uploads.perchance.org/file/2a81d956ff7f7be11df68a3fa1c4103e.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Velocity~04197c7886643f04d2ca1d72e5fa7ea7.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/Velocity by Anarky AKA Mr. Death/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Male"
+        ],
+        "genre": [
+          "Action"
+        ],
+        "source": [
+          "Original"
+        ],
+        "role": [
+          "Hero"
+        ],
+        "personality": [
+          "Intelligent",
+          "Ambitious",
+          "Serious",
+          "Vengeful",
+          "Violent"
+        ],
+        "setting": [
+          "Parallel Universe"
+        ]
+      }
+    }
+  },
+  {
+    "path": "nsfw/Raider's Wolrd by Aur\u00e9lie Catena",
+    "manifest": {
+      "name": "Raider's Wolrd",
+      "description": "A postapocalyptic world based on the Fallout-verse and in particular on the Raiders. Cruel, brutal, violent.",
+      "author": "Aur\u00e9lie Catena",
+      "authorId": 151034684,
+      "imageUrl": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/d373bfa3-8fb1-4483-b589-95fd314974d0/dg4t1wr-bd99ada6-5b3e-434e-a726-a7bf230f4d96.png/v1/fill/w_1280,h_1280,q_80,strp/raider_fallout_new_vegas_by_jul19888_dg4t1wr-fullview.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTI4MCIsInBhdGgiOiJcL2ZcL2QzNzNiZmEzLThmYjEtNDQ4My1iNTg5LTk1ZmQzMTQ5NzRkMFwvZGc0dDF3ci1iZDk5YWRhNi01YjNlLTQzNGUtYTcyNi1hN2JmMjMwZjRkOTYucG5nIiwid2lkdGgiOiI8PTEyODAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.X8ZYrDm8IsGrHGMfvloGeTjATvhL3EW1p_GQ4YPshDw",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Raider's_World~c31fb73b5cc0e0550b2ad9e0e415fd69.gz",
+      "downloadPath": "ai-character-chat/characters/nsfw/Raider's Wolrd by Aur\u00e9lie Catena/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "nsfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female",
+          "Male"
+        ],
+        "genre": [
+          "Adventure",
+          "Post-apocalyptic"
+        ],
+        "source": [
+          "Adult Game"
+        ],
+        "role": [
+          "Adventurer",
+          "Guard",
+          "Assassin",
+          "Thief",
+          "Warrior",
+          "Villain"
+        ],
+        "personality": [
+          "Aggressive",
+          "Abusive / Toxic",
+          "Sadistic",
+          "Violent"
+        ],
+        "fetishes": [
+          "BDSM",
+          "Body Modification",
+          "Bondage",
+          "Breeding",
+          "Leather",
+          "Slavery"
+        ],
+        "setting": [
+          "Post-Apocalyptic"
+        ]
+      }
+    }
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  {
     "path": "sfw/Character_generator by bus01",
     "manifest": {
       "name": "Character generator",
@@ -21,9 +620,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Unspecified",
           "Human"
@@ -93,9 +690,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Inumimi",
           "Canine",
@@ -159,9 +754,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Human",
           "Canine",
@@ -229,9 +822,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Human"
         ],
@@ -354,9 +945,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Genre": [
           "RPG",
           "Fantasy",
@@ -390,9 +979,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "NSFW"
-        ],
+        "rating": "nsfw",
         "Species": [
           "Elf"
         ],
@@ -468,9 +1055,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Dragon",
           "Human"
@@ -508,9 +1093,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Human",
           "Dragon"
@@ -546,9 +1129,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Unspecified",
           "Human"
@@ -785,9 +1366,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "NSFW"
-        ],
+        "rating": "nsfw",
         "Species": [
           "Chimera",
           "Monster Girl/Boy",
@@ -873,9 +1452,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "NSFW"
-        ],
+        "rating": "nsfw",
         "Species": [
           "Deity",
           "Mythological"
@@ -942,9 +1519,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "NSFW"
-        ],
+        "rating": "nsfw",
         "Species": [
           "Human"
         ],
@@ -1010,9 +1585,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Human"
         ],
@@ -1076,9 +1649,7 @@
         "assets": []
       },
       "categories": {
-        "Rating": [
-          "SFW"
-        ],
+        "rating": "sfw",
         "Species": [
           "Furry",
           "Canine"
@@ -1128,9 +1699,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "sfw"
-        ],
+        "rating": "sfw",
         "species": [
           "human",
           "kitsune",
@@ -1186,9 +1755,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "sfw"
-        ],
+        "rating": "sfw",
         "species": [
           "cyborg",
           "human"
@@ -1257,9 +1824,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "sfw"
-        ],
+        "rating": "sfw",
         "species": [
           "human",
           "fairy",
@@ -1326,10 +1891,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "nsfw",
-          "sexual content"
-        ],
+        "rating": "nsfw",
         "species": [
           "furry",
           "robot",
@@ -1390,9 +1952,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "sfw"
-        ],
+        "rating": "sfw",
         "species": [
           "furry",
           "beast",
@@ -1455,9 +2015,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "sfw"
-        ],
+        "rating": "sfw",
         "species": [
           "human"
         ],
@@ -1518,9 +2076,7 @@
         "assets": []
       },
       "categories": {
-        "rating": [
-          "sfw"
-        ],
+        "rating": "sfw",
         "species": [
           "human"
         ],
