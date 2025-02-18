@@ -73,6 +73,7 @@ jobs:
           if git diff --quiet origin/perchance_comments origin/test_processor; then
             echo "No differences found between branches. Skipping PR creation."
           else
+            gh label create "automated-pr" --color #1D76DB --description "Automatic PR generated for adding content to the DB" || echo "Label 'automated-pr' already exist or can't be created."
             gh pr create \
               --base perchance_comments \
               --head test_processor \
