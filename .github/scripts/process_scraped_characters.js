@@ -545,7 +545,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     Return only a JSON formatted response with the following structure:
     {
-        "rating": "sfw" | "nsfw",  // Enum that should strictly be either 'sfw' or 'nsfw', not a list or any other options
+        "rating": "sfw" | "nsfw",  // Answer strictly with either 'sfw' or 'nsfw'. Right answers: "sfw", "nsfw". Wrong answers: ["sfw"], ["nsfw","Explicit"].
         "description": "<brief description>",
         "needsManualReview": boolean,
         "charState": "valid" | "invalid" | "quarantine",  // States for validation of the content
