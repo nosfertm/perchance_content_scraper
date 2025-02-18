@@ -88,13 +88,14 @@ const { gunzip } = require('zlib');
 const util = require('util');
 const zlib = require('zlib');
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+//const { json } = require('stream/consumers');
+
 // Promisify 'gunzip'
 const gunzipAsync = promisify(gunzip);
 const gzip = util.promisify(zlib.gzip);
 
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { json } = require('stream/consumers');
-//const { Console } = require('console');
+// API Config
 const genAI = new GoogleGenerativeAI(API_CONFIG.gemini.token);
 const model = genAI.getGenerativeModel({ model: API_CONFIG.gemini.model });
 

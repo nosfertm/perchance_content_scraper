@@ -21,6 +21,18 @@ jobs:
         with:
           ref: test_processor
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'  # Specify the Node.js version to use
+
+      - name: Install dependencies manually
+        run: |
+          npm install @google/generative-ai
+          npm install zlib
+          npm install util
+          npm install path
+
       - name: Set environment variables
         env:
           GEMINI_TOKEN: ${{ secrets.GEMINI_TOKEN }}
