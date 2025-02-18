@@ -20,6 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: test_processor
+          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -50,18 +51,14 @@ jobs:
           rm -f package-lock.json  # Remove file
           rm -f package.json
 
-      - name: Configure Git for PAT
+      - name: Commit and push changes
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git remote set-url origin https://${{ secrets.PAT_GITHUB_ACTIONS }}@github.com/nosfertm/perchance_content_scraper.git
-
-
-      - name: Commit changes
-        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
           git add .
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update generated files"
-          git push origin test_processor  # Push changes to the working branch
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update generated files" && git push)
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
