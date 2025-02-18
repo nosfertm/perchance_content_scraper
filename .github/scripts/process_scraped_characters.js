@@ -251,6 +251,9 @@ class QuotaManager {
             await this.saveQuotas();
         }
 
+        // Executes cooldown if needed
+        await this.Cooldown();
+
         return API_CONFIG[apiName].maxCalls === -1 || this.quotas[apiName].dailyCalls < API_CONFIG[apiName].maxCalls;
     }
 
@@ -542,15 +545,16 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     Return only a JSON formatted response with the following structure:
     {
-        "rating": "sfw/nsfw",  // Enum that should be either 'sfw' or 'nsfw'
+        "rating": "sfw" | "nsfw",  // Enum that should strictly be either 'sfw' or 'nsfw', not a list or any other options
         "description": "<brief description>",
         "needsManualReview": boolean,
-        "charState": "valid/invalid/quarantine",  // Added validation states
-        "stateReason": "<reason for state if not valid>",  // Added explanation field
+        "charState": "valid" | "invalid" | "quarantine",  // States for validation of the content
+        "stateReason": "<reason for state if not valid>",  // Explanation for the invalid or quarantined state
         "categories": {
-            "<category_name>": ["<matching tags>"]
+            "<category_name>": ["<matching tags>"]  // // Each category or tag name must be in lowercase
         }
-    }
+}
+
 
 
     Do not include markdown, further explanation or anything else. 
@@ -1259,9 +1263,6 @@ async function processCharacter(folder) {
             stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
             return;
         }
-
-
-        console.log(`aiAnalysis: ${aiAnalysis}`)
 
         // Variable to check character image condition
         const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
