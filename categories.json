@@ -4,7 +4,7 @@
         "description": "Content maturity level",
         "tags": {
             "general": ["SFW", "NSFW"],
-            "nsfw": ["Explicit", "Gore", "Dark Themes"]
+            "nsfw": ["Explicit", "Gore", "Dark Themes", "Sexual content"]
         },
         "required": true,
         "nsfw_only": false
