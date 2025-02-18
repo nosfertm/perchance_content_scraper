@@ -60,12 +60,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
-          branch: test_processor
-          base: perchance_comments
-          title: "Automated PR - Updated generated files"
-          body: "This PR contains automatically generated updates."
-          labels: automated-pr
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+      #     branch: test_processor
+      #     base: perchance_comments
+      #     title: "Automated PR - Updated generated files"
+      #     body: "This PR contains automatically generated updates."
+      #     labels: automated-pr
