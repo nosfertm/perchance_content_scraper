@@ -42,10 +42,13 @@ function listFiles(dirPath) {
 function renameDirectory(oldPath, newName) {
     const dirPath = path.dirname(oldPath);
     const newPath = path.join(dirPath, newName);
+
+    // Se o nome não mudou, não faz nada
+    if (oldPath === newPath) return;
     
     try {
         fs.renameSync(oldPath, newPath);
-        console.log(`Pasta renomeada: ${oldPath} -> ${newPath}`);
+        console.log(`Pasta renomeada: ${oldPath} -> ${newName}`);
         return newPath;
     } catch (error) {
         console.error(`Erro ao renomear pasta ${oldPath}:`, error);
@@ -59,26 +62,30 @@ function renameFile(dirPath, oldName) {
     const newName = sanitizeString(oldName);
     const newPath = path.join(dirPath, newName);
 
+    // Se o nome não mudou, não faz nada
+    if (oldPath === newPath) return;
+
     try {
         fs.renameSync(oldPath, newPath);
-        console.log(`Arquivo renomeado: ${oldPath} -> ${newPath}`);
+        console.log(`Arquivo renomeado: ${oldName} -> ${newName}`);
     } catch (error) {
         console.error(`Erro ao renomear arquivo ${oldPath}:`, error);
     }
 }
+
 
 // Função principal que coordena todo o processo
 function sanitizeAll(basePath) {
     console.log('Iniciando processo de sanitização...');
     
     // Lista todas as pastas no diretório base
-    const directories = listDirectories(basePath).slice(5, 10);;
+    const directories = listDirectories(basePath).slice(0, 50);  //.slice(0, 25);
     console.log(`Encontradas ${directories.length} pastas para processar`);
 
     // Processa cada pasta
     directories.forEach(dir => {
         const fullDirPath = path.join(basePath, dir);
-        console.log(`\nProcessando pasta: ${dir}`);
+        //console.log(`\nProcessando pasta: ${dir}`);
 
         // Sanitiza e renomeia a pasta atual
         const newDirName = sanitizeString(dir);
