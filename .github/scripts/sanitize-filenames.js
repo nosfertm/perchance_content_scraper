@@ -3,14 +3,15 @@ const path = require('path');
 
 // Função para sanitizar strings (remove caracteres especiais e espaços)
 function sanitizeString(str) {
-    // Remove caracteres especiais, mantém letras, números, hífen, underscore e espaço
     return str
-        .replace(/[^\w\s\p{Emoji}\-]+/gu, '') // Mantém emojis usando \p{Emoji} (Unicode Property Escapes)
-        .replace(/\s+/g, ' ')            // Garante que apenas um espaço seja mantido
-        .replace(/__+/g, '_')            // Remove underscores múltiplos
-        .replace(/^_|_$/g, '')           // Remove underscores no início e fim
-        // .toLowerCase();                  // Converte para minúsculas
+        .replace(/[\/\\:*?"<>|]+/g, '')   // Remove caracteres proibidos no Windows
+        .replace(/[^\p{L}\p{N}\p{M}\p{Zs}\p{P}\p{Emoji}_\-.,!~'"]/gu, '') 
+        .replace(/\s+/g, ' ')            // Reduz múltiplos espaços para um só
+        .replace(/__+/g, '_')            // Remove underscores duplos ou mais
+        .replace(/^_|_$/g, '')           // Remove underscore no início/fim
+        .trim();                          // Remove espaços extras no início/fim
 }
+
 
 
 // Função para listar todas as pastas em um diretório
@@ -71,7 +72,7 @@ function sanitizeAll(basePath) {
     console.log('Iniciando processo de sanitização...');
     
     // Lista todas as pastas no diretório base
-    const directories = listDirectories(basePath).slice(0, 2);;
+    const directories = listDirectories(basePath).slice(5, 10);;
     console.log(`Encontradas ${directories.length} pastas para processar`);
 
     // Processa cada pasta
@@ -84,13 +85,13 @@ function sanitizeAll(basePath) {
         const newDirPath = renameDirectory(fullDirPath, newDirName);
 
         // Lista e processa os arquivos dentro da pasta
-        const files = listFiles(newDirPath);
-        console.log(`Encontrados ${files.length} arquivos em ${newDirPath}`);
+        //const files = listFiles(newDirPath);
+        //console.log(`Encontrados ${files.length} arquivos em ${newDirPath}`);
 
         // Renomeia cada arquivo
-        files.forEach(file => {
-            renameFile(newDirPath, file);
-        });
+        // files.forEach(file => {
+        //     renameFile(newDirPath, file);
+        // });
     });
 
     console.log('\nProcesso de sanitização concluído!');
