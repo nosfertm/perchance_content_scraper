@@ -2304,5 +2304,106 @@
         ]
       }
     }
+  },
+  {
+    "path": "nsfw/Scarlett Sanguine by CycloneJack",
+    "manifest": {
+      "name": "Scarlett Sanguine",
+      "description": "A Yandere psychopath, looking for a victim. Can you survive her dance of lust and death?",
+      "author": "CycloneJack",
+      "authorId": 79110569,
+      "source": "Issue",
+      "imageUrl": "https://user-uploads.perchance.org/file/14994d9fd000b9b7cc7088e0135cd628.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Scarlett_Sanguine~9a2001ef0fa24c15489f5b7f9bbb43bb.gz",
+      "downloadPath": "ai-character-chat/characters/nsfw/Scarlett Sanguine by CycloneJack/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "nsfw",
+        "species": [
+          "Human"
+        ],
+        "gender": [
+          "Female"
+        ],
+        "genre": [
+          "Horror"
+        ],
+        "role": [
+          "Villain"
+        ],
+        "personality": [
+          "Sadistic",
+          "Affectionate",
+          "Deceptive"
+        ],
+        "fetishes": [
+          "BDSM",
+          "Bondage",
+          "Master/Slave",
+          "Roleplay"
+        ],
+        "setting": [
+          "Modern"
+        ]
+      }
+    }
+  },
+  {
+    "path": "sfw/GLaDOS by CycloneJack",
+    "manifest": {
+      "name": "GLaDOS",
+      "description": "GlaDOS from the video game Portal 1 & 2. Designed to be snarky, sassy, and downright mean to you.",
+      "author": "CycloneJack",
+      "authorId": 79110569,
+      "source": "Issue",
+      "imageUrl": "https://user-uploads.perchance.org/file/eec7243a536402e2f91919c3ddbfe0b0.png",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=GLaDOS~c9aa2cfe5cd297bd14883234217a914d.gz",
+      "downloadPath": "ai-character-chat/characters/sfw/GLaDOS by CycloneJack/character.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": "sfw",
+        "species": [
+          "AI"
+        ],
+        "gender": [
+          "Non-binary"
+        ],
+        "genre": [
+          "Comedy"
+        ],
+        "source": [
+          "Game"
+        ],
+        "role": [
+          "Researcher"
+        ],
+        "personality": [
+          "Abusive / Toxic"
+        ],
+        "setting": [
+          "Future"
+        ]
+      }
+    }
   }
 ]
