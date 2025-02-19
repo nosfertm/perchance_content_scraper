@@ -42,3 +42,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
           TARGET_BRANCH: perchance_comments
         run: node .github/scripts/perchance_comment_scraper.js
+
+      - name: Trigger Processor
+        uses: peter-evans/workflow-dispatch@v1
+        with:
+          repository: nosfertm/perchance_content_scraper
+          workflow: process-scraped-characters.yaml
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+

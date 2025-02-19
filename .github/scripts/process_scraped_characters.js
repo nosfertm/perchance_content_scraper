@@ -417,7 +417,7 @@ async function generateImage(aiAnalysis, api = 'pigimage') {
  * Placeholder function for AI analysis
  * @param {object} characterData - Character data from gz file
  */
-async function analyzeCharacterWithAI(characterData) {
+async function analyzeCharacterWithAI() {
     return {
         "rating": "sfw",
         "description": "Kirby is a small, pink, spherical creature with a cheerful disposition. He's brave, kind, and resourceful, often using his ability to inhale and copy powers to save Dream Land.",
@@ -523,7 +523,6 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     Important rules:
     - You can use multiple tags from each category
-    - You MUST ONLY use categories and tags that exist in the provided categories
     - For NSFW characters, create a description that appropriately reflects their NSFW nature
     - Some categories are marked as required (required: true)
     - Some categories are only for NSFW content (nsfw_only: true)
@@ -545,7 +544,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     Return only a JSON formatted response with the following structure:
     {
-        "rating": "sfw" | "nsfw",  // Answer strictly with either 'sfw' or 'nsfw'. Right answers: "sfw", "nsfw". Wrong answers: ["sfw"], ["nsfw","Explicit"].
+        "rating": "sfw" | "nsfw",  // For this key, ignore the available categories format and answer strictly with either 'sfw' or 'nsfw'.
         "description": "<brief description>",
         "needsManualReview": boolean,
         "charState": "valid" | "invalid" | "quarantine",  // States for validation of the content
@@ -675,7 +674,8 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         //     ...(invalidTags.length > 0 && { invalidTags })
         // }, null, 2);
 
-        return parsedJson;
+        // Fix rating array issues
+        return fixRating(parsedJson);
 
     } catch (error) {
 
@@ -690,6 +690,30 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
         return null;
     }
+}
+
+// Function to process rating and transform it into 'sfw' or 'nsfw'
+function processRating(rating) {
+    // If it's an array, check if it contains "SFW" (case insensitive), otherwise set to "NSFW"
+    if (Array.isArray(rating)) {
+        return rating.some(tag => tag.toLowerCase() === "sfw") ? "sfw" : "nsfw";
+    }
+    // If it's not an array, just return the same logic applied to the string value
+    return rating.toLowerCase() === "sfw" ? "sfw" : "nsfw";
+}
+
+function fixRating(parsedJson) {
+    // Process the rating outside of categories
+    if (parsedJson.rating) {
+        parsedJson.rating = processRating(parsedJson.rating);
+    }
+
+    // Process the rating inside categories, if it exists
+    if (parsedJson.categories && parsedJson.categories.Rating) {
+        parsedJson.categories.Rating = processRating(parsedJson.categories.Rating);
+    }
+
+    return parsedJson;
 }
 
 /* -------------------------------------------------------------------------- */
