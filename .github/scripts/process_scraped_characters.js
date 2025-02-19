@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '1.0';
+const scriptVersion = '1.1';
 
 // Configuration variables
 const CONFIG = {
