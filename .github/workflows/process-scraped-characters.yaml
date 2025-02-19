@@ -1,8 +1,8 @@
 name: Process Scraped Characters
 
 on:
-  schedule:
-    - cron: "0 12 * * *"  # Runs daily at 12:00 UTC
+  # schedule:
+  #   - cron: "0 12 * * *"  # Runs daily at 12:00 UTC
   workflow_dispatch:  # Allows manual execution
   workflow_call:  # Allows being triggered by another workflow
 
