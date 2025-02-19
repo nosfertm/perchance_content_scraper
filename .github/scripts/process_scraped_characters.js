@@ -419,7 +419,7 @@ async function generateImage(aiAnalysis, api = 'pigimage') {
  */
 async function analyzeCharacterWithAI() {
     return {
-        "rating": "sfw",
+        "rating": ["sfw"],
         "description": "Kirby is a small, pink, spherical creature with a cheerful disposition. He's brave, kind, and resourceful, often using his ability to inhale and copy powers to save Dream Land.",
         "needsManualReview": false,
         "charState": "valid",
@@ -667,7 +667,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
         await quotaManager.incrementQuota(api);
 
-        // Retorna o resultado com as listas de inválidos
+        // Return result with filtered invalid
         // return JSON.stringify({
         //     ...parsedJson,
         //     ...(invalidCategories.length > 0 && { invalidCategories }),
@@ -702,18 +702,28 @@ function processRating(rating) {
     return rating.toLowerCase() === "sfw" ? "sfw" : "nsfw";
 }
 
+// Function to fix rating format in the JSON object
 function fixRating(parsedJson) {
+    // Create a copy of the original object to avoid modifying it directly
+    const result = { ...parsedJson };
+    
     // Process the rating outside of categories
-    if (parsedJson.rating) {
-        parsedJson.rating = processRating(parsedJson.rating);
+    if (result.rating) {
+        result.rating = processRating(result.rating);
     }
 
-    // Process the rating inside categories, if it exists
-    if (parsedJson.categories && parsedJson.categories.Rating) {
-        parsedJson.categories.Rating = processRating(parsedJson.categories.Rating);
+    // Process the rating inside categories
+    if (result.categories) {
+        // Create a copy of categories to maintain other category values
+        result.categories = { ...result.categories };
+        
+        // Process Rating category if it exists
+        if (result.categories.Rating) {
+            result.categories.Rating = processRating(result.categories.Rating);
+        }
     }
 
-    return parsedJson;
+    return result;
 }
 
 /* -------------------------------------------------------------------------- */
