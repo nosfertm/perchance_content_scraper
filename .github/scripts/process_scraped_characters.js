@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '1.3';
+const scriptVersion = '1.5';
 
 // Configuration variables
 const CONFIG = {
@@ -178,6 +178,25 @@ class FileHandler {
             await this.writeFile(filePath, JSON.stringify(data, null, 2));
         } catch (error) {
             console.error(`Error writing JSON file ${filePath}:`, error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Move a file or directory to a new location
+     * @param {string} source - Path to the file or directory
+     * @param {string} destination - New path for the file or directory
+     */
+    static async move(source, destination) {
+        try {
+            // Ensure the destination directory exists
+            const destDir = path.dirname(destination);
+            await fs.mkdir(destDir, { recursive: true });
+
+            // Move the file or directory
+            await fs.rename(source, destination);
+        } catch (error) {
+            console.error(`Error moving ${source} to ${destination}:`, error);
             throw error;
         }
     }
@@ -763,11 +782,12 @@ async function checkDuplicateCharacter(folder) {
         const possiblePaths = Object.values(CONFIG.PATHS);
 
         for (const checkPath of possiblePaths) {
-            const fullPath = path.join(CONFIG.BASE_PATH, checkPath, folder);
+            const ckPath = path.join(checkPath, folder);
+            const fullPath = path.join(CONFIG.BASE_PATH, ckPath);
             try {
                 await fs.access(fullPath);
                 console.log(`Checking for duplicates on ${fullPath}`);
-                return true;
+                return ckPath;
             } catch {
                 // Path doesn't exist, continue checking
             }
@@ -786,14 +806,20 @@ async function checkDuplicateCharacter(folder) {
  */
 async function handleDuplicate(folder, existingPath) {
     try {
+        const sourcePath = path.join(CONFIG.SOURCE_PATH, existingPath)
         const duplicatePath = path.join(CONFIG.BASE_PATH, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
         const referenceContent = {
-            originalPath: existingPath,
+            existingPath: existingPath,
+            duplicatedContent: sourcePath,
             duplicateDate: new Date().toISOString()
         };
 
+        // Move duplicated files
+        console.log(`Moving duplicated character from: "${sourcePath}" to "${duplicatePath}"`)
+        await FileHandler.move(sourcePath, duplicatePath);
         await FileHandler.writeJson(path.join(duplicatePath, 'duplicate_reference.json'), referenceContent);
         stats.duplicate++;
+
     } catch (error) {
         console.error(`Error handling duplicate character ${folder}:`, error);
         throw error;
@@ -1260,7 +1286,7 @@ async function processCharacter(folder) {
         // Check for duplicate - TODO FIX TO DEAL WITH CHARACTER FOLDER
         const isDuplicate = await checkDuplicateCharacter(folder);
         if (isDuplicate) {
-            await handleDuplicate(folder);
+            await handleDuplicate(folder, isDuplicate);
             return;
         }
 
@@ -1292,7 +1318,7 @@ async function processCharacter(folder) {
         //const aiAnalysis = await analyzeCharacterWithAI(characterData);
         const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, categories)
         if (!aiAnalysis) {
-            errMsg = 'Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.'
+            errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.\n${error.message || ''}`
             console.error(errMsg)
             stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
             return;
