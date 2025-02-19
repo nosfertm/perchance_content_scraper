@@ -806,7 +806,7 @@ async function checkDuplicateCharacter(folder) {
  */
 async function handleDuplicate(folder, existingPath) {
     try {
-        const sourcePath = path.join(CONFIG.SOURCE_PATH, existingPath)
+        const sourcePath = path.join(CONFIG.SOURCE_PATH, folder)
         const duplicatePath = path.join(CONFIG.BASE_PATH, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
         const referenceContent = {
             existingPath: existingPath,
@@ -1318,7 +1318,7 @@ async function processCharacter(folder) {
         //const aiAnalysis = await analyzeCharacterWithAI(characterData);
         const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, categories)
         if (!aiAnalysis) {
-            errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.\n${error.message || ''}`
+            errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`
             console.error(errMsg)
             stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
             return;
