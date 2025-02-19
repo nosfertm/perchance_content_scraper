@@ -5,11 +5,11 @@ const path = require('path');
 function sanitizeString(str) {
     // Remove caracteres especiais, mantém letras, números, hífen, underscore e espaço
     return str
-        .replace(/[^\w\- ]+/g, '')       // Remove caracteres não alfanuméricos, excluindo o underscore, hífen e espaço
+        .replace(/[^\w\s\p{Emoji}\-]+/gu, '') // Mantém emojis usando \p{Emoji} (Unicode Property Escapes)
         .replace(/\s+/g, ' ')            // Garante que apenas um espaço seja mantido
         .replace(/__+/g, '_')            // Remove underscores múltiplos
         .replace(/^_|_$/g, '')           // Remove underscores no início e fim
-        .toLowerCase();                  // Converte para minúsculas
+        // .toLowerCase();                  // Converte para minúsculas
 }
 
 
@@ -71,7 +71,7 @@ function sanitizeAll(basePath) {
     console.log('Iniciando processo de sanitização...');
     
     // Lista todas as pastas no diretório base
-    const directories = listDirectories(basePath);
+    const directories = listDirectories(basePath).slice(0, 2);;
     console.log(`Encontradas ${directories.length} pastas para processar`);
 
     // Processa cada pasta
