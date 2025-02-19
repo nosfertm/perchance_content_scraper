@@ -770,7 +770,7 @@ async function handleDuplicate(folder, existingPath) {
  * Determine destination path based on AI analysis
  * @param {object} aiAnalysis - Analysis results from AI
  */
-function determineDestinationPath(aiAnalysis) {
+function determineDestinationPath(aiAnalysis, folder) {
 
     // Ensure the keys are valid
     const charState = aiAnalysis.charState ? aiAnalysis.charState.toLowerCase() : null;
