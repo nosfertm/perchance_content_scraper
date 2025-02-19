@@ -44,7 +44,7 @@ jobs:
           GEMINI_TOKEN: ${{ secrets.GEMINI_TOKEN }}
           PIGIMAGE_TOKEN: ${{ secrets.PIGIMAGE_TOKEN }}
           FREEIMAGE_TOKEN: ${{ secrets.FREEIMAGE_TOKEN }}
-        run: node .github/scripts/process_scraped_characters.js  # Adjust the script name as needed
+        run: node .github/scripts/process_scraped_characters.js 
 
       - name: Remove node_modules and package-lock.json
         run: |
@@ -67,8 +67,8 @@ jobs:
           rm -rf ai-character-char
           rm -rf ai-character-chat/characters/scrape
 
-      - name: Debug - List remaining files before creating the new branch
-        run: ls -R
+      # - name: Debug - List remaining files before creating the new branch
+      #   run: ls -R
 
       # First, save the files we want to keep in a temporary location
       - name: Save processed files to temporary location
@@ -94,8 +94,8 @@ jobs:
           # Remove temporary directory
           rm -rf /tmp/processed_files
 
-      - name: Debug - List restored files
-        run: ls -R
+      # - name: Debug - List restored files
+      #   run: ls -R
 
       - name: Commit and push changes to the new branch
         run: |
