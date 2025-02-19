@@ -44,10 +44,14 @@ jobs:
         run: node .github/scripts/perchance_comment_scraper.js
 
       - name: Trigger Processor
-        uses: peter-evans/workflow-dispatch@v3
+        uses: actions/github-script@v6
         with:
-          repository: nosfertm/perchance_content_scraper
-          workflow: process-scraped-characters.yaml
-          ref: ${{ github.ref }}
-          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          github-token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'nosfertm',
+              repo: 'perchance_content_scraper',
+              workflow_id: 'process-scraped-characters.yaml',
+              ref: '${{ github.ref }}'
+            })
 
