@@ -3,14 +3,20 @@ const path = require('path');
 
 // Função para sanitizar strings (remove caracteres especiais e espaços)
 function sanitizeString(str) {
+    if (!str) return 'unnamed';
+
     return str
-        .replace(/[\/\\:*?"<>|]+/g, '')   // Remove caracteres proibidos no Windows
-        .replace(/[^\p{L}\p{N}\p{M}\p{Zs}\p{P}\p{Emoji}_\-.,!~'"]/gu, '') 
-        .replace(/\s+/g, ' ')            // Reduz múltiplos espaços para um só
-        .replace(/__+/g, '_')            // Remove underscores duplos ou mais
-        .replace(/^_|_$/g, '')           // Remove underscore no início/fim
-        .trim();                          // Remove espaços extras no início/fim
+        .normalize('NFKD')                // Normalize Unicode to decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks (accents)
+        .replace(/[\p{C}\p{Zl}\p{Zp}]+/gu, '') // Remove control characters and line breaks
+        .replace(/[\/\\:*?"<>|#@!%^&=`[\]{}$;,+]+/g, '') // Remove problematic characters for OS, URLs, and databases
+        .replace(/[^a-zA-Z0-9\p{L}\p{M}\p{N} _\-.,'()~]/gu, '') // Keep safe characters for OS and web
+        .replace(/\s{2,}/g, ' ')          // Replace multiple spaces with a single space
+        .replace(/_{2,}/g, '_')           // Remove consecutive underscores
+        .replace(/^[-_ ]+|[-_ ]+$/g, '')  // Trim leading/trailing underscores, dashes, and spaces
+        .trim();                          // Trim spaces at the beginning and end
 }
+
 
 
 
@@ -79,7 +85,7 @@ function sanitizeAll(basePath) {
     console.log('Iniciando processo de sanitização...');
     
     // Lista todas as pastas no diretório base
-    const directories = listDirectories(basePath).slice(0, 50);  //.slice(0, 25);
+    const directories = listDirectories(basePath);  //.slice(0, 25);
     console.log(`Encontradas ${directories.length} pastas para processar`);
 
     // Processa cada pasta

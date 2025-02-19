@@ -28,19 +28,34 @@ const LINK_PATTERN = /(perchance\.org\/(.+?)\?data=(.+?)~(.+?)\.gz)/;
  * @param {string} str - String to sanitize
  * @returns {string} Sanitized string safe for filesystem use
  */
+// function sanitizeString(str) {
+//     if (!str) return 'unnamed';
+
+//     return str
+//         .normalize('NFKD')                // Normalize Unicode characters
+//         .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
+//         .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
+//         .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
+//         .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
+//         .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
+//         .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
+//         .trim();                         // Trim whitespace
+// }
 function sanitizeString(str) {
     if (!str) return 'unnamed';
 
     return str
-        .normalize('NFKD')                // Normalize Unicode characters
-        .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
-        .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
-        .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
-        .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
-        .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
-        .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
-        .trim();                         // Trim whitespace
+        .normalize('NFKD')                // Normalize Unicode to decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks (accents)
+        .replace(/[\p{C}\p{Zl}\p{Zp}]+/gu, '') // Remove control characters and line breaks
+        .replace(/[\/\\:*?"<>|#@!%^&=`[\]{}$;,+]+/g, '') // Remove problematic characters for OS, URLs, and databases
+        .replace(/[^a-zA-Z0-9\p{L}\p{M}\p{N} _\-.,'()~]/gu, '') // Keep safe characters for OS and web
+        .replace(/\s{2,}/g, ' ')          // Replace multiple spaces with a single space
+        .replace(/_{2,}/g, '_')           // Remove consecutive underscores
+        .replace(/^[-_ ]+|[-_ ]+$/g, '')  // Trim leading/trailing underscores, dashes, and spaces
+        .trim();                          // Trim spaces at the beginning and end
 }
+
 
 function sanitizeFileName(fileName) {
     if (!fileName) {
@@ -475,7 +490,7 @@ function generateProcessingSummary(state) {
 
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 1.3...');
+console.log('Starting Perchance Comment Scraper 1.5...');
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
