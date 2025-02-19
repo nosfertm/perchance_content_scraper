@@ -32,7 +32,7 @@ const CONFIG = {
 const API_CONFIG = {
     gemini: {
         token: process.env.GEMINI_TOKEN,
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash',
         rateLimit: 60,  // Calls per minute
         maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
