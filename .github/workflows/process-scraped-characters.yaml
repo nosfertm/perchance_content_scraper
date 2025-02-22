@@ -19,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: perchance_comments
+          ref: test_processor
           token: ${{ secrets.PAT_GITHUB_ACTIONS }}
           fetch-depth: 0
 
