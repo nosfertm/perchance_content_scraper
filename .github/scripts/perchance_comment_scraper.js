@@ -620,13 +620,20 @@ async function processMessages() {
                         existingLinks
                     );
 
-                    if (characterLinks.length !== uniqueLinks.length) {
-                        console.log(`       ${duplicateCount} duplicate character links found in message.\nRemaining: ${uniqueLinks.length} to be processed.`);
-                    }
-
                     // Increase the counter for duplicated characters
                     lastProcessed[channel].duplicatedCharacterLink_Total + duplicateCount;
                     lastProcessed[channel].duplicatedCharacterLink_lastRun + duplicateCount;
+
+                    // Log found duplicates
+                    if (characterLinks.length !== uniqueLinks.length) {
+                        console.log(`       ${duplicateCount} duplicate character links found in message.`);
+                        console.log(`       Remaining: ${uniqueLinks.length} unique links to be processed.`);
+                    } 
+                    
+                    if (!uniqueLinks) {
+                        console.log(`       No character links remaining in message after clean-up. Skipping message.`);
+                        continue;
+                    }
 
 
                     if (ignored) {
@@ -635,9 +642,6 @@ async function processMessages() {
                         lastProcessed[channel].charactersIgnored_lastRun += 1;
 
                     } else if (characterLinks.length > 0) {
-                        // Update counters - now accounting for duplicates
-                        lastProcessed[channel].charactersFound_Total += characterLinks.length;
-                        lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
                         // Process only unique characters
                         for (const charInfo of uniqueLinks) {
@@ -645,6 +649,10 @@ async function processMessages() {
                             // Add new links to the existing links array for duplicate checking
                             if (newLink) {
                                 existingLinks.push(...newLink);
+
+                                // Update counters - now accounting for duplicates
+                                lastProcessed[channel].charactersFound_Total += characterLinks.length;
+                                lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
                             }
                         }
                     }
@@ -818,6 +826,8 @@ processMessages()
         console.log(`Messages Analyzed: ${summary.messagesThisRun}`);
         console.log(`Characters Found: ${summary.charactersThisRun}`);
         console.log(`Characters Ignored: ${summary.charactersIgnoredThisRun}`);
+        console.log(`Duplicated Character Links: ${summary.duplicatedCharacterLinkThisRun}`);
+        console.log(`Duplicated Character Hashes: ${summary.duplicatedCharacterHashThisRun}`);
 
         // Channel-specific statistics
         console.log('\nPer Channel Statistics (This Run):');

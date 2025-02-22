@@ -63,9 +63,7 @@ jobs:
 
       - name: Remove unwanted files from the machine to create PR
         run: |
-          rm -rf characters
-          rm -rf ai-character-char
-          rm -rf ai-character-chat/characters/scrape
+          rm -rf scrape
 
       # - name: Debug - List remaining files before creating the new branch
       #   run: ls -R

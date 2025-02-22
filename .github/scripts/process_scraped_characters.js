@@ -87,6 +87,7 @@ const { promisify } = require('util');
 const { gunzip } = require('zlib');
 const util = require('util');
 const zlib = require('zlib');
+const crypto = require('crypto');
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 //const { json } = require('stream/consumers');
@@ -777,94 +778,32 @@ async function getCharacterFolders() {
         const folders = await fs.readdir(CONFIG.SOURCE_PATH);
 
         // Filter out hidden files (starting with '.')
-        const filter = folders.filter(folder => !folder.startsWith('.'));
+        const filteredFolders = folders.filter(folder => !folder.startsWith('.'));
 
         // Log found files/folders for debugging
         //console.log("Found files/folders:", filter);
 
-        return filter;
+        //return filter;
+
+        // Get each folder statistic to sort by creation date
+        const foldersWithStats = await Promise.all(
+            filteredFolders.map(async folder => {
+                const fullPath = path.join(CONFIG.SOURCE_PATH, folder);
+                const stats = await fs.stat(fullPath);
+                return { name: folder, birthtime: stats.birthtime };
+            })
+        );
+
+        // Order by creation date (Older first)
+        foldersWithStats.sort((a, b) => a.birthtime - b.birthtime);
+
+        // Return only odered folder names
+        return foldersWithStats.map(folder => folder.name);
+
 
     } catch (err) {
         console.error(`Error reading directory ${CONFIG.SOURCE_PATH}:`, err.message);
         throw err;
-    }
-}
-
-/**
- * Check if character already exists in output directory
- * @param {string} folder - Character folder name
- * @returns {Promise<boolean>} - Whether character exists
- */
-async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
-    try {
-
-        // Get all paths from CONFIG.PATHS dynamically
-        const possiblePaths = Object.values(CONFIG.PATHS);
-
-        // Set variables
-        const folder = metadata.folderName;
-        const link = metadata.link;
-
-        // Checking for folders with same name
-        for (const checkPath of possiblePaths) {
-            const ckPath = path.join(checkPath, folder);
-            const fullPath = path.join(CONFIG.OUTPUT_PATH, ckPath);
-            try {
-                await fs.access(fullPath);
-                console.log(`Found duplicate folder on ${fullPath}`);
-                return ckPath;
-            } catch {
-                // Path doesn't exist, continue checking
-            }
-        }
-
-        // Check for repeating links in existingLinks
-        const duplicateLink = existingLinks.find(existing =>
-        (
-            existing.shareUrl === link ||
-            (existing.shareLinkFileHash &&
-                existing.shareLinkFileHash === metadata.shareLinkFileHash)
-        )
-        );
-
-        if (duplicateLink) {
-            console.log(`Duplicate link found in ${duplicateLink.path}`);
-            return duplicateLink;
-        }
-
-        // TODO - CHECK FOR HASH DUPLICATES
-
-        return false;
-    } catch (error) {
-        console.error(`Error checking for duplicate character ${folder}:`, error);
-        throw error;
-    }
-}
-
-/**
- * Handle duplicate character
- * @param {string} folder - Character folder name
- * @param {string} existingPath - Path to existing character
- */
-async function handleDuplicate(folder, existingPath) {
-    try {
-        const sourcePath = path.join(CONFIG.SOURCE_PATH, folder)
-        const duplicatePath = path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
-        const referenceContent = {
-            existingPath: existingPath,
-            duplicatedContent: sourcePath,
-            duplicateDate: new Date().toISOString()
-        };
-
-        // Move duplicated files
-        console.log(`Moving duplicated character from: "${sourcePath}" to "${duplicatePath}"`)
-        await FileHandler.copy(sourcePath, duplicatePath);
-        await FileHandler.writeJson(path.join(duplicatePath, 'duplicate_reference.json'), referenceContent);
-        stats.duplicate++;
-
-    } catch (error) {
-        console.error(`Error handling duplicate character ${folder}:`, error);
-        throw error;
     }
 }
 
@@ -909,6 +848,144 @@ function determineDestinationPath(aiAnalysis, folder) {
     }
 }
 
+
+/* -------------------------------------------------------------------------- */
+/*                             DUPLICATE HANDLING                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Check if character already exists in output directory
+ * @param {string} folder - Character folder name
+ * @returns {Promise<boolean>} - Whether character exists
+ */
+async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
+    try {
+
+        // Get all paths from CONFIG.PATHS dynamically
+        const possiblePaths = Object.values(CONFIG.PATHS);
+
+        // Set variables
+        const folder = metadata.folderName;
+        const link = metadata.link;
+
+        // // Checking for folders with same name
+        // for (const checkPath of possiblePaths) {
+        //     const ckPath = path.join(checkPath, folder);
+        //     const fullPath = path.join(CONFIG.OUTPUT_PATH, ckPath);
+        //     try {
+        //         await fs.access(fullPath);
+        //         console.log(`Found duplicate folder on ${fullPath}`);
+        //         return ckPath;
+        //     } catch {
+        //         // Path doesn't exist, continue checking
+        //     }
+        // }
+
+        // Check for repeating links in existingLinks
+        const duplicateLink = existingLinks.find(existing =>
+        (
+            existing.shareUrl === link ||
+            (existing.shareLinkFileHash &&
+                existing.shareLinkFileHash === metadata.shareLinkFileHash)
+        )
+        );
+
+        if (duplicateLink) {
+            console.log(`Duplicate link found in ${duplicateLink.path}`);
+            return duplicateLink.path;
+        }
+
+        return false;
+    } catch (error) {
+        console.error(`Error checking for duplicate character ${folder}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Handle duplicate character
+ * @param {string} folder - Character folder name
+ * @param {string} existingPath - Path to existing character
+ */
+async function removeDuplicate(folder, existingPath, metadata) {
+    try {
+        const sourcePath = path.join(CONFIG.SOURCE_PATH, folder)
+        // Gets parent directory of source path
+        const parentDir = path.dirname(CONFIG.PATHS.SOURCE_PATH);
+        const duplicatePath = path.join(parentDir, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
+        const referenceContent = {
+            originPath: sourcePath,
+            existingPath: existingPath,
+            destinationPath: duplicatePath,
+            duplicateDate: new Date().toISOString()
+        };
+
+        const newMetadata = [{ ...metadata }];
+        const fileId = metadata.fileId
+
+        // Move duplicated files
+        console.log(`Moving and copying duplicated character files from: "${sourcePath}" to "${duplicatePath}"`)
+
+        // Move gz file
+        await FileHandler.move(
+            path.join(sourcePath, fileId),
+            path.join(duplicatePath, fileId)
+        );
+
+        // Copy captured message
+        await FileHandler.copy(
+            path.join(sourcePath, 'capturedMessage.json'),
+            path.join(duplicatePath, 'capturedMessage.json')
+        );
+
+        // Write jsons
+        await FileHandler.writeJson(path.join(duplicatePath, 'duplicate_reference.json'), referenceContent);
+        await FileHandler.writeJson(path.join(duplicatePath, 'metadata.json'), newMetadata);
+        stats.duplicate++;
+
+    } catch (error) {
+        console.error(`Error handling duplicate character ${folder}:`, error);
+        throw error;
+    }
+}
+
+/**
+ * Calculate the hash of a given file buffer.
+ * @param {Buffer} fileBuffer - The file data as a Buffer.
+ * @param {string} algorithm - The hash algorithm (default: 'sha256').
+ * @returns {Promise<string>} The computed hash as a hexadecimal string.
+ */
+async function calculateFileHash(fileBuffer, algorithm = 'sha256') {
+    try {
+        // Create a hash instance
+        const hash = crypto.createHash(algorithm);
+
+        // Update hash with the file data
+        hash.update(fileBuffer);
+
+        // Return the final hash as a hex string
+        return hash.digest('hex');
+    } catch (error) {
+        console.error('Error calculating file hash:', error.message);
+        throw error;
+    }
+}
+
+
+// Function to check if a file hash already exists in the links array
+function checkForDuplicateHash(existingLinks, fileHash) {
+    // Return false if no hash provided
+    if (!fileHash) return false;
+
+    // Check if hash exists in existingLinks
+    const isDuplicate = existingLinks.some(existing =>
+        existing && existing.shareLinkFileHash &&
+        existing.shareLinkFileHash === fileHash
+    );
+
+    return isDuplicate;
+}
+
 /* -------------------------------------------------------------------------- */
 /*                          CHARACTER FILES HANDLING                          */
 /* -------------------------------------------------------------------------- */
@@ -918,7 +995,7 @@ function determineDestinationPath(aiAnalysis, folder) {
  * @param {string} folder - Character folder name
  * @param {string} fileName - File name
  */
-async function extractCharacterData(folder, fileName, retry = false) {
+async function extractCharacterData(folder, fileName, existingLinks, retry = false) {
     console.log(`Extracting character data from ${fileName} in folder ${folder}`);
     console.log(`folder: ${folder}, fileName: ${fileName}`);
     const gzPath = path.join(CONFIG.SOURCE_PATH, folder, fileName);
@@ -939,6 +1016,14 @@ async function extractCharacterData(folder, fileName, retry = false) {
         }
     }
 
+    // Calculate file hash
+    const fileHash = await calculateFileHash(gzBuffer);
+
+    if (checkForDuplicateHash(existingLinks, fileHash)) {
+        console.log(`           Duplicate file hash found for: ${charName}`);
+        return 'duplicate';
+    }
+
     let unzipped;
     try {
         // Attempt to decompress the file
@@ -957,7 +1042,7 @@ async function extractCharacterData(folder, fileName, retry = false) {
 
             // Download the file and attempt extraction again
             await downloadFile(folder, fileName);
-            return extractCharacterData(folder, fileName, true);  // Retry after downloading
+            return extractCharacterData(folder, fileName, existingLinks, true);  // Retry after downloading
         } else {
             // Re-throw any other unexpected errors
             throw error;
@@ -1301,10 +1386,11 @@ async function processCharacters() {
 
         const characterFolders = await getCharacterFolders();
         console.log(`Found ${characterFolders.length} characters to process`);
+        const foldersToProcess = characterFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
 
         // Shuffle folders and limit to MAX_CHARACTERS_PER_RUN
-        const shuffledFolders = shuffleArray([...characterFolders]);    // TODO - Process by creating order
-        const foldersToProcess = shuffledFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
+        //const shuffledFolders = shuffleArray([...characterFolders]);    // TODO - Process by creating order
+        //const foldersToProcess = shuffledFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
         //console.log(`Processing ${foldersToProcess}`);
 
         // Extract existing links from index.json
@@ -1371,15 +1457,22 @@ async function processCharacter(folder, existingLinks) {
                 // Check for duplicate - TODO FIX TO DEAL WITH CHARACTER FOLDER
                 const isDuplicate = await checkDuplicateLinksAndFolder(item, existingLinks);
                 if (isDuplicate) {
-                    await handleDuplicate(folder, isDuplicate); // TODO - tratar quando for só um ou mais arquivos dentro da pasta. Talvez só copiar pasta e por fim, deletar ela
-                    //return;
+                    await removeDuplicate(folder, isDuplicate, item);
+                    totalItems --;
+                    continue;
                 }
 
                 // Get Gz fileId
                 const gzFile = item.fileId;
 
                 // Extract Gz content or download if corrupted / missing
-                const characterData = await extractCharacterData(folder, gzFile);
+                const characterData = await extractCharacterData(folder, gzFile, existingLinks);
+
+                if (characterData === 'duplicate') {
+                    console.log(`    Skipping duplicated character ${item.characterName_Sanitized} by ${item.authorName}.`);
+                    totalItems--;
+                    continue;
+                }
 
                 // Read capturedMessage.json
                 const message = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE));
