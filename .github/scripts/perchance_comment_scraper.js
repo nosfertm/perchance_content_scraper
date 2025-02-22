@@ -283,6 +283,7 @@ function checkForDuplicateLinks(characterLinks, existingLinks) {
 
         if (isDuplicate) {
             // Increment duplicate counter
+            console.log(`       Duplicate link found for ${charInfo.character}: ${charInfo.link}.`);
             duplicateCount++;
         } else {
             // Add to unique links array if not a duplicate
@@ -619,9 +620,13 @@ async function processMessages() {
                         existingLinks
                     );
 
+                    if (characterLinks.length !== uniqueLinks.length) {
+                        console.log(`       ${duplicateCount} duplicate character links found in message.\nRemaining: ${uniqueLinks.length} to be processed.`);
+                    }
+
                     // Increase the counter for duplicated characters
-                    lastProcessed[channel].duplicatedCharacterLinks_Total + duplicateCount;
-                    lastProcessed[channel].duplicatedCharacterLinks_lastRun + duplicateCount;
+                    lastProcessed[channel].duplicatedCharacterLink_Total + duplicateCount;
+                    lastProcessed[channel].duplicatedCharacterLink_lastRun + duplicateCount;
 
 
                     if (ignored) {
@@ -669,8 +674,10 @@ async function processMessages() {
                 charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
                 charactersIgnored_Total: lastProcessed[channel].charactersIgnored_Total,
                 charactersIgnored_lastRun: lastProcessed[channel].charactersIgnored_lastRun,
-                duplicatedCharacterLinks_Total: lastProcessed[channel].duplicatedCharacterLinks_Total,
-                duplicatedCharacterLinks_lastRun: lastProcessed[channel].duplicatedCharacterLinks_lastRun,
+                duplicatedCharacterLink_Total: lastProcessed[channel].duplicatedCharacterLink_Total,
+                duplicatedCharacterLink_lastRun: lastProcessed[channel].duplicatedCharacterLink_lastRun,
+                duplicatedCharacterHash_Total: lastProcessed[channel].duplicatedCharacterHash_Total,
+                duplicatedCharacterHash_lastRun: lastProcessed[channel].duplicatedCharacterHash_lastRun,
                 deltaMinutes: lastProcessed[channel].deltaMinutes
             };
         }
@@ -703,6 +710,10 @@ async function getLastProcessedState() {
         charactersFound_lastRun: 0,
         charactersIgnored_Total: 0,    // Start from 0 if new
         charactersIgnored_lastRun: 0,
+        duplicatedCharacterLink_Total: 0,    // Start from 0 if new
+        duplicatedCharacterLink_lastRun: 0,
+        duplicatedCharacterHash_Total: 0,    // Start from 0 if new
+        duplicatedCharacterHash_lastRun: 0,
         deltaMinutes: 0
     });
 
@@ -723,9 +734,13 @@ async function getLastProcessedState() {
             state[channel].messagesAnalyzed_Total = state[channel].messagesAnalyzed_Total || 0;
             state[channel].charactersFound_Total = state[channel].charactersFound_Total || 0;
             state[channel].charactersIgnored_Total = state[channel].charactersIgnored_Total || 0;
+            state[channel].duplicatedCharacterLink_Total = state[channel].duplicatedCharacterLink_Total || 0;
+            state[channel].duplicatedCharacterHash_Total = state[channel].duplicatedCharacterHash_Total || 0;
             state[channel].messagesAnalyzed_lastRun = 0;
             state[channel].charactersFound_lastRun = 0;
             state[channel].charactersIgnored_lastRun = 0;
+            state[channel].duplicatedCharacterLink_lastRun = 0;
+            state[channel].duplicatedCharacterHash_lastRun = 0;
             state[channel].deltaMinutes = state[channel].deltaMinutes || 0;
         }
     });
@@ -764,7 +779,9 @@ function generateProcessingSummary(state) {
         totalCharactersIgnored: 0,
         messagesThisRun: 0,
         charactersThisRun: 0,
-        charactersIgnoredThisRun: 0
+        charactersIgnoredThisRun: 0,
+        duplicatedCharacterLinkThisRun: 0,
+        duplicatedCharacterHashThisRun: 0
     };
 
     CONFIG.channels.forEach(channel => {
@@ -775,6 +792,8 @@ function generateProcessingSummary(state) {
             summary.messagesThisRun += state[channel].messagesAnalyzed_lastRun || 0;
             summary.charactersThisRun += state[channel].charactersFound_lastRun || 0;
             summary.charactersIgnoredThisRun += state[channel].charactersIgnored_lastRun || 0;
+            summary.duplicatedCharacterLinkThisRun += state[channel].duplicatedCharacterLink_lastRun || 0;
+            summary.duplicatedCharacterHashThisRun += state[channel].duplicatedCharacterHash_lastRun || 0;
         }
     });
 
