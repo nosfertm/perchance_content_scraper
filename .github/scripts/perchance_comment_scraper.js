@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '3.6';
+const scriptVersion = '3.8';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share"],
@@ -27,7 +27,8 @@ const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?]+\.gz)/;
 
 import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
-import path from 'path';
+import path, { dirname } from 'path';
+import crypto from 'crypto';
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
@@ -192,10 +193,119 @@ async function createOrUpdateFile(filePath, content, message, append = false, lo
 }
 
 /* -------------------------------------------------------------------------- */
-/*                               CHARACTER FILES                              */
+/*                             DUPLICATE HANDLING                             */
 /* -------------------------------------------------------------------------- */
 
+async function getLinksFromIndex() {
+    try {
+        // Read the JSON file using the 
+        const indexPath = path.join(CONFIG.OUTPUT_PATH, 'index.json');
+        const indexData = await FileHandler.readJson(indexPath);
 
+        // Create an array to store all the links
+        const extractedLinks = [];
+        let linkInfo = {};
+
+        // Loop through each entry in the index file
+        for (const entry of indexData) {
+            if (entry.manifest) {
+                // Populate the object with all required information
+                linkInfo = {
+                    path: entry.path || "",                                    // Character path
+                    name: entry.manifest.name || "",                       // Character name
+                    shareUrl: entry.manifest.shareUrl || "",               // Share URL
+                    authorId: entry.manifest.authorId || "",               // Author ID
+                    shareLinkFileHash: entry.manifest.shareLinkFileHash || "" // File hash
+                }
+            };
+
+            extractedLinks.push(linkInfo);
+        }
+
+        return extractedLinks;
+
+    } catch (error) {
+        console.error('Error reading or processing index.json:', error);
+        throw error;
+    }
+}
+
+const crypto = require('crypto');
+
+/**
+ * Calculate the hash of a given file buffer.
+ * @param {Buffer} fileBuffer - The file data as a Buffer.
+ * @param {string} algorithm - The hash algorithm (default: 'sha256').
+ * @returns {Promise<string>} The computed hash as a hexadecimal string.
+ */
+async function calculateFileHash(fileBuffer, algorithm = 'sha256') {
+    try {
+        // Create a hash instance
+        const hash = crypto.createHash(algorithm);
+
+        // Update hash with the file data
+        hash.update(fileBuffer);
+
+        // Return the final hash as a hex string
+        return hash.digest('hex');
+    } catch (error) {
+        console.error('Error calculating file hash:', error.message);
+        throw error;
+    }
+}
+
+
+// Function to check for duplicate links and update counters
+function checkForDuplicateLinks(characterLinks, existingLinks) {
+    // Array to store unique links
+    const uniqueLinks = [];
+    // Counter for duplicate links found
+    let duplicateCount = 0;
+
+    // Check each character link against existing links
+    for (const charInfo of characterLinks) {
+        // Get file hash from the link (if exists)
+        const fileHash = charInfo.fileId || "";
+
+        // Check if link exists in existingLinks
+        const isDuplicate = existingLinks.some(existing =>
+            (existing.shareUrl === charInfo.link) ||
+            (existing.shareLinkFileHash === fileHash)
+        );
+
+        if (isDuplicate) {
+            // Increment duplicate counter
+            duplicateCount++;
+        } else {
+            // Add to unique links array if not a duplicate
+            uniqueLinks.push(charInfo);
+        }
+    }
+
+    return {
+        uniqueLinks,      // Links that aren't duplicates
+        duplicateCount    // Number of duplicates found
+    };
+}
+
+
+// Function to check if a file hash already exists in the links array
+function checkForDuplicateHash(existingLinks, fileHash) {
+    // Return false if no hash provided
+    if (!fileHash) return false;
+
+    // Check if hash exists in existingLinks
+    const isDuplicate = existingLinks.some(existing => 
+        existing && existing.shareLinkFileHash && 
+        existing.shareLinkFileHash === fileHash
+    );
+
+    return isDuplicate;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               CHARACTER FILES                              */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Extracts character links from a message.
@@ -314,7 +424,7 @@ async function downloadFile(url) {
 }
 
 // Function to create metadata file content
-async function createMetadata(characterInfo, message, fileId, charName, folderName) {
+async function createMetadata(characterInfo, message, fileId, charName, folderName, fileHash) {
     try {
         // Create metadata wrapped in an array for future extensibility
         return [{
@@ -323,7 +433,7 @@ async function createMetadata(characterInfo, message, fileId, charName, folderNa
             characterName_Sanitized: charName,
             fileId: fileId,
             link: characterInfo.link,
-            shareLinkFileHash: '',  // TODO: Implement file hash
+            shareLinkFileHash: fileHash || '',
             authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
             authorId: message.publicId || 'Unknown'
         }];
@@ -339,14 +449,14 @@ async function createMetadata(characterInfo, message, fileId, charName, folderNa
  * @param {Object} message - Original message
  * @returns {Object} Directory and character information for metadata
  */
-async function saveCharacterData(characterInfo, message) {
+async function saveCharacterData(characterInfo, message, existingLinks) {
     console.log("\n");
     console.log("       --------------------");
     console.log(`       Processing character!`);
-    
+
     // Object to store all files that need to be created/updated
     const filesToCreate = {};
-    
+
     try {
         // Sanitize character and author names for safe filesystem usage
         const charName = sanitizeString(characterInfo.character) || 'Unnamed';
@@ -365,6 +475,22 @@ async function saveCharacterData(characterInfo, message) {
 
         try {
 
+            // Download and save character file
+            const fileBuffer = await downloadFile(characterInfo.fileId);
+
+            // Calculate file hash
+            const fileHash = await calculateFileHash(fileBuffer);
+
+            if (checkForDuplicateHash(existingLinks, fileHash)) {
+                console.log(`           Duplicate file hash found for: ${charName}`);
+                return null;
+            }
+            
+            filesToCreate[`${dirName}/${fileId}`] = {
+                content: fileBuffer,
+                commitMessage: `Add share file for: ${charName}`
+            };
+
             // Create a json to save the original message
             filesToCreate[`${dirName}/capturedMessage.json`] = {
                 content: JSON.stringify({ ...message }, null, 2),
@@ -372,18 +498,11 @@ async function saveCharacterData(characterInfo, message) {
             };
 
             // Create a json to save metadata
-            const metadata = await createMetadata(characterInfo, message, fileId, charName, folderName);
+            const metadata = await createMetadata(characterInfo, message, fileId, charName, folderName, fileHash);
             filesToCreate[`${dirName}/metadata.json`] = {
                 content: JSON.stringify(metadata, null, 2),
                 commitMessage: `Add metadata for: ${charName}`,
                 append: true
-            };
-
-            // Download and save character file
-            const fileBuffer = await downloadFile(characterInfo.fileId);
-            filesToCreate[`${dirName}/${fileId}`] = {
-                content: fileBuffer,
-                commitMessage: `Add share file for: ${charName}`
             };
 
             // Create/update all files at once
@@ -397,6 +516,15 @@ async function saveCharacterData(characterInfo, message) {
             }
 
             console.log('           Successfully processed all character files!\n');
+
+            return {
+                path: dirName || "",                                    // Character path
+                name: charName || "",                       // Character name
+                shareUrl: characterInfo.link || "",               // Share URL
+                authorId: message.authorId || "",               // Author ID
+                shareLinkFileHash: fileHash || "" // File hash
+            }
+
         } catch (error) {
             console.error('Error processing character:', error);
             console.log('           Character info:', JSON.stringify(characterInfo, null, 2));
@@ -418,6 +546,7 @@ async function saveCharacterData(characterInfo, message) {
 async function processMessages() {
     console.log('Starting message processing...');
     const lastProcessed = await getLastProcessedState();
+    const existingLinks = await getLinksFromIndex();
 
     for (const channel of CONFIG.channels) {
         console.log("\n");
@@ -470,22 +599,40 @@ async function processMessages() {
 
                     // Process character links
                     const { links: characterLinks, ignored } = extractCharacterLinks(message.message);
+                    let newLink = [];
 
                     // Example of characterLinks content:
                     // [{"character":"Lissa","fileId":"1f8092b94bb0fd4c43cd5d0141dee24e.gz","link":"https://perchance.org/ai-character-chat?data=Lissa~1f8092b94bb0fd4c43cd5d0141dee24e.gz"}]
+
+
+                    // Check for duplicates and get unique links
+                    const { uniqueLinks, duplicateCount } = checkForDuplicateLinks(
+                        characterLinks,
+                        existingLinks
+                    );
+
+                    // Increase the counter for duplicated characters
+                    lastProcessed[channel].duplicatedCharacterLinks_Total + duplicateCount;
+                    lastProcessed[channel].duplicatedCharacterLinks_lastRun + duplicateCount;
+
 
                     if (ignored) {
                         // Increase the counter for NOSCRAPED characters
                         lastProcessed[channel].charactersIgnored_Total += 1;
                         lastProcessed[channel].charactersIgnored_lastRun += 1;
+
                     } else if (characterLinks.length > 0) {
-                        // Process characters if found any
+                        // Update counters - now accounting for duplicates
                         lastProcessed[channel].charactersFound_Total += characterLinks.length;
                         lastProcessed[channel].charactersFound_lastRun += characterLinks.length;
 
-                        // Process each character found - now passing all characterLinks to the function
-                        for (const charInfo of characterLinks) {
-                            await saveCharacterData(charInfo, message);
+                        // Process only unique characters
+                        for (const charInfo of uniqueLinks) {
+                            newLink = await saveCharacterData(charInfo, message, existingLinks);
+                            // Add new links to the existing links array for duplicate checking
+                            if (newLink) {
+                                existingLinks.push(...newLink);
+                            }
                         }
                     }
 
@@ -514,6 +661,8 @@ async function processMessages() {
                 charactersFound_lastRun: lastProcessed[channel].charactersFound_lastRun,
                 charactersIgnored_Total: lastProcessed[channel].charactersIgnored_Total,
                 charactersIgnored_lastRun: lastProcessed[channel].charactersIgnored_lastRun,
+                duplicatedCharacterLinks_Total: lastProcessed[channel].duplicatedCharacterLinks_Total,
+                duplicatedCharacterLinks_lastRun: lastProcessed[channel].duplicatedCharacterLinks_lastRun,
                 deltaMinutes: lastProcessed[channel].deltaMinutes
             };
         }
