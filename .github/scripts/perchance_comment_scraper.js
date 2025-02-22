@@ -199,7 +199,7 @@ async function createOrUpdateFile(filePath, content, message, append = false, lo
 async function getLinksFromIndex() {
     try {
         // Read the JSON file using the 
-        const indexPath = path.join(CONFIG.OUTPUT_PATH, 'index.json');
+        const indexPath = path.join("ai-character-chat", "characters", 'index.json');
         const indexData = await FileHandler.readJson(indexPath);
 
         // Create an array to store all the links
