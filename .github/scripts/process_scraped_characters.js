@@ -3,13 +3,13 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '1.5';
+const scriptVersion = '1.6';
 
 // Configuration variables
 const CONFIG = {
     // Paths
-    BASE_PATH: "ai-character-chat/characters",
-    SOURCE_PATH: "ai-character-chat/characters/scrape/perchance_comments",
+    OUTPUT_PATH: "ai-character-chat/characters",
+    SOURCE_PATH: "scrape/perchance_comments/Raw",
     PATHS: {
         VALIDATED_SFW: "sfw",
         VALIDATED_NSFW: "nsfw",
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 2,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -181,7 +181,7 @@ class FileHandler {
             throw error;
         }
     }
-    
+
     /**
      * Move a file or directory to a new location
      * @param {string} source - Path to the file or directory
@@ -197,6 +197,25 @@ class FileHandler {
             await fs.rename(source, destination);
         } catch (error) {
             console.error(`Error moving ${source} to ${destination}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Copy a file or directory to a new location
+     * @param {string} source - Path to the file or directory
+     * @param {string} destination - New path for the file or directory
+     */
+    static async copy(source, destination) {
+        try {
+            // Ensure the destination directory exists
+            const destDir = path.dirname(destination);
+            await fs.mkdir(destDir, { recursive: true });
+
+            // Copy the file or directory
+            await fs.cp(source, destination, { recursive: true });
+        } catch (error) {
+            console.error(`Error copying ${source} to ${destination}:`, error);
             throw error;
         }
     }
@@ -725,7 +744,7 @@ function processRating(rating) {
 function fixRating(parsedJson) {
     // Create a copy of the original object to avoid modifying it directly
     const result = { ...parsedJson };
-    
+
     // Process the rating outside of categories
     if (result.rating) {
         result.rating = processRating(result.rating);
@@ -735,7 +754,7 @@ function fixRating(parsedJson) {
     if (result.categories) {
         // Create a copy of categories to maintain other category values
         result.categories = { ...result.categories };
-        
+
         // Process Rating category if it exists
         if (result.categories.Rating) {
             result.categories.Rating = processRating(result.categories.Rating);
@@ -776,22 +795,45 @@ async function getCharacterFolders() {
  * @param {string} folder - Character folder name
  * @returns {Promise<boolean>} - Whether character exists
  */
-async function checkDuplicateCharacter(folder) {
+async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
     try {
+
         // Get all paths from CONFIG.PATHS dynamically
         const possiblePaths = Object.values(CONFIG.PATHS);
 
+        // Set variables
+        const folder = metadata.folderName;
+        const link = metadata.link;
+
+        // Checking for folders with same name
         for (const checkPath of possiblePaths) {
             const ckPath = path.join(checkPath, folder);
-            const fullPath = path.join(CONFIG.BASE_PATH, ckPath);
+            const fullPath = path.join(CONFIG.OUTPUT_PATH, ckPath);
             try {
                 await fs.access(fullPath);
-                console.log(`Checking for duplicates on ${fullPath}`);
+                console.log(`Found duplicate folder on ${fullPath}`);
                 return ckPath;
             } catch {
                 // Path doesn't exist, continue checking
             }
         }
+
+        // Check for repeating links in existingLinks
+        const duplicateLink = existingLinks.find(existing =>
+        (
+            existing.shareUrl === link ||
+            (existing.shareLinkFileHash &&
+                existing.shareLinkFileHash === metadata.shareLinkFileHash)
+        )
+        );
+
+        if (duplicateLink) {
+            console.log(`Duplicate link found in ${duplicateLink.path}`);
+            return duplicateLink;
+        }
+
+        // TODO - CHECK FOR HASH DUPLICATES
+
         return false;
     } catch (error) {
         console.error(`Error checking for duplicate character ${folder}:`, error);
@@ -807,7 +849,7 @@ async function checkDuplicateCharacter(folder) {
 async function handleDuplicate(folder, existingPath) {
     try {
         const sourcePath = path.join(CONFIG.SOURCE_PATH, folder)
-        const duplicatePath = path.join(CONFIG.BASE_PATH, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
+        const duplicatePath = path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
         const referenceContent = {
             existingPath: existingPath,
             duplicatedContent: sourcePath,
@@ -816,7 +858,7 @@ async function handleDuplicate(folder, existingPath) {
 
         // Move duplicated files
         console.log(`Moving duplicated character from: "${sourcePath}" to "${duplicatePath}"`)
-        await FileHandler.move(sourcePath, duplicatePath);
+        await FileHandler.copy(sourcePath, duplicatePath);
         await FileHandler.writeJson(path.join(duplicatePath, 'duplicate_reference.json'), referenceContent);
         stats.duplicate++;
 
@@ -839,11 +881,13 @@ function determineDestinationPath(aiAnalysis, folder) {
         ? aiAnalysis.rating.find(item => ['sfw', 'nsfw'].includes(item.toLowerCase()))?.toLowerCase()
         : (typeof aiAnalysis.rating === 'string' ? aiAnalysis.rating.toLowerCase() : null);
 
+    // Gets parent directory of source path
+    const parentDir = path.dirname(CONFIG.PATHS.SOURCE_PATH);
 
     // Send to manual review
     if (manualReview) {
-        filePath = CONFIG.PATHS.MANUAL_REVIEW;
-        FileHandler.writeJson(path.join(CONFIG.BASE_PATH, filePath, folder, 'aiAnalysis.json'), aiAnalysis)
+        filePath = path.join(parentDir, CONFIG.PATHS.MANUAL_REVIEW);
+        FileHandler.writeJson(path.join(filePath, folder, 'aiAnalysis.json'), aiAnalysis)
         return filePath;
     }
 
@@ -851,16 +895,16 @@ function determineDestinationPath(aiAnalysis, folder) {
     if (charState === 'valid') {
         // If valid, send to the appropriate folder
         return rating === 'sfw'
-            ? CONFIG.PATHS.VALIDATED_SFW
-            : CONFIG.PATHS.VALIDATED_NSFW;
+            ? path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.VALIDATED_SFW)
+            : path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.VALIDATED_NSFW);
     } else {
         // If not valid, send to invalid or quarantine
         if (charState === 'quarantine') {
-            return CONFIG.PATHS.QUARANTINE;
+            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.QUARANTINE);
         } else if (aiAnalysis.charState.toLowerCase() === 'invalid') {
-            return CONFIG.PATHS.DISCARDED_INVALID;
+            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_INVALID);
         } else {
-            return CONFIG.PATHS.DISCARDED_ERROR;
+            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_ERROR);
         }
     }
 }
@@ -875,6 +919,8 @@ function determineDestinationPath(aiAnalysis, folder) {
  * @param {string} fileName - File name
  */
 async function extractCharacterData(folder, fileName, retry = false) {
+    console.log(`Extracting character data from ${fileName} in folder ${folder}`);
+    console.log(`folder: ${folder}, fileName: ${fileName}`);
     const gzPath = path.join(CONFIG.SOURCE_PATH, folder, fileName);
     let gzBuffer;
 
@@ -989,7 +1035,8 @@ async function createCharacterStructure(folder, metadata, message, characterData
     });
 
     // Write files to destination // TODO - fix all fs. uses fs.mkdir/fs.writeFile
-    const destFolder = path.join(CONFIG.BASE_PATH, destinationPath, folder);
+    //const destFolder = path.join(CONFIG.OUTPUT_PATH, destinationPath, folder);
+    const destFolder = path.join(destinationPath, folder);
     await fs.mkdir(destFolder, { recursive: true });
 
     for (const [filename, content] of Object.entries(files)) {
@@ -1144,7 +1191,8 @@ function createManifest(metadata, message, characterData, aiAnalysis, charFiles,
     const imgUrl = JSON.parse(avatar).url
 
     // Set download path
-    const downloadPath = path.join(CONFIG.BASE_PATH, destinationPath, folder, importFileName).replace(/\\/g, '/');
+    //const downloadPath = path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, importFileName).replace(/\\/g, '/');
+    const downloadPath = path.join(destinationPath, folder, importFileName).replace(/\\/g, '/');
 
     return {
         name: characterData?.addCharacter?.name || '',
@@ -1154,6 +1202,7 @@ function createManifest(metadata, message, characterData, aiAnalysis, charFiles,
         source: 'SCRAPER',
         imageUrl: imgUrl || '',
         shareUrl: metadata.link,
+        shareLinkFileHash: metadata.shareLinkFileHash,  // TODO - Implement hash
         downloadPath: downloadPath,
         shapeShifter_Pulls: 0,
         galleryChat_Clicks: 0,
@@ -1164,7 +1213,8 @@ function createManifest(metadata, message, characterData, aiAnalysis, charFiles,
         },
         features: {
             customCode: charFiles[path.join('src', 'customCode.js')] ?
-                [path.join(CONFIG.BASE_PATH, destinationPath, folder, 'src', 'customCode.js')] : [],
+                //[path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, 'src', 'customCode.js')] : [],
+                [path.join(destinationPath, folder, 'src', 'customCode.js')] : [],
             assets: []
         },
         categories: aiAnalysis.categories
@@ -1201,7 +1251,7 @@ function createChangelog(message) {
  * @param {object} manifest - Character manifest
  */
 async function updateCharacterIndex(characterPath, manifest) {
-    const indexPath = path.join(CONFIG.BASE_PATH, 'index.json').replace(/\\/g, '/');
+    const indexPath = path.join(CONFIG.OUTPUT_PATH, 'index.json').replace(/\\/g, '/');
 
     try {
         try {
@@ -1214,7 +1264,8 @@ async function updateCharacterIndex(characterPath, manifest) {
         const indexContent = await fs.readFile(indexPath, 'utf8');
         const indexData = JSON.parse(indexContent);
 
-        const relativePath = path.relative(CONFIG.BASE_PATH, characterPath);
+        //const relativePath = path.relative(CONFIG.OUTPUT_PATH, characterPath);
+        const relativePath = path.relative(characterPath);
         const newEntry = { path: relativePath, manifest };
 
         const existingIndex = indexData.findIndex(item => item.path === relativePath);
@@ -1252,17 +1303,26 @@ async function processCharacters() {
         console.log(`Found ${characterFolders.length} characters to process`);
 
         // Shuffle folders and limit to MAX_CHARACTERS_PER_RUN
-        const shuffledFolders = shuffleArray([...characterFolders]);
+        const shuffledFolders = shuffleArray([...characterFolders]);    // TODO - Process by creating order
         const foldersToProcess = shuffledFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
         //console.log(`Processing ${foldersToProcess}`);
 
-        for (const folder of foldersToProcess) {
-            // Process the character in the folder
-            await processCharacter(folder);
+        // Extract existing links from index.json
+        const existingLinks = await getLinksFromIndex();
 
-            // Skip cooldown if there's only one folder to process
+        // Process each folder
+        for (const folder of foldersToProcess) {
+            // Process the character and get new links
+            const newLinks = await processCharacter(folder, existingLinks);
+
+            // Add new links to the existing links array for duplicate checking
+            if (newLinks) {
+                existingLinks.push(...newLinks);
+            }
+
+            // Apply cooldown if processing multiple folders
             if (foldersToProcess.length > 1) {
-                await quotaManager.Cooldown();  // Apply cooldown if there are multiple folders
+                await quotaManager.Cooldown();
             }
         }
 
@@ -1275,101 +1335,158 @@ async function processCharacters() {
     }
 }
 
-async function processCharacter(folder) {
+async function processCharacter(folder, existingLinks) {
     console.log('\n\n----------------');
     console.log(`Processing character: ${folder}`);
 
     try {
+
         // Read metadata.json
-        const [metadata] = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE));
+        const metadata = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE));
+        //console.log("    Metadata:", metadata);
 
-        // Check for duplicate - TODO FIX TO DEAL WITH CHARACTER FOLDER
-        const isDuplicate = await checkDuplicateCharacter(folder);
-        if (isDuplicate) {
-            await handleDuplicate(folder, isDuplicate);
-            return;
+        // Create arrays to store and manipulate links
+        const processedLinks = [];
+        const uniqueMetadata = [];
+        const seenLinks = new Set();
+
+        // Keep only unique links
+        for (const item of metadata) {
+            if (!seenLinks.has(item.link)) {
+                seenLinks.add(item.link);
+                uniqueMetadata.push(item);
+            }
         }
 
-        // Get Gz fileId
-        gzFile = metadata.fileId;
+        //console.log("    Unique metadata:", uniqueMetadata);
 
-        // Extract Gz content or download if corrupted / missing
-        const characterData = await extractCharacterData(folder, metadata.fileId);
+        // Get total items to process
+        const totalItems = uniqueMetadata.length;
 
-        // Read capturedMessage.json
-        const message = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE));
+        // Iterate over unique metadata
+        for (const item of uniqueMetadata) {
+            try {
+                //console.log(`    Processing item: ${JSON.stringify(item)} with link: ${item.link}`);
 
-        // console.log("\n\n")
-        // console.log("Character Name:", characterData?.addCharacter?.name || '');
-        // console.log("Role Instruction:", characterData?.addCharacter?.roleInstruction || '');
-        // console.log("Reminder Message:", characterData?.addCharacter?.reminderMessage || '');
-        // console.log("Avatar:", JSON.stringify(characterData?.addCharacter?.avatar || ''));
-        // console.log("\n")
-        // console.log("User Character Name:", characterData?.userCharacter?.name || '');
-        // console.log("User Role Instruction:", characterData?.userCharacter?.roleInstruction || '');
-        // console.log("User Avatar:", JSON.stringify(characterData?.userCharacter?.avatar || ''));
-        // console.log("\n\n")
+                // Check for duplicate - TODO FIX TO DEAL WITH CHARACTER FOLDER
+                const isDuplicate = await checkDuplicateLinksAndFolder(item, existingLinks);
+                if (isDuplicate) {
+                    await handleDuplicate(folder, isDuplicate); // TODO - tratar quando for só um ou mais arquivos dentro da pasta. Talvez só copiar pasta e por fim, deletar ela
+                    //return;
+                }
 
-        const roleInstruction = characterData?.addCharacter?.roleInstruction || '';
-        const reminder = characterData?.addCharacter?.reminderMessage || '';
-        const userRole = characterData?.userCharacter?.roleInstruction || '';
-        const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
+                // Get Gz fileId
+                const gzFile = item.fileId;
 
-        //const aiAnalysis = await analyzeCharacterWithAI(characterData);
-        const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, categories)
-        if (!aiAnalysis) {
-            errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`
-            console.error(errMsg)
-            stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
-            return;
-        }
+                // Extract Gz content or download if corrupted / missing
+                const characterData = await extractCharacterData(folder, gzFile);
 
-        // Variable to check character image condition
-        const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
-        let finalImage;
+                // Read capturedMessage.json
+                const message = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE));
 
-        // Check if the avatar URL is empty
-        if (!avatarUrl) {
-            console.log("    Missing avatar. Trying to generate.");
+                // console.log("\n\n")
+                // console.log("Character Name:", characterData?.addCharacter?.name || '');
+                // console.log("Role Instruction:", characterData?.addCharacter?.roleInstruction || '');
+                // console.log("Reminder Message:", characterData?.addCharacter?.reminderMessage || '');
+                // console.log("Avatar:", JSON.stringify(characterData?.addCharacter?.avatar || ''));
+                // console.log("\n")
+                // console.log("User Character Name:", characterData?.userCharacter?.name || '');
+                // console.log("User Role Instruction:", characterData?.userCharacter?.roleInstruction || '');
+                // console.log("User Avatar:", JSON.stringify(characterData?.userCharacter?.avatar || ''));
+                // console.log("\n\n")
 
-            // Try to generate a new image
-            const generatedImage = await generateImage(aiAnalysis);
+                const roleInstruction = characterData?.addCharacter?.roleInstruction || '';
+                const reminder = characterData?.addCharacter?.reminderMessage || '';
+                const userRole = characterData?.userCharacter?.roleInstruction || '';
+                const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
 
-            // Upload the generated image
-            if (generatedImage) {
-                finalImage = await uploadImage(generatedImage);
-            } else {
-                errMsg = 'Image was not generated. Skipping character.'
-                console.error(errMsg)
-                stats.errors.push({ folder, error: errMsg || error.message || 'Unknown' });
-                return;
+                //const aiAnalysis = await analyzeCharacterWithAI(characterData);
+                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, categories)
+                if (!aiAnalysis) {
+                    errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
+                    throw new Error(errMsg);
+                }
+
+                // Variable to check character image condition
+                const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
+                let finalImage;
+
+                // Check if the avatar URL is empty
+                if (!avatarUrl) {
+                    console.log("    Missing avatar. Trying to generate.");
+
+                    // Try to generate a new image
+                    const generatedImage = await generateImage(aiAnalysis);
+
+                    // Upload the generated image
+                    if (generatedImage) {
+                        finalImage = await uploadImage(generatedImage);
+                    } else {
+                        errMsg = 'Image was not generated. Skipping character.'
+                        console.error(errMsg)
+                        throw new Error(errMsg);
+                    }
+
+                }
+                // Check if the avatar URL is a Base64 image
+                else if (avatarUrl.startsWith("data:image")) {
+                    console.log("    Avatar is a Base64 image. Uploading to freeimage.");
+                    finalImage = await uploadImage(avatarUrl);
+                } else {
+                    finalImage = avatarUrl
+                }
+
+                const destinationPath = determineDestinationPath(aiAnalysis, folder);
+                await createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, finalImage);
+
+
+                // Copy capturedMessage.json
+                await fs.copyFile(
+                    path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE),
+                    //path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, CONFIG.MESSAGE_FILE)
+                    path.join(destinationPath, folder, CONFIG.MESSAGE_FILE)
+                );
+
+                // Copy metadata.json
+                await fs.copyFile(
+                    path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE),
+                    //path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, CONFIG.METADATA_FILE)
+                    path.join(destinationPath, folder, CONFIG.METADATA_FILE)
+                );
+
+                updateStats(aiAnalysis.rating);
+
+                // If everything went well, add to processed links
+                processedLinks.push({
+                    path: folder,
+                    name: item.characterName || "",
+                    shareUrl: item.link || "",
+                    authorId: item.authorId || "",
+                    shareLinkFileHash: item.shareLinkFileHash || ""
+                });
+
+                // Take the processed item from the total
+                totalItems--;
+
+            } catch (error) {
+                console.error(`Error processing item ${JSON.stringify(item)} of folder ${folder}:`, error);
+                stats.errors.push({ folder, error: error.message });
+                continue;
             }
 
         }
-        // Check if the avatar URL is a Base64 image
-        else if (avatarUrl.startsWith("data:image")) {
-            console.log("    Avatar is a Base64 image. Uploading to freeimage.");
-            finalImage = await uploadImage(avatarUrl);
-        } else {
-            finalImage = avatarUrl
+
+        // Only remove the folder after processing if there are no more items to process
+        if (totalItems === 0) {
+            // Remove the folder from source after 
+            console.log(`Removing folder ${folder} from source after processing`);
+            await FileHandler.removeDirectory(path.join(CONFIG.SOURCE_PATH, folder));
         }
 
-        const destinationPath = determineDestinationPath(aiAnalysis, folder);
-        await createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, finalImage);
+        console.log(`processedLinks: ${JSON.stringify(processedLinks)}`);
 
-        // Copy capturedMessage.json
-        await fs.copyFile(
-            path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE),
-            path.join(CONFIG.BASE_PATH, destinationPath, folder, CONFIG.MESSAGE_FILE)
-        );
-
-        // Copy metadata.json
-        await fs.copyFile(
-            path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE),
-            path.join(CONFIG.BASE_PATH, destinationPath, folder, CONFIG.METADATA_FILE)
-        );
-        await FileHandler.removeDirectory(path.join(CONFIG.SOURCE_PATH, folder));
-        updateStats(aiAnalysis.rating);
+        // Return all processed links
+        return processedLinks;
 
     } catch (error) {
         console.error(`Error processing character in folder ${folder}:`, error);
@@ -1380,6 +1497,41 @@ async function processCharacter(folder) {
 /* -------------------------------------------------------------------------- */
 /*                             AUXILIARY FUNCTIONS                            */
 /* -------------------------------------------------------------------------- */
+
+
+async function getLinksFromIndex() {
+    try {
+        // Read the JSON file using the 
+        const indexPath = path.join(CONFIG.OUTPUT_PATH, 'index.json');
+        const indexData = await FileHandler.readJson(indexPath);
+
+        // Create an array to store all the links
+        const extractedLinks = [];
+        let linkInfo = {};
+
+        // Loop through each entry in the index file
+        for (const entry of indexData) {
+            if (entry.manifest) {
+                // Populate the object with all required information
+                linkInfo = {
+                    path: entry.path || "",                                    // Character path
+                    name: entry.manifest.name || "",                       // Character name
+                    shareUrl: entry.manifest.shareUrl || "",               // Share URL
+                    authorId: entry.manifest.authorId || "",               // Author ID
+                    shareLinkFileHash: entry.manifest.shareLinkFileHash || "" // File hash
+                }
+            };
+
+            extractedLinks.push(linkInfo);
+        }
+
+        return extractedLinks;
+
+    } catch (error) {
+        console.error('Error reading or processing index.json:', error);
+        throw error;
+    }
+}
 
 /**
  * Shuffle array for a random order

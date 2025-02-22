@@ -1,19 +1,12 @@
 // perchance_comment_scraper.js
-// Scrapes the comment section on perchance
+// Scrapes the comment section on perchance and saves the character files
 // Code heavily inspired on VioneT20 code.
 
-import { Octokit } from '@octokit/rest';
-import fetch from 'node-fetch';
-import path from 'path';
-//import * as https from 'https';
-// import * as zlib from 'zlib';
-// import { promisify } from 'util';
+/* -------------------------------------------------------------------------- */
+/*                                   CONFIG                                   */
+/* -------------------------------------------------------------------------- */
 
-// const gzip = promisify(zlib.gzip);
-// const gunzip = promisify(zlib.gunzip);
-const octokit = new Octokit({
-    auth: process.env.GITHUB_TOKEN
-});
+const scriptVersion = '3.6';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share"],
@@ -21,30 +14,61 @@ const CONFIG = {
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
-    outputDir: path.join("ai-character-chat", "characters", "scrape", "perchance_comments"),
+    outputDir: path.join("scrape", "perchance_comments", "Raw"),
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
 
 const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?]+\.gz)/;
 
+/* -------------------------------------------------------------------------- */
+/*                                DEPENDENCIES                                */
+/* -------------------------------------------------------------------------- */
+
+import { Octokit } from '@octokit/rest';
+import fetch from 'node-fetch';
+import path from 'path';
+
+const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN
+});
+
+/* -------------------------------------------------------------------------- */
+/*                             AUXILIARY FUNCTIONS                            */
+/* -------------------------------------------------------------------------- */
+
 /**
  * Sanitizes a string while preserving readable characters
  * @param {string} str - String to sanitize
  * @returns {string} Sanitized string safe for filesystem use
  */
+// function sanitizeString(str) {
+//     if (!str.trim()) return 'unnamed';
+
+//     return str
+//         .normalize('NFKD')                // Normalize Unicode characters
+//         .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
+//         .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
+//         .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
+//         .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
+//         .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
+//         .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
+//         .trim();                         // Trim whitespace
+// }
 function sanitizeString(str) {
-    if (!str.trim()) return 'unnamed';
+    if (!str) return 'unnamed';
 
     return str
-        .normalize('NFKD')                // Normalize Unicode characters
-        .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
-        .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
-        .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
-        .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
-        .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
-        .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
-        .trim();                         // Trim whitespace
+        .normalize('NFKD')                          // Normalize Unicode to decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '')              // Remove diacritical marks (accents)
+        .replace(/[\p{C}\p{Zl}\p{Zp}\p{Cf}]+/gu, '')  // Remove control characters, invisible characters, and formatting characters
+        .replace(/[\/\\:*?"<>|#@!%^&=`[\]{}$;,+]+/g, '') // Remove problematic characters for OS, URLs, and databases
+        .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+        .replace(/\s+/g, '_')                     // Replace all spaces with underscores
+        .replace(/[^a-zA-Z0-9\p{L}\p{M}\p{N}_-]/gu, '') // Allow only safe characters
+        .replace(/_{2,}/g, '_')                      // Replace multiple underscores with a single one
+        .replace(/^[-_ ]+|[-_ ]+$/g, '')             // Trim leading/trailing underscores, dashes, and spaces
+        .trim();                                     // Trim spaces at the beginning and end
 }
 
 function sanitizeFileName(fileName) {
@@ -73,7 +97,9 @@ function sanitizeFileName(fileName) {
     return `${sanitizedName}${extension}`;
 }
 
-
+/* -------------------------------------------------------------------------- */
+/*                                FILE HANDLING                               */
+/* -------------------------------------------------------------------------- */
 
 async function getGithubFile(path) {
     try {
@@ -100,11 +126,14 @@ async function getGithubFile(path) {
  * @param {string} filePath - Path to file
  * @param {string} content - File content
  * @param {string} message - Commit message
+ * @param {boolean} log - Whether to log success messages (default: true)
+ * @param {boolean} append - Whether to append content to existing file (default: false)
  */
-async function createOrUpdateFile(filePath, content, message, log = true) {
+async function createOrUpdateFile(filePath, content, message, append = false, log = true) {
     try {
-        // Check if file exists
+        // Check if file exists and get its content if in append mode
         let sha;
+        let existingContent;
         try {
             const file = await octokit.repos.getContent({
                 owner: CONFIG.owner,
@@ -113,12 +142,32 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
                 ref: CONFIG.targetBranch
             });
             sha = file.data.sha;
+
+            // If append mode and it's metadata.json, get existing content
+            if (append && path.basename(filePath) === 'metadata.json') {
+                existingContent = Buffer.from(file.data.content, 'base64').toString('utf8');
+            }
         } catch (error) {
             if (error.status !== 404) throw error;
         }
 
-        // Convert content to base64, handling both Buffer and string inputs
-        const contentBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content);
+        // Handle content merging for metadata.json in append mode
+        let contentToUpload = content;
+        if (append && existingContent) {
+            // Parse existing and new content
+            const existingData = JSON.parse(existingContent);
+            const newData = JSON.parse(content);
+
+            // Ensure both are arrays
+            const existingArray = Array.isArray(existingData) ? existingData : [existingData];
+            const newArray = Array.isArray(newData) ? newData : [newData];
+
+            // Combine arrays and convert back to string
+            contentToUpload = JSON.stringify([...existingArray, ...newArray], null, 2);
+        }
+
+        // Convert final content to base64
+        const contentBuffer = Buffer.isBuffer(contentToUpload) ? contentToUpload : Buffer.from(contentToUpload);
         const contentBase64 = contentBuffer.toString('base64');
 
         // Create or update file
@@ -132,101 +181,21 @@ async function createOrUpdateFile(filePath, content, message, log = true) {
             sha: sha
         });
 
-        if (log) console.log(`           Successfully ${sha ? 'updated' : 'created'} ${filePath}`);
+        if (log) {
+            const action = sha ? (append ? 'appended to' : 'updated') : 'created';
+            console.log(`           Successfully ${action} ${filePath}`);
+        }
     } catch (error) {
         console.error(`Error creating/updating file ${filePath}:`, error);
         throw error;
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               CHARACTER FILES                              */
+/* -------------------------------------------------------------------------- */
 
-/**
- * Downloads file from URL and returns it as a Buffer
- * @param {string} url - URL to download from
- * @returns {Promise<Buffer>} File content as Buffer
- */
-async function downloadFile(url) {
-    try {
-        const download_url = `https://user-uploads.perchance.org/file/${url}`
-        console.log(`           Downloading: ${download_url}`);
-        const response = await fetch(download_url);
 
-        // Check if download was successful
-        if (!response.ok) {
-            throw new Error(`Download failed: ${response.status}`);
-        }
-
-        // Get the raw buffer
-        const fileData = await response.arrayBuffer();
-        return Buffer.from(fileData);
-
-    } catch (error) {
-        console.error('Failed to download file:', error.message);
-        throw error;
-    }
-}
-
-/**
- * Reads the last processed state
- * @returns {Promise<Object>} Channel processing states
- */
-async function getLastProcessedState() {
-    console.log('Reading last processed state...');
-    const state = await getGithubFile(CONFIG.timestampFile);
-
-    // Helper function to create a default channel state
-    const createDefaultChannelState = () => ({
-        messageId: null,
-        time: 0,
-        messagesAnalyzed_Total: 0,    // Start from 0 if new
-        messagesAnalyzed_lastRun: 0,
-        charactersFound_Total: 0,      // Start from 0 if new
-        charactersFound_lastRun: 0,
-        charactersIgnored_Total: 0,    // Start from 0 if new
-        charactersIgnored_lastRun: 0,
-        deltaMinutes: 0
-    });
-
-    if (!state) {
-        // If no state exists, create new state for all channels
-        return CONFIG.channels.reduce((acc, channel) => {
-            acc[channel] = createDefaultChannelState();
-            return acc;
-        }, {});
-    }
-
-    // If state exists, ensure all properties exist with correct types
-    CONFIG.channels.forEach(channel => {
-        if (!state[channel]) {
-            state[channel] = createDefaultChannelState();
-        } else {
-            // Ensure numeric properties are initialized properly
-            state[channel].messagesAnalyzed_Total = state[channel].messagesAnalyzed_Total || 0;
-            state[channel].charactersFound_Total = state[channel].charactersFound_Total || 0;
-            state[channel].charactersIgnored_Total = state[channel].charactersIgnored_Total || 0;
-            state[channel].messagesAnalyzed_lastRun = 0;
-            state[channel].charactersFound_lastRun = 0;
-            state[channel].charactersIgnored_lastRun = 0;
-            state[channel].deltaMinutes = state[channel].deltaMinutes || 0;
-        }
-    });
-
-    return state;
-}
-
-/**
- * Saves processing state
- * @param {Object} state - Current processing state
- */
-async function saveProcessingState(state) {
-    console.log('Saving processing state...');
-    await createOrUpdateFile(
-        CONFIG.timestampFile,
-        JSON.stringify(state, null, 2),
-        'Update last processed state',
-        false
-    );
-}
 
 /**
  * Extracts character links from a message.
@@ -235,6 +204,10 @@ async function saveProcessingState(state) {
  * @returns {Object} Object containing links array and ignored status
  */
 function extractCharacterLinks(message) {
+
+    // Add a space after each .gz to separate concatenated links (ex: '...43eac53.gzhttps:\\...' > '...43eac53.gz https:\\...')
+    message = message.replace(/\.gz/g, '.gz ');
+
     // Safe URI decoding function
     const safeDecode = (str) => {
         try {
@@ -314,6 +287,32 @@ function extractCharacterLinks(message) {
     };
 }
 
+/**
+ * Downloads file from URL and returns it as a Buffer
+ * @param {string} url - URL to download from
+ * @returns {Promise<Buffer>} File content as Buffer
+ */
+async function downloadFile(url) {
+    try {
+        const download_url = `https://user-uploads.perchance.org/file/${url}`
+        console.log(`           Downloading: ${download_url}`);
+        const response = await fetch(download_url);
+
+        // Check if download was successful
+        if (!response.ok) {
+            throw new Error(`Download failed: ${response.status}`);
+        }
+
+        // Get the raw buffer
+        const fileData = await response.arrayBuffer();
+        return Buffer.from(fileData);
+
+    } catch (error) {
+        console.error('Failed to download file:', error.message);
+        throw error;
+    }
+}
+
 // Function to create metadata file content
 async function createMetadata(characterInfo, message, fileId, charName, folderName) {
     try {
@@ -324,6 +323,7 @@ async function createMetadata(characterInfo, message, fileId, charName, folderNa
             characterName_Sanitized: charName,
             fileId: fileId,
             link: characterInfo.link,
+            shareLinkFileHash: '',  // TODO: Implement file hash
             authorName: message.username || message.userNickname || message.publicId || 'Anonymous',
             authorId: message.publicId || 'Unknown'
         }];
@@ -375,7 +375,8 @@ async function saveCharacterData(characterInfo, message) {
             const metadata = await createMetadata(characterInfo, message, fileId, charName, folderName);
             filesToCreate[`${dirName}/metadata.json`] = {
                 content: JSON.stringify(metadata, null, 2),
-                commitMessage: `Add metadata for: ${charName}`
+                commitMessage: `Add metadata for: ${charName}`,
+                append: true
             };
 
             // Download and save character file
@@ -390,7 +391,8 @@ async function saveCharacterData(characterInfo, message) {
                 await createOrUpdateFile(
                     filePath,
                     fileInfo.content,
-                    fileInfo.commitMessage
+                    fileInfo.commitMessage,
+                    fileInfo.append || false
                 );
             }
 
@@ -406,6 +408,9 @@ async function saveCharacterData(characterInfo, message) {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                             MESSAGES PROCESSING                            */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Main message processing function
@@ -519,6 +524,72 @@ async function processMessages() {
     return lastProcessed;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                 STATISTICS                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Reads the last processed state
+ * @returns {Promise<Object>} Channel processing states
+ */
+async function getLastProcessedState() {
+    console.log('Reading last processed state...');
+    const state = await getGithubFile(CONFIG.timestampFile);
+
+    // Helper function to create a default channel state
+    const createDefaultChannelState = () => ({
+        messageId: null,
+        time: 0,
+        messagesAnalyzed_Total: 0,    // Start from 0 if new
+        messagesAnalyzed_lastRun: 0,
+        charactersFound_Total: 0,      // Start from 0 if new
+        charactersFound_lastRun: 0,
+        charactersIgnored_Total: 0,    // Start from 0 if new
+        charactersIgnored_lastRun: 0,
+        deltaMinutes: 0
+    });
+
+    if (!state) {
+        // If no state exists, create new state for all channels
+        return CONFIG.channels.reduce((acc, channel) => {
+            acc[channel] = createDefaultChannelState();
+            return acc;
+        }, {});
+    }
+
+    // If state exists, ensure all properties exist with correct types
+    CONFIG.channels.forEach(channel => {
+        if (!state[channel]) {
+            state[channel] = createDefaultChannelState();
+        } else {
+            // Ensure numeric properties are initialized properly
+            state[channel].messagesAnalyzed_Total = state[channel].messagesAnalyzed_Total || 0;
+            state[channel].charactersFound_Total = state[channel].charactersFound_Total || 0;
+            state[channel].charactersIgnored_Total = state[channel].charactersIgnored_Total || 0;
+            state[channel].messagesAnalyzed_lastRun = 0;
+            state[channel].charactersFound_lastRun = 0;
+            state[channel].charactersIgnored_lastRun = 0;
+            state[channel].deltaMinutes = state[channel].deltaMinutes || 0;
+        }
+    });
+
+    return state;
+}
+
+/**
+ * Saves processing state
+ * @param {Object} state - Current processing state
+ */
+async function saveProcessingState(state) {
+    console.log('Saving processing state...');
+    await createOrUpdateFile(
+        CONFIG.timestampFile,
+        JSON.stringify(state, null, 2),
+        'Update last processed state',
+        false
+    );
+}
+
 /**
  * Generates a summary of processing statistics
  * @param {Object} state - The final processing state
@@ -553,9 +624,12 @@ function generateProcessingSummary(state) {
     return summary;
 }
 
+/* -------------------------------------------------------------------------- */
+/*                               INITIALIZATION                               */
+/* -------------------------------------------------------------------------- */
 
 // Main execution
-console.log('Starting Perchance Comment Scraper 3.0...');
+console.log(`Starting Perchance Comment Scraper ${scriptVersion}...`);
 processMessages()
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
