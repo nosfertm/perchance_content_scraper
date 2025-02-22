@@ -396,7 +396,7 @@ async function saveCharacterData(characterInfo, message) {
                 );
             }
 
-            console.log('           Successfully processed all character files');
+            console.log('           Successfully processed all character files!\n');
         } catch (error) {
             console.error('Error processing character:', error);
             console.log('           Character info:', JSON.stringify(characterInfo, null, 2));
