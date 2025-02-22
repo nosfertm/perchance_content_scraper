@@ -29,6 +29,8 @@ import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 import path, { dirname } from 'path';
 import crypto from 'crypto';
+import { promises as fs } from 'fs';
+
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
@@ -203,7 +205,7 @@ async function getLinksFromIndex() {
         let indexData;
 
         try {
-            const content = await this.readFile(indexPath);
+            const content = await fs.readFile(indexPath, 'utf-8');
             indexData = JSON.parse(content);
         } catch (error) {
             console.error(`Error in readJson for file ${indexPath}:`, error);
