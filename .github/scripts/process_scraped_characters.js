@@ -821,7 +821,7 @@ function determineDestinationPath(aiAnalysis, folder) {
         : (typeof aiAnalysis.rating === 'string' ? aiAnalysis.rating.toLowerCase() : null);
 
     // Gets parent directory of source path
-    const parentDir = path.dirname(CONFIG.PATHS.SOURCE_PATH);
+    const parentDir = path.dirname(CONFIG.SOURCE_PATH);
 
     // Send to manual review
     if (manualReview) {
@@ -911,7 +911,7 @@ async function removeDuplicate(folder, existingPath, metadata) {
     try {
         const sourcePath = path.join(CONFIG.SOURCE_PATH, folder)
         // Gets parent directory of source path
-        const parentDir = path.dirname(CONFIG.PATHS.SOURCE_PATH);
+        const parentDir = path.dirname(CONFIG.SOURCE_PATH);
         const duplicatePath = path.join(parentDir, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
         const referenceContent = {
             originPath: sourcePath,
