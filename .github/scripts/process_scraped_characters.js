@@ -1021,7 +1021,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
 
     if (checkForDuplicateHash(existingLinks, fileHash)) {
         console.log(`           Duplicate file hash found for: ${charName}`);
-        return 'duplicate';
+        return {characterdata:'duplicate',fileHash: fileHash};
     }
 
     let unzipped;
@@ -1037,12 +1037,12 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
             // If retry flag is set, prevent infinite recursion
             if (retry) {
                 console.error('Download failed. Retrying extraction without download.');
-                return null;  // Return null to indicate failure
+                return {characterdata: null ,fileHash: null};  // Return null to indicate failure
             }
 
             // Download the file and attempt extraction again
             await downloadFile(folder, fileName);
-            return extractCharacterData(folder, fileName, existingLinks, true);  // Retry after downloading
+            return {characterdata: extractCharacterData(folder, fileName, existingLinks, true),fileHash: null};  // Retry after downloading
         } else {
             // Re-throw any other unexpected errors
             throw error;
@@ -1050,7 +1050,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
     }
 
     // Return the uncompressed data as a JSON object
-    return JSON.parse(unzipped.toString());
+    return {characterdata: JSON.parse(unzipped.toString()),fileHash: null};
 }
 
 /**
@@ -1093,7 +1093,7 @@ async function downloadFile(dir, filename) {
  * @param {object} aiAnalysis - AI analysis results
  * @param {string} destinationPath - Destination path
  */
-async function createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, img) {
+async function createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, img, fileHash) {
 
     // Create character files
     const importFileName = `character_${folder}.gz`
@@ -1101,7 +1101,7 @@ async function createCharacterStructure(folder, metadata, message, characterData
     const charFiles = await createCharacterFiles(characterInfo, importFileName, img)
 
     // Create manifest
-    const manifest = createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName);
+    const manifest = createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash);
 
     // Create changelog
     const changelog = createChangelog(message);
@@ -1267,7 +1267,7 @@ async function createCharacterFiles(characterInfo, importFileName, img) {
  * @param {object} aiAnalysis - AI analysis results
  * @param {object} img - Image Link
  */
-function createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName) {
+function createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash) {
 
     console.log("    Creating manifest")
 
@@ -1287,7 +1287,7 @@ function createManifest(metadata, message, characterData, aiAnalysis, charFiles,
         source: 'SCRAPER',
         imageUrl: imgUrl || '',
         shareUrl: metadata.link,
-        shareLinkFileHash: metadata.shareLinkFileHash,  // TODO - Implement hash
+        shareLinkFileHash: fileHash || '',
         downloadPath: downloadPath,
         shapeShifter_Pulls: 0,
         galleryChat_Clicks: 0,
@@ -1336,6 +1336,8 @@ function createChangelog(message) {
  * @param {object} manifest - Character manifest
  */
 async function updateCharacterIndex(characterPath, manifest) {
+    console.log("    Updating index.json");
+    console.log("    Character path:", characterPath);
     const indexPath = path.join(CONFIG.OUTPUT_PATH, 'index.json').replace(/\\/g, '/');
 
     try {
@@ -1466,7 +1468,7 @@ async function processCharacter(folder, existingLinks) {
                 const gzFile = item.fileId;
 
                 // Extract Gz content or download if corrupted / missing
-                const characterData = await extractCharacterData(folder, gzFile, existingLinks);
+                const {characterData, fileHash} = await extractCharacterData(folder, gzFile, existingLinks);
 
                 if (characterData === 'duplicate') {
                     console.log(`    Skipping duplicated character ${item.characterName_Sanitized} by ${item.authorName}.`);
@@ -1517,7 +1519,9 @@ async function processCharacter(folder, existingLinks) {
                     } else {
                         errMsg = 'Image was not generated. Skipping character.'
                         console.error(errMsg)
-                        throw new Error(errMsg);
+                        //throw new Error(errMsg);
+                        stats.errors.push({ folder, error: error.message });
+                        continue;
                     }
 
                 }
@@ -1530,7 +1534,7 @@ async function processCharacter(folder, existingLinks) {
                 }
 
                 const destinationPath = determineDestinationPath(aiAnalysis, folder);
-                await createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, finalImage);
+                await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, fileHash);
 
 
                 // Copy capturedMessage.json
@@ -1573,7 +1577,7 @@ async function processCharacter(folder, existingLinks) {
         if (totalItems === 0) {
             // Remove the folder from source after 
             console.log(`Removing folder ${folder} from source after processing`);
-            await FileHandler.removeDirectory(path.join(CONFIG.SOURCE_PATH, folder));
+            //await FileHandler.removeDirectory(path.join(CONFIG.SOURCE_PATH, folder));
         }
 
         console.log(`processedLinks: ${JSON.stringify(processedLinks)}`);
