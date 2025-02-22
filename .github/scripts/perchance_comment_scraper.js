@@ -230,8 +230,6 @@ async function getLinksFromIndex() {
     }
 }
 
-const crypto = require('crypto');
-
 /**
  * Calculate the hash of a given file buffer.
  * @param {Buffer} fileBuffer - The file data as a Buffer.
