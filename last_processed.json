@@ -76,17 +76,17 @@
   },
   "share": {
     "messageId": "67ba27e712cdd8e61118de05",
-    "time": 1740250547000,
-    "messagesAnalyzed_Total": 6988,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 1290,
-    "charactersFound_lastRun": 0,
+    "time": 1740253159292,
+    "messagesAnalyzed_Total": 6993,
+    "messagesAnalyzed_lastRun": 5,
+    "charactersFound_Total": 1291,
+    "charactersFound_lastRun": 1,
     "charactersIgnored_Total": 7,
     "charactersIgnored_lastRun": 0,
-    "deltaMinutes": 44,
     "duplicatedCharacterLink_Total": 0,
-    "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
-    "duplicatedCharacterHash_lastRun": 0
+    "duplicatedCharacterHash_Total": 0,
+    "duplicatedCharacterHash_lastRun": 0,
+    "deltaMinutes": 44
   }
 }
