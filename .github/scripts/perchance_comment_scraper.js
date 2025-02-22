@@ -200,7 +200,15 @@ async function getLinksFromIndex() {
     try {
         // Read the JSON file using the 
         const indexPath = path.join("ai-character-chat", "characters", 'index.json');
-        const indexData = await FileHandler.readJson(indexPath);
+        let indexData;
+
+        try {
+            const content = await this.readFile(indexPath);
+            indexData = JSON.parse(content);
+        } catch (error) {
+            console.error(`Error in readJson for file ${indexPath}:`, error);
+            throw error;
+        }
 
         // Create an array to store all the links
         const extractedLinks = [];
@@ -293,8 +301,8 @@ function checkForDuplicateHash(existingLinks, fileHash) {
     if (!fileHash) return false;
 
     // Check if hash exists in existingLinks
-    const isDuplicate = existingLinks.some(existing => 
-        existing && existing.shareLinkFileHash && 
+    const isDuplicate = existingLinks.some(existing =>
+        existing && existing.shareLinkFileHash &&
         existing.shareLinkFileHash === fileHash
     );
 
@@ -483,7 +491,7 @@ async function saveCharacterData(characterInfo, message, existingLinks) {
                 console.log(`           Duplicate file hash found for: ${charName}`);
                 return null;
             }
-            
+
             filesToCreate[`${dirName}/${fileId}`] = {
                 content: fileBuffer,
                 commitMessage: `Add share file for: ${charName}`
