@@ -1356,8 +1356,8 @@ async function updateCharacterIndex(characterPath, manifest) {
         const indexData = JSON.parse(indexContent);
 
         //const relativePath = path.relative(CONFIG.OUTPUT_PATH, characterPath);
-        const relativePath = path.relative(characterPath);
-        const newEntry = { path: relativePath, manifest };
+        //const newEntry = { path: relativePath, manifest };
+        const newEntry = { path: characterPath, manifest };
 
         const existingIndex = indexData.findIndex(item => item.path === relativePath);
         if (existingIndex !== -1) {
@@ -1366,6 +1366,7 @@ async function updateCharacterIndex(characterPath, manifest) {
             indexData.push(newEntry);
         }
 
+        console.log("    Writing updated index.json to:", indexPath);
         await fs.writeFile(indexPath, JSON.stringify(indexData, null, 2));
     } catch (error) {
         console.error('Error updating index.json:', error);
