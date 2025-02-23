@@ -825,7 +825,7 @@ function determineDestinationPath(aiAnalysis, folder) {
 
     // Send to manual review
     if (manualReview) {
-        filePath = path.join(parentDir, CONFIG.PATHS.MANUAL_REVIEW);
+        filePath = path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.MANUAL_REVIEW);
         FileHandler.writeJson(path.join(filePath, folder, 'aiAnalysis.json'), aiAnalysis)
         return filePath;
     }
@@ -841,9 +841,9 @@ function determineDestinationPath(aiAnalysis, folder) {
         if (charState === 'quarantine') {
             return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.QUARANTINE);
         } else if (aiAnalysis.charState.toLowerCase() === 'invalid') {
-            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_INVALID);
+            return path.join(parentDir, CONFIG.PATHS.DISCARDED_INVALID);
         } else {
-            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_ERROR);
+            return path.join(parentDir, CONFIG.PATHS.DISCARDED_ERROR);
         }
     }
 }
@@ -1355,11 +1355,13 @@ async function updateCharacterIndex(characterPath, manifest) {
         const indexContent = await fs.readFile(indexPath, 'utf8');
         const indexData = JSON.parse(indexContent);
 
-        //const relativePath = path.relative(CONFIG.OUTPUT_PATH, characterPath);
-        //const newEntry = { path: relativePath, manifest };
+        // const relativePath = path.relative(CONFIG.OUTPUT_PATH, characterPath);
+        // const newEntry = { path: relativePath, manifest };
+
         const newEntry = { path: characterPath, manifest };
 
-        const existingIndex = indexData.findIndex(item => item.path === relativePath);
+        //const existingIndex = indexData.findIndex(item => item.path === relativePath);
+        const existingIndex = indexData.findIndex(item => item.path === characterPath);
         if (existingIndex !== -1) {
             indexData[existingIndex] = newEntry;
         } else {
