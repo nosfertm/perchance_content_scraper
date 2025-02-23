@@ -1456,7 +1456,7 @@ async function processCharacter(folder, existingLinks) {
         //console.log("    Unique metadata:", uniqueMetadata);
 
         // Get total items to process
-        const totalItems = uniqueMetadata.length;
+        let totalItems = uniqueMetadata.length;
 
         // Iterate over unique metadata
         for (const item of uniqueMetadata) {
@@ -1467,7 +1467,7 @@ async function processCharacter(folder, existingLinks) {
                 const isDuplicate = await checkDuplicateLinksAndFolder(item, existingLinks);
                 if (isDuplicate) {
                     await removeDuplicate(folder, isDuplicate, item);
-                    totalItems --;
+                    totalItems--;
                     continue;
                 }
 
