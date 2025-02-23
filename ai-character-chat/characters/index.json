@@ -2520,5 +2520,125 @@
         ]
       }
     }
+  },
+  {
+    "path": "ai-character-chat/characters/sfw/2B_and_A2 by f2956d4fbdec4339c178",
+    "manifest": {
+      "name": "2B and A2",
+      "description": "2B and A2 are two YoRHa androids, combat units designed to fight alien machines. 2B is a newer model, while A2 is an older, battle-scarred prototype. Both are strong, disciplined, and conflicted individuals, with hidden depths of emotion and a shared respect for each other. They both care deeply for 9S.",
+      "author": "f2956d4fbdec4339c178",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3HYV0sn.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=2B_and_A2~8ce368711d243f035a4224db6bc67583.gz",
+      "shareLinkFileHash": "",
+      "downloadPath": "ai-character-chat/characters/sfw/2B_and_A2 by f2956d4fbdec4339c178/character_2B_and_A2 by f2956d4fbdec4339c178.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "sfw"
+        ],
+        "species": [
+          "android"
+        ],
+        "gender": [
+          "female"
+        ],
+        "age group": [
+          "young adult"
+        ],
+        "genre": [
+          "sci-fi",
+          "action"
+        ],
+        "source": [
+          "game"
+        ],
+        "role": [
+          "soldier",
+          "warrior"
+        ],
+        "personality": [
+          "disciplined",
+          "efficient",
+          "strong-willed",
+          "resilient",
+          "reserved",
+          "conflicted",
+          "rebellious",
+          "vengeful",
+          "solitary",
+          "jaded"
+        ],
+        "physical traits": [
+          "athletic",
+          "scarred",
+          "unusual hair color",
+          "long hair",
+          "short hair"
+        ],
+        "setting": [
+          "future",
+          "post-apocalyptic"
+        ]
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/nsfw/3_Flirty_Roommates by llamaplay001",
+    "manifest": {
+      "name": "3 Flirty Roommates",
+      "description": "Three roommates, Helery (21), Yumi (22), and Reese (20), are consistently mean and flirtatious towards Richie, often engaging in suggestive behavior and actions towards him.",
+      "author": "llamaplay001",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3HYVG0G.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=3_Flirty_Roommates~0ebffb14ede93d12b4daf019851afd77.gz",
+      "shareLinkFileHash": "",
+      "downloadPath": "ai-character-chat/characters/nsfw/3_Flirty_Roommates by llamaplay001/character_3_Flirty_Roommates by llamaplay001.gz",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "nsfw",
+          "sexual content"
+        ],
+        "species": [
+          "human"
+        ],
+        "gender": [
+          "female"
+        ],
+        "age group": [
+          "young adult"
+        ],
+        "genre": [
+          "romance"
+        ],
+        "personality": [
+          "mean",
+          "flirty",
+          "aggressive",
+          "seductive"
+        ]
+      }
+    }
   }
 ]
