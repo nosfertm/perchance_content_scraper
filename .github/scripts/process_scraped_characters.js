@@ -926,11 +926,19 @@ async function removeDuplicate(folder, existingPath, metadata) {
         // Move duplicated files
         console.log(`Moving and copying duplicated character files from: "${sourcePath}" to "${duplicatePath}"`)
 
-        // Move gz file
-        await FileHandler.move(
-            path.join(sourcePath, fileId),
-            path.join(duplicatePath, fileId)
-        );
+        try {
+            // Move gz file
+            await FileHandler.move(
+                path.join(sourcePath, fileId),
+                path.join(duplicatePath, fileId)
+            );
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                console.warn(`Error moving gz file for duplicate character ${folder}:`, error);
+            } else {
+                throw error;
+            }
+        }
 
         // Copy captured message
         await FileHandler.copy(
@@ -1021,7 +1029,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
 
     if (checkForDuplicateHash(existingLinks, fileHash)) {
         console.log(`           Duplicate file hash found for: ${charName}`);
-        return {characterData:'duplicate',fileHash: fileHash};
+        return { characterData: 'duplicate', fileHash: fileHash };
     }
 
     let unzipped;
@@ -1037,16 +1045,16 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
             // If retry flag is set, prevent infinite recursion
             if (retry) {
                 console.error('Download failed. Retrying extraction without download.');
-                return {characterData: null ,fileHash: null};  // Return null to indicate failure
+                return { characterData: null, fileHash: null };  // Return null to indicate failure
             }
 
             // Download the file and attempt extraction again
             await downloadFile(folder, fileName);
             const retryResult = await extractCharacterData(folder, fileName, existingLinks, true);
             return {
-                characterData: retryResult.characterData, 
+                characterData: retryResult.characterData,
                 fileHash: retryResult.fileHash || fileHash
-            }; 
+            };
         } else {
             // Re-throw any other unexpected errors
             throw error;
@@ -1054,7 +1062,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
     }
 
     // Return the uncompressed data as a JSON object
-    return {characterData: JSON.parse(unzipped.toString()),fileHash: null};
+    return { characterData: JSON.parse(unzipped.toString()), fileHash: null };
 }
 
 /**
@@ -1475,7 +1483,7 @@ async function processCharacter(folder, existingLinks) {
                 const gzFile = item.fileId;
 
                 // Extract Gz content or download if corrupted / missing
-                const {characterData, fileHash} = await extractCharacterData(folder, gzFile, existingLinks);
+                const { characterData, fileHash } = await extractCharacterData(folder, gzFile, existingLinks);
 
                 if (characterData === 'duplicate') {
                     console.log(`    Skipping duplicated character ${item.characterName_Sanitized} by ${item.authorName}.`);
