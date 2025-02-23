@@ -1520,7 +1520,7 @@ async function processCharacter(folder, existingLinks) {
                         errMsg = 'Image was not generated. Skipping character.'
                         console.error(errMsg)
                         //throw new Error(errMsg);
-                        stats.errors.push({ folder, error: error.message });
+                        stats.errors.push({ folder, error: errMsg });
                         continue;
                     }
 
