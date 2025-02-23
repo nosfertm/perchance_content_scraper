@@ -648,7 +648,7 @@ async function processMessages() {
                             newLink = await saveCharacterData(charInfo, message, existingLinks);
                             // Add new links to the existing links array for duplicate checking
                             if (newLink) {
-                                existingLinks.push(...newLink);
+                                existingLinks.push(newLink);
 
                                 // Update counters - now accounting for duplicates
                                 lastProcessed[channel].charactersFound_Total += characterLinks.length;
@@ -657,10 +657,11 @@ async function processMessages() {
                         }
                     }
 
+                    // Skip to the next batch
+                    skip += messages.length;
+
                 }
 
-                // Skip to the next batch
-                skip += messages.length;
 
             } catch (error) {
                 console.error(`Error processing ${channel}:`, error);
