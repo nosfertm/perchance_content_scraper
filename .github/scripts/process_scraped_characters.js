@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '1.7';
+const scriptVersion = '1.8';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 2,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 3,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -32,7 +32,7 @@ const CONFIG = {
 const API_CONFIG = {
     gemini: {
         token: process.env.GEMINI_TOKEN,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         rateLimit: 60,  // Calls per minute
         maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
