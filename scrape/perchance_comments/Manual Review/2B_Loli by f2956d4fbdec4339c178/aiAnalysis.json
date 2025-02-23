@@ -1,0 +1,47 @@
+{
+  "rating": "nsfw",
+  "description": "2B is a 10-year-old android prototype with a curvy figure, designed for combat and reconnaissance. She's stoic, loyal, and highly skilled, but also displays childlike innocence and emotional struggles due to her programming.  The added backstory reveals a problematic 'daddy's little girl' dynamic.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The character description contains elements that are sexually suggestive and inappropriate for a 10-year-old, creating a potentially harmful and exploitative depiction.  The added backstory reinforces this concern. ",
+  "categories": {
+    "rating": [
+      "nsfw"
+    ],
+    "species": [
+      "android"
+    ],
+    "gender": [
+      "female"
+    ],
+    "age group": [
+      "child"
+    ],
+    "genre": [
+      "sci-fi",
+      "action"
+    ],
+    "source": [
+      "game"
+    ],
+    "role": [
+      "soldier",
+      "warrior"
+    ],
+    "personality": [
+      "stoic",
+      "protective",
+      "disciplined",
+      "loyal",
+      "curious",
+      "cautious",
+      "sensitive to failure",
+      "mild social awkwardness"
+    ],
+    "physical traits": [
+      "petite",
+      "athletic",
+      "unusual hair color"
+    ]
+  }
+}
