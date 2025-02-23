@@ -1021,7 +1021,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
 
     if (checkForDuplicateHash(existingLinks, fileHash)) {
         console.log(`           Duplicate file hash found for: ${charName}`);
-        return {characterdata:'duplicate',fileHash: fileHash};
+        return {characterData:'duplicate',fileHash: fileHash};
     }
 
     let unzipped;
@@ -1037,12 +1037,16 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
             // If retry flag is set, prevent infinite recursion
             if (retry) {
                 console.error('Download failed. Retrying extraction without download.');
-                return {characterdata: null ,fileHash: null};  // Return null to indicate failure
+                return {characterData: null ,fileHash: null};  // Return null to indicate failure
             }
 
             // Download the file and attempt extraction again
             await downloadFile(folder, fileName);
-            return {characterdata: extractCharacterData(folder, fileName, existingLinks, true),fileHash: null};  // Retry after downloading
+            const retryResult = await extractCharacterData(folder, fileName, existingLinks, true);
+            return {
+                characterData: retryResult.characterData, 
+                fileHash: retryResult.fileHash || fileHash
+            }; 
         } else {
             // Re-throw any other unexpected errors
             throw error;
@@ -1050,7 +1054,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
     }
 
     // Return the uncompressed data as a JSON object
-    return {characterdata: JSON.parse(unzipped.toString()),fileHash: null};
+    return {characterData: JSON.parse(unzipped.toString()),fileHash: null};
 }
 
 /**
