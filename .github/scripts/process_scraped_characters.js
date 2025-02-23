@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '1.8';
+const scriptVersion = '1.9';
 
 // Configuration variables
 const CONFIG = {
@@ -934,7 +934,7 @@ async function removeDuplicate(folder, existingPath, metadata) {
             );
         } catch (error) {
             if (error.code === 'ENOENT') {
-                console.warn(`Error moving gz file for duplicate character ${folder}:`, error);
+                console.warn(`Error ENOENT: moving gz file for duplicate character ${folder}:`);
             } else {
                 throw error;
             }
@@ -1461,10 +1461,10 @@ async function processCharacter(folder, existingLinks) {
             }
         }
 
-        //console.log("    Unique metadata:", uniqueMetadata);
-
         // Get total items to process
         let totalItems = uniqueMetadata.length;
+
+        console.log(`    ${totalItems} Unique metadata:`, JSON.stringify(uniqueMetadata));
 
         // Iterate over unique metadata
         for (const item of uniqueMetadata) {
