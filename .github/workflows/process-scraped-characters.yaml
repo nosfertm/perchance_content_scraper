@@ -96,26 +96,26 @@ jobs:
       # - name: Debug - List restored files
       #   run: ls -R
 
-      - name: Commit and push changes to the new branch
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add .
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update processed files" && git push origin processed-batch1)
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+      # - name: Commit and push changes to the new branch
+      #   run: |
+      #     git config --global user.name "GitHub Actions"
+      #     git config --global user.email "actions@github.com"
+      #     git add .
+      #     git diff --quiet && git diff --staged --quiet || (git commit -m "Update processed files" && git push origin processed-batch1)
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
 
-      - name: Create Pull Request
-        env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
-        run: |
-          if git diff --quiet origin/main origin/processed-batch1; then
-            echo "No differences found between branches. Skipping PR creation."
-          else
-            gh pr create \
-              --base main \
-              --head processed-batch1 \
-              --title "Automated PR - Updated generated files" \
-              --body "This PR contains automatically generated updates." \
-              --label "automated-pr"
-          fi
+      # - name: Create Pull Request
+      #   env:
+      #     GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+      #   run: |
+      #     if git diff --quiet origin/main origin/processed-batch1; then
+      #       echo "No differences found between branches. Skipping PR creation."
+      #     else
+      #       gh pr create \
+      #         --base main \
+      #         --head processed-batch1 \
+      #         --title "Automated PR - Updated generated files" \
+      #         --body "This PR contains automatically generated updates." \
+      #         --label "automated-pr"
+      #     fi
