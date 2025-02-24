@@ -30,8 +30,7 @@ jobs:
 
       - name: Install dependencies manually
         run: |
-          npm install @google/generative-ai
-          npm install string-similarity
+          npm install @google/generative-ai string-similarity glob
 
       - name: Set environment variables
         env:
