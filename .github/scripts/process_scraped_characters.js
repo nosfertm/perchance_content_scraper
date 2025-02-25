@@ -1315,10 +1315,10 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
     Return only a JSON formatted response with the following structure:
     {
         "rating": "sfw" | "nsfw",  // For this key, ignore the available categories format and answer strictly with either 'sfw' or 'nsfw'.
-        "description": "<brief description>",
+        "description": "<a comprehensive concise description, no more than 1 paragraph>",
         "needsManualReview": boolean,
         "charState": "valid" | "invalid" | "quarantine",  // States for validation of the content
-        "stateReason": "<reason for state if not valid>",  // Explanation for the invalid or quarantined state
+        "stateReason": "<reason for state if not valid or why it needs manual review>",  // Explanation for the invalid, quarantined or manual review state
         "categories": {
             "<category_name>": ["<matching tags>"]  // // Each category or tag name must be in lowercase
         }
@@ -1925,7 +1925,7 @@ async function createCharacterStructure(folder, metadata, message, characterData
 
 
     // Update index.json
-    if (aiAnalysis?.charState?.toLowerCase() === 'valid') {
+    if (aiAnalysis?.charState?.toLowerCase() === 'valid' && !aiAnalysis?.needsManualReview) {
         await updateCharacterIndex(destFolder, manifest);
     }
 }
