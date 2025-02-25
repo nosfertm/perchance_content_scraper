@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.0';
+const scriptVersion = '2.1';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 20,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -108,7 +108,7 @@ const API_CONFIG = {
     gemini: {
         token: process.env.GEMINI_TOKEN,
         model: 'gemini-1.5-flash',
-        rateLimit: 60,  // Calls per minute
+        rateLimit: 50,  // Calls per minute
         maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
         timeBetweenRetries: 3000, // Time in ms between retries
@@ -2310,13 +2310,13 @@ async function processCharacter(folder, existingLinks) {
 
                 if (forkAnalysis.isExisting && forkAnalysis.type === 'UPDATE') {
                     // This is an update to an existing character
-                    console.log(`Character ${item.name} is an UPDATE to existing character. Similarity: ${forkAnalysis.overallSimilarity * 100}%`);
+                    console.log(`Character ${item.characterName} is an UPDATE to existing character. Similarity: ${forkAnalysis.overallSimilarity}.`);
                     stats.updated++;
                 }
 
                 // If it's a fork, add that information to the manifest
                 if (forkAnalysis.type === 'FORK') {
-                    console.log(`Character ${item.name} is an FORK of existing character. Similarity: ${forkAnalysis.overallSimilarity * 100}%.\nForked character: ${forkAnalysis.forkedFrom}`);
+                    console.log(`Character ${item.characterName} is an FORK of existing character. Similarity: ${forkAnalysis.overallSimilarity}.\nForked character: ${forkAnalysis.forkedFrom}`);
                     stats.forked++;
                 }
 
