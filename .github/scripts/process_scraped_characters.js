@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 20,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 50,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -2183,7 +2183,7 @@ async function processCharacters() {
         }
 
         const characterFolders = await getNewCharacterFolders();
-        console.log(`Found ${characterFolders.length} characters to process`);
+        console.log(`Processing ${MAX_CHARACTERS_PER_RUN} of ${characterFolders.length} characters found to process`);
         const foldersToProcess = characterFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
 
         // Shuffle folders and limit to MAX_CHARACTERS_PER_RUN
