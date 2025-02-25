@@ -1723,7 +1723,6 @@ async function removeDuplicate(folder, existingPath, metadata, fileHash = null) 
         // Write jsons
         await FileHandler.writeJson(path.join(duplicatePath, 'duplicate_reference.json'), referenceContent);
         await FileHandler.writeJson(path.join(duplicatePath, 'metadata.json'), newMetadata);
-        stats.duplicate++;
 
     } catch (error) {
         console.error(`Error handling duplicate character ${folder}:`, error);
