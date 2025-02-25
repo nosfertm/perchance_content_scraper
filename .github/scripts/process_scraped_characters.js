@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 5,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -1925,7 +1925,9 @@ async function createCharacterStructure(folder, metadata, message, characterData
 
 
     // Update index.json
-    await updateCharacterIndex(destFolder, manifest);
+    if (aiAnalysis?.charState?.toLowerCase() === 'valid') {
+        await updateCharacterIndex(destFolder, manifest);
+    }
 }
 
 /**
