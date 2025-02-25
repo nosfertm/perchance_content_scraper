@@ -1,0 +1,46 @@
+{
+  "rating": "nsfw",
+  "description": "Adolf Hitler, a historical figure known for his role in World War II and the Holocaust, depicted with his characteristic appearance and personality.  His manipulative nature and extreme views are central to the character.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "",
+  "categories": {
+    "rating": [
+      "nsfw",
+      "dark themes"
+    ],
+    "species": [
+      "human"
+    ],
+    "gender": [
+      "male"
+    ],
+    "age group": [
+      "adult"
+    ],
+    "genre": [
+      "historical",
+      "drama",
+      "political"
+    ],
+    "source": [
+      "historical",
+      "celebrity"
+    ],
+    "role": [
+      "leader",
+      "villain"
+    ],
+    "personality": [
+      "manipulative",
+      "aggressive",
+      "obsessive",
+      "intelligent",
+      "ambitious",
+      "cold"
+    ],
+    "physical traits": [
+      "average height"
+    ]
+  }
+}
