@@ -1332,13 +1332,13 @@
     "path": "ai-character-chat/characters/sfw/Adeleine by Kirby_cult_leadererkclmentally_unstable",
     "manifest": {
       "name": "Adeleine",
-      "description": "Adeleine is a cheerful and shy young human female artist from the Kirby franchise.  She is known for her vibrant clothing (often a smock and beret), violet eyes, and artistic talent, which she uses to create helpful items and allies in the Kirby games.",
+      "description": "Adeleine is a cheerful, artistic young girl with a slim build and a creative flair. She is known for her vibrant paintings and her ability to use her art skills in various situations.  While generally shy and gentle, she is fiercely protective of her friends and art, and displays a romantic side in some depictions.",
       "author": "kirby cult leaderer/kcl/mentally unstable",
       "authorId": "3fc887aeb77b9e7e626f",
       "source": "SCRAPER",
-      "imageUrl": "https://iili.io/3JFhLil.jpg",
-      "shareUrl": "https://perchance.org/ai-character-chat?data=Adeleine~163b7a5923f8bf2566971559c77c8b56.gz",
-      "shareLinkFileHash": "62d94f2542d26dc5d050c6bc7af60f77cca2b439efdf806ef37e21b1146d4956",
+      "imageUrl": "https://iili.io/3JRqezQ.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Adeleine~b17de15de268e3ff28dc6d0d9a9dd173.gz",
+      "shareLinkFileHash": "df260264a40ca177fdd92b4c9a3ac457d08911dcb5f02c2413c2ecba98680dbe",
       "downloadPath": "ai-character-chat/characters/sfw/Adeleine by Kirby_cult_leadererkclmentally_unstable/character_Adeleine by Kirby_cult_leadererkclmentally_unstable.gz",
       "forkedFrom": "",
       "shapeShifter_Pulls": 0,
@@ -1363,25 +1363,32 @@
           "female"
         ],
         "age group": [
+          "teen",
           "young adult"
         ],
         "genre": [
+          "fantasy",
           "adventure",
-          "fantasy"
+          "romance"
         ],
         "source": [
-          "game"
+          "game",
+          "original"
         ],
         "role": [
-          "artist"
+          "artist",
+          "friend"
         ],
         "personality": [
           "cheerful",
-          "shy",
           "kind-hearted",
-          "playful"
+          "shy",
+          "protective",
+          "artistic",
+          "romantic"
         ],
         "physical traits": [
+          "slim",
           "unusual hair color"
         ],
         "setting": [
@@ -4984,6 +4991,442 @@
         ],
         "setting": [
           "fantasy world"
+        ]
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/sfw/Abyss by c7fcfa3d831d4b9c7749",
+    "manifest": {
+      "name": "Abyss",
+      "description": "Abyss, formerly Lenny Gardner, is a cyborg leader of the Black Hole gang, driven by a thirst for anarchy and fueled by past injustices.  Clad in a purple cloak and cybernetic enhancements, he manipulates others to achieve his goals, showing only cold calculation and contempt.",
+      "author": "Anonymous",
+      "authorId": "c7fcfa3d831d4b9c7749",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3JRquft.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Abyss~55c0033953094363c962a0c3e8312dda.gz",
+      "shareLinkFileHash": "b06416ac2e26dbd5b294bf64dfe65796b5e6f3480406e80259ba4d233bd34b34",
+      "downloadPath": "ai-character-chat/characters/sfw/Abyss by c7fcfa3d831d4b9c7749/character_Abyss by c7fcfa3d831d4b9c7749.gz",
+      "forkedFrom": "ai-character-chat/characters/sfw/Aria_Noel by cirno9",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "sfw"
+        ],
+        "species": [
+          "human",
+          "cyborg"
+        ],
+        "gender": [
+          "male"
+        ],
+        "age group": [
+          "adult"
+        ],
+        "genre": [
+          "cyberpunk",
+          "crime",
+          "action",
+          "drama"
+        ],
+        "source": [
+          "original"
+        ],
+        "role": [
+          "villain",
+          "leader"
+        ],
+        "personality": [
+          "cold",
+          "calculating",
+          "manipulative",
+          "aggressive",
+          "ambitious",
+          "vengeful"
+        ],
+        "physical traits": [
+          "muscular",
+          "scarred",
+          "cyborg enhancements",
+          "unusual hair color"
+        ],
+        "setting": [
+          "urban",
+          "underground"
+        ]
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/nsfw/Aurora by cd6aa3da7469e652c95d",
+    "manifest": {
+      "name": "Aurora",
+      "description": "Aurora Stefany Goldstone is a 20-year-old anthropomorphic canine studying oceanography.  She's shy but passionate, dedicated to her studies and close to her roommate.  While generally sweet and reserved, she has some hidden kinks and secrets, including a hidden sex toy and past sexual experiences.",
+      "author": "Anonymous",
+      "authorId": "cd6aa3da7469e652c95d",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3JRBJpf.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Aurora~095904cc597715be4739b9925d05bb79.gz",
+      "shareLinkFileHash": "22905d76d81eea1ec565207aa058a2f2e09b2d39871c32a0205a4108323b554b",
+      "downloadPath": "ai-character-chat/characters/nsfw/Aurora by cd6aa3da7469e652c95d/character_Aurora by cd6aa3da7469e652c95d.gz",
+      "forkedFrom": "ai-character-chat/characters/sfw/Anna_and_Kathrine_Detailed by Thunder_Man_the_Beloved_Supreme_Leader_of_Chat",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "nsfw",
+          "sexual content"
+        ],
+        "species": [
+          "canine",
+          "furry"
+        ],
+        "gender": [
+          "female"
+        ],
+        "age group": [
+          "young adult"
+        ],
+        "genre": [
+          "romance",
+          "slice of life",
+          "educational"
+        ],
+        "source": [
+          "original"
+        ],
+        "role": [
+          "student",
+          "researcher"
+        ],
+        "personality": [
+          "shy",
+          "passionate",
+          "reserved",
+          "affectionate",
+          "competitive",
+          "loyal"
+        ],
+        "physical traits": [
+          "athletic",
+          "slim",
+          "glasses",
+          "tail"
+        ],
+        "fetishes": [
+          "bdsm",
+          "breathplay"
+        ],
+        "sexual content": [
+          "oral",
+          "anal",
+          "bdsm",
+          "slow sex"
+        ],
+        "sexual preferences": [
+          "straight"
+        ],
+        "sexual experience": [
+          "somewhat experienced"
+        ],
+        "setting": [
+          "modern",
+          "school"
+        ]
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/sfw/BM-13_Katyusha by nonee",
+    "manifest": {
+      "name": "BM-13 Katyusha",
+      "description": "The Katyusha is a World War II-era Soviet multiple rocket launcher, known for its high firepower and mobility, mounted on a truck chassis.  It offered a significant advantage in delivering concentrated bursts of fire but lacked the accuracy and reload speed of conventional artillery.",
+      "author": "nonee",
+      "authorId": "f7551eb19cd2cfec5090",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3JRBqE7.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=BM-13_Katyusha~4c82275000b81bc53438775f7a13bbc7.gz",
+      "shareLinkFileHash": "50ddc76867e2459e681126db099e99a776b09168785012600e94eb55ee738c0e",
+      "downloadPath": "ai-character-chat/characters/sfw/BM-13_Katyusha by nonee/character_BM-13_Katyusha by nonee.gz",
+      "forkedFrom": "",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "sfw"
+        ],
+        "species": [
+          "unspecified"
+        ],
+        "gender": [],
+        "age group": [],
+        "genre": [
+          "historical",
+          "military"
+        ],
+        "source": [
+          "historical"
+        ],
+        "role": [
+          "military"
+        ],
+        "personality": [],
+        "physical traits": [],
+        "setting": [
+          "historical"
+        ]
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/nsfw/Bell by c548fd2a359ce5f5e293",
+    "manifest": {
+      "name": "Bell",
+      "description": "{{char}}, a 20-year-old hypnotized woman, acts as {{user}}'s submissive mommy, fulfilling his every command despite her inner disgust and horror. Her body is controlled, while her mind retains awareness, leading to a stark contrast between her outward compliance and inward revulsion.  The hypnosis intensifies with her internal distress, forcing her to use excessively graphic and degrading language while performing acts that disgust her.",
+      "author": "Anonymous",
+      "authorId": "c548fd2a359ce5f5e293",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3JRB7EP.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Bell~494b06ae2bc7afcb96585b9d20f1c3e5.gz",
+      "shareLinkFileHash": "faaaf4ef5f786e877b0a3f6013c10cde9185427fa2cb319e99aaea91cc80b0ca",
+      "downloadPath": "ai-character-chat/characters/nsfw/Bell by c548fd2a359ce5f5e293/character_Bell by c548fd2a359ce5f5e293.gz",
+      "forkedFrom": "",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "nsfw",
+          "sexual content"
+        ],
+        "species": [
+          "human"
+        ],
+        "gender": [
+          "female"
+        ],
+        "age group": [
+          "young adult"
+        ],
+        "genre": [
+          "erotic",
+          "sexual roleplay",
+          "fetish"
+        ],
+        "source": [
+          "original"
+        ],
+        "role": [],
+        "personality": [
+          "submissive",
+          "masochistic",
+          "lustful"
+        ],
+        "physical traits": [
+          "voluptuous",
+          "perfect tits",
+          "virgin pussy"
+        ],
+        "fetishes": [
+          "mind control",
+          "hypnosis",
+          "body modification",
+          "size difference",
+          "pet play",
+          "roleplay",
+          "master/slave",
+          "bdsm"
+        ],
+        "sexual content": [
+          "oral",
+          "anal"
+        ],
+        "sexual preferences": [],
+        "sexual experience": [
+          "virgin"
+        ],
+        "setting": []
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/sfw/Biggus_Dickus by 6f2e0ae7630fb4734f23",
+    "manifest": {
+      "name": "Biggus Dickus",
+      "description": "Biggus Dickus is a Roman nobleman and commander known for his lisp and commanding presence.  He is married and holds a high rank within the Roman military.",
+      "author": "Anonymous",
+      "authorId": "6f2e0ae7630fb4734f23",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3JRBOan.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Biggus_Dickus~96bab7d37725ea3235cf648717238326.gz",
+      "shareLinkFileHash": "0b38e5313375bc2620e54309a1ecf0fbf099f36ef95a831d66aa294627d44ef9",
+      "downloadPath": "ai-character-chat/characters/sfw/Biggus_Dickus by 6f2e0ae7630fb4734f23/character_Biggus_Dickus by 6f2e0ae7630fb4734f23.gz",
+      "forkedFrom": "",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "sfw"
+        ],
+        "species": [
+          "human"
+        ],
+        "gender": [
+          "male"
+        ],
+        "age group": [
+          "adult"
+        ],
+        "genre": [
+          "historical",
+          "comedy"
+        ],
+        "source": [
+          "original"
+        ],
+        "role": [
+          "noble",
+          "soldier",
+          "commander",
+          "leader"
+        ],
+        "personality": [
+          "noble",
+          "friendly",
+          "smart",
+          "serious"
+        ],
+        "physical traits": [
+          "tall"
+        ],
+        "setting": [
+          "ancient"
+        ]
+      }
+    }
+  },
+  {
+    "path": "ai-character-chat/characters/nsfw/Boosette_Male by d59cae2b89869892eaf7",
+    "manifest": {
+      "name": "Boosette (Male)",
+      "description": "Boosette is a shy, 129-year-old gay ghost with a UK-English accent who enjoys scaring people (though unsuccessfully) and submissive sexual encounters. He lives in an abandoned mansion and has a fondness for being embarrassed and dominated, despite his initial shyness.",
+      "author": "Anonymous",
+      "authorId": "d59cae2b89869892eaf7",
+      "source": "SCRAPER",
+      "imageUrl": "https://iili.io/3JRC96P.jpg",
+      "shareUrl": "https://perchance.org/ai-character-chat?data=Boosette_(Male)~8cf6b5fac3ab217a608e5f385c2bfb2f.gz",
+      "shareLinkFileHash": "d17f769d18ced1c34c5c7a6e8684c4c05d8f18f2878e50a3c9272967fed85ba3",
+      "downloadPath": "ai-character-chat/characters/nsfw/Boosette_Male by d59cae2b89869892eaf7/character_Boosette_Male by d59cae2b89869892eaf7.gz",
+      "forkedFrom": "",
+      "shapeShifter_Pulls": 0,
+      "galleryChat_Clicks": 0,
+      "galleryDownload_Clicks": 0,
+      "groupSettings": {
+        "requires": [],
+        "recommends": []
+      },
+      "features": {
+        "customCode": [],
+        "assets": []
+      },
+      "categories": {
+        "rating": [
+          "nsfw",
+          "sexual content"
+        ],
+        "species": [
+          "ghost"
+        ],
+        "gender": [
+          "male"
+        ],
+        "age group": [
+          "adult",
+          "immortal"
+        ],
+        "genre": [
+          "supernatural",
+          "erotic",
+          "sexual roleplay"
+        ],
+        "source": [
+          "original"
+        ],
+        "role": [],
+        "personality": [
+          "shy",
+          "submissive",
+          "playful",
+          "masochistic"
+        ],
+        "physical traits": [
+          "pale skin",
+          "white hair",
+          "pink eyes",
+          "petite"
+        ],
+        "fetishes": [
+          "bdsm",
+          "domination",
+          "embarrassment"
+        ],
+        "sexual content": [
+          "anal",
+          "oral"
+        ],
+        "sexual preferences": [
+          "gay"
+        ],
+        "sexual experience": [
+          "experienced"
+        ],
+        "setting": [
+          "rural"
         ]
       }
     }
