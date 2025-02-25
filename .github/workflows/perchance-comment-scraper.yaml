@@ -43,15 +43,15 @@ jobs:
           TARGET_BRANCH: perchance_comments
         run: node .github/scripts/perchance_comment_scraper.js
 
-      - name: Trigger Processor
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.PAT_GITHUB_ACTIONS }}
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: 'nosfertm',
-              repo: 'perchance_content_scraper',
-              workflow_id: 'process-scraped-characters.yaml',
-              ref: '${{ github.ref }}'
-            })
+      # - name: Trigger Processor
+      #   uses: actions/github-script@v6
+      #   with:
+      #     github-token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+      #     script: |
+      #       await github.rest.actions.createWorkflowDispatch({
+      #         owner: 'nosfertm',
+      #         repo: 'perchance_content_scraper',
+      #         workflow_id: 'process-scraped-characters.yaml',
+      #         ref: '${{ github.ref }}'
+      #       })
 
