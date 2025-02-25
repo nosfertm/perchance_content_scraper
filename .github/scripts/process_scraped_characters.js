@@ -2183,7 +2183,7 @@ async function processCharacters() {
         }
 
         const characterFolders = await getNewCharacterFolders();
-        console.log(`Processing ${MAX_CHARACTERS_PER_RUN} of ${characterFolders.length} characters found to process`);
+        console.log(`Processing ${CONFIG.MAX_CHARACTERS_PER_RUN} of ${characterFolders.length} characters found to process`);
         const foldersToProcess = characterFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
 
         // Shuffle folders and limit to MAX_CHARACTERS_PER_RUN
