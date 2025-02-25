@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '1.7';
+const scriptVersion = '2.0';
 
 // Configuration variables
 const CONFIG = {
@@ -21,18 +21,93 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 2,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 5,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
     MESSAGE_FILE: "capturedMessage.json"
 }
 
+// Similarity analysis configuration
+// Similarity analysis configuration
+const SIMILARITY_CONFIG = {
+    // Core files to check, in order of priority
+    // Format: 'filename': { threshold: float, required: boolean, characterDataPath: string }
+    // Files are checked in order, subsequent checks only occur if previous meet threshold
+    coreSimilarity: {
+        'roleInstruction.txt': {
+            threshold: 0.80,
+            required: true,
+            characterDataPath: 'addCharacter.roleInstruction'
+        },
+        'name.txt': {
+            threshold: 0.80,
+            required: true,
+            characterDataPath: 'addCharacter.name'
+        },
+        'reminderMessage.txt': {
+            threshold: 0.70,
+            required: true,
+            characterDataPath: 'addCharacter.reminderMessage'
+        },
+        'initialMessages.json': {
+            threshold: 0.70,
+            required: false,
+            characterDataPath: 'userCharacter.initialMessages'
+        },
+        'custom-code.js': {
+            threshold: 0.60,
+            required: false,
+            characterDataPath: 'addCharacter.customCode'
+        }
+    },
+
+    // Minimum overall similarity to consider as update
+    overallThreshold_Update: 0.5,
+
+    // Minimum overall similarity to consider as fork
+    overallThreshold_Fork: 0.75,
+
+    // Additional files to check for changes if similarity is confirmed
+    // These don't affect fork/update detection but are used for 
+    // Additional files to check for changes if similarity is confirmed
+    // These don't affect fork/update detection but are used for changelog
+    additionalFiles: [
+        {
+            filename: 'avatar.json',
+            characterDataPath: 'addCharacter.avatar',
+            emptyContent: { "avatar": {} }
+        },
+        {
+            filename: 'loreBooksUrls.json',
+            characterDataPath: 'addCharacter.loreBooksUrls',
+            emptyContent: []
+        },
+        {
+            filename: 'systemCharacter.json',
+            characterDataPath: 'addCharacter.systemCharacter',
+            emptyContent: { "avatar": {} }
+        },
+        {
+            filename: 'scene.json',
+            characterDataPath: 'addCharacter.scene',
+            emptyContent: {
+                "background": {
+                    "url": ""
+                },
+                "music": {
+                    "url": ""
+                }
+            }
+        }
+    ]
+};
+
 // API Configuration and quotas
 const API_CONFIG = {
     gemini: {
         token: process.env.GEMINI_TOKEN,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-1.5-flash',
         rateLimit: 60,  // Calls per minute
         maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
@@ -75,6 +150,8 @@ let stats = {
     quarantine: 0,
     invalid: 0,
     duplicate: 0,
+    updated: 0,
+    forked: 0,
     errors: []
 };
 
@@ -88,6 +165,8 @@ const { gunzip } = require('zlib');
 const util = require('util');
 const zlib = require('zlib');
 const crypto = require('crypto');
+const stringSimilarity = require('string-similarity');
+const glob = require('glob').sync;
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 //const { json } = require('stream/consumers');
@@ -188,7 +267,7 @@ class FileHandler {
      * @param {string} source - Path to the file or directory
      * @param {string} destination - New path for the file or directory
      */
-    static async move(source, destination) {
+    static async move(source, destination, silence = false) {
         try {
             // Ensure the destination directory exists
             const destDir = path.dirname(destination);
@@ -197,7 +276,7 @@ class FileHandler {
             // Move the file or directory
             await fs.rename(source, destination);
         } catch (error) {
-            console.error(`Error moving ${source} to ${destination}:`, error);
+            if (!silence) console.error(`Error moving ${source} to ${destination}:`, error);
             throw error;
         }
     }
@@ -362,6 +441,658 @@ class QuotaManager {
         }
     }
 
+}
+
+/* --------------------------- DUPLICATE HANDLING --------------------------- */
+
+/**
+ * Class to analyze character similarities and detect forks/updates
+ */
+class CharacterSimilarityChecker {
+    // constructor(config = SIMILARITY_CONFIG, globalConfig = {}) {
+    //     this.config = config;
+    //     this.globalConfig = globalConfig;
+    // }
+    constructor() {
+        this.config = CONFIG.SIMILARITY || SIMILARITY_CONFIG;
+        this.globalConfig = CONFIG;
+    }
+
+    /**
+     * Gets all existing character paths from the configured directories
+     * @returns {Promise<Array<string>>} Array of paths to existing characters
+     */
+    async getAllExistingCharacterPaths() {
+        const characterPaths = [];
+
+        // Generate paths from CONFIG structure
+        const basePath = this.globalConfig.OUTPUT_PATH;
+        for (const pathKey of Object.keys(this.globalConfig.PATHS)) {
+            const dirPath = path.join(basePath, this.globalConfig.PATHS[pathKey]);
+
+            try {
+                // Find character directories using glob pattern matching
+                const characterDirs = glob(`${dirPath}/**/manifest.json`);
+
+                // Add the directory containing each manifest.json
+                for (const manifestPath of characterDirs) {
+                    characterPaths.push(path.dirname(manifestPath));
+                }
+            } catch (error) {
+                console.warn(`Warning: Could not search in ${dirPath}: ${error.message}`);
+            }
+        }
+
+        return characterPaths;
+    }
+
+    /**
+     * Analyzes a character against existing characters to detect forks/updates
+     * @param {Object} characterData - JSON object containing character data
+     * @param {string} characterName - Name of the character (for logging)
+     * @param {string} authorName - Author of the character
+     * @returns {Promise<Object>} Analysis results including fork/update status and changes
+     */
+    async analyzeCharacter(characterData, characterName, authorName, authorId) {
+        // Get all existing character paths
+        const existingCharPaths = await this.getAllExistingCharacterPaths();
+
+        console.log(`        Checking ${characterName} by ${authorName} for similarity against ${existingCharPaths.length} existing characters`);
+
+        let bestMatch = {
+            path: null,
+            similarity: 0,
+            analysis: null
+        };
+
+        // Check against all existing characters
+        for (const existingPath of existingCharPaths) {
+            const analysis = await this.compareCharacterWithExisting(
+                characterData,
+                authorName,
+                authorId,
+                existingPath
+            );
+
+            if (analysis.overallSimilarity > bestMatch.similarity) {
+                bestMatch = {
+                    path: existingPath,
+                    similarity: analysis.overallSimilarity,
+                    analysis: analysis
+                };
+            }
+        }
+
+        return {
+            ...bestMatch.analysis,
+            bestMatchPath: bestMatch.path
+        };
+    }
+
+    /**
+     * Compares character data with an existing character file
+     * @param {Object} characterData - JSON object containing character data
+     * @param {string} authorName - Author of the character
+     * @param {string} existingCharPath - Path to existing character
+     * @returns {Promise<Object>} Comparison results
+     */
+    async compareCharacterWithExisting(characterData, authorName, authorId, existingCharPath) {
+        const result = {
+            isDuplicate: false,
+            isFork: false,
+            isUpdate: false,
+            similarities: {},
+            changes: [],
+            overallSimilarity: 0
+        };
+
+        // Load existing character manifest to check author
+        const existingMeta = await this.loadManifest(existingCharPath);
+
+        // Check if same author (potential update)
+        //console.log(`Checking authorName: ${authorName} against ${existingMeta.author}, and authorId: ${authorId} against ${existingMeta.authorId} for ${path.basename(existingCharPath)}`);
+        result.isDuplicate = authorId === existingMeta.authorId || (authorName === existingMeta.author && authorName !== 'Anonymous');
+
+        // Perform sequential similarity checks
+        let totalSimilarity = 0;
+        let checksPerformed = 0;
+        let continueChecking = true;
+
+        for (const [filename, config] of Object.entries(this.config.coreSimilarity)) {
+            // Skip if we already failed a required check
+            if (!continueChecking) break;
+
+            // Get data from JSON using the configured path
+            const newContent = this.getNestedProperty(characterData, config.characterDataPath) || '';
+
+            // Get data from existing character file
+            const existingContent = await this.readFileContent(
+                path.join(existingCharPath, 'src', filename)
+            );
+
+            // Calculate similarity
+            const similarity = this.calculateSimilarity(newContent, existingContent);
+            result.similarities[filename] = similarity;
+
+            // If required file doesn't meet threshold, stop checking
+            if (config.required && similarity < config.threshold) {
+                continueChecking = false;
+                break;
+            }
+
+            // console.log(`Similarity for ${filename}: ${similarity}. Checks performed: ${checksPerformed}`);
+            // if (filename === 'initialMessages.json') {
+            //     console.log('\n\nNew:', newContent);
+            //     console.log('Existing:', existingContent, '\n\n');
+            // }
+
+            totalSimilarity += similarity;
+            checksPerformed++;
+
+            // Record changes if files differ
+            if (similarity < 1 && similarity > 0) {
+                result.changes.push({
+                    file: filename,
+                    similarity: similarity,
+                    type: 'MODIFIED'
+                });
+            }
+        }
+
+        // Calculate overall similarity
+        result.overallSimilarity = checksPerformed > 0 ?
+            totalSimilarity / checksPerformed : 0;
+
+        // Determine if it's a update based on similarity thresholds
+        result.isUpdate = result.isDuplicate &&
+            result.overallSimilarity < 1 &&
+            result.overallSimilarity >= this.config.overallThreshold_Update;
+
+        // Determine if it's a fork based on similarity thresholds
+        result.isFork = !result.isUpdate &&
+            result.overallSimilarity >= this.config.overallThreshold_Fork;
+
+        // If it's a fork/update, check additional files for changes
+        if (result.isFork || result.isUpdate) {
+            const additionalChanges = await this.checkAdditionalFiles(
+                characterData,
+                existingCharPath
+            );
+            result.changes.push(...additionalChanges);
+        }
+
+        return result;
+    }
+
+    /**
+     * Safely gets a nested property from an object using a path string
+     * @param {Object} obj - Object to get property from
+     * @param {string} path - Dot-notation path to property (e.g., 'addCharacter.roleInstruction')
+     * @returns {any} Property value or undefined if not found
+     */
+    getNestedProperty(obj, path) {
+        return path.split('.').reduce((prev, curr) => {
+            return prev ? prev[curr] : undefined;
+        }, obj);
+    }
+
+    /**
+ * Calculates string similarity between two content strings
+ * @param {string} newContent - The new content as a string
+ * @param {string} existingContent - The existing content as a string
+ * @returns {number} - Similarity score (0 to 1) where 1 is identical
+ */
+    calculateSimilarity(newContent, existingContent) {
+        // If either input is not a string, convert to string
+        const newStr = typeof newContent !== 'string' ? String(newContent) : newContent;
+        const existingStr = typeof existingContent !== 'string' ? String(existingContent) : existingContent;
+
+        // Try to parse as JSON (to check for empty JSON structures)
+        let newParsed, existingParsed;
+        let isNewJson = false, isExistingJson = false;
+
+        try {
+            newParsed = JSON.parse(newStr);
+            isNewJson = true;
+        } catch (e) {
+            // Not valid JSON, use the string as is
+        }
+
+        try {
+            existingParsed = JSON.parse(existingStr);
+            isExistingJson = true;
+        } catch (e) {
+            // Not valid JSON, use the string as is
+        }
+
+        // If both are valid JSON, check if they're empty using isEmptyValue
+        if (isNewJson && isExistingJson) {
+            // If both are empty, they're identical
+            if (this.isEmptyValue(newParsed) && this.isEmptyValue(existingParsed)) {
+                return 1; // Maximum similarity
+            }
+
+            // If one is empty but the other isn't, they're completely different
+            if (this.isEmptyValue(newParsed) || this.isEmptyValue(existingParsed)) {
+                return 0; // No similarity
+            }
+        }
+
+        // For non-JSON strings or non-empty JSON strings, preprocess and compare them
+        return stringSimilarity.compareTwoStrings(
+            this.preprocessContent(newStr),
+            this.preprocessContent(existingStr)
+        );
+    }
+
+
+    /**
+     * Checks additional files for changes with improved JSON comparison
+     * @param {Object} characterData - JSON object containing character data
+     * @param {string} existingPath - Path to existing character
+     * @returns {Promise<Array>} Array of detected changes
+     */
+    async checkAdditionalFiles(characterData, existingPath) {
+        //console.log(`    Checking additional files for ${existingPath}`);
+        const changes = [];
+
+        for (const fileDef of this.config.additionalFiles) {
+            // Extract new and existing content
+            let newContent = this.getNestedProperty(characterData, fileDef.characterDataPath);
+            let existingContent = await this.readFileContent(
+                path.join(existingPath, fileDef.filename)
+            );
+
+            // Normalize empty content (null → empty object/array)
+            newContent = newContent ?? fileDef.emptyContent;
+            existingContent = existingContent ?? fileDef.emptyContent;
+
+            // Ensure parsed JSON before formatting
+            try {
+                if (typeof existingContent === 'string') existingContent = JSON.parse(existingContent);
+                if (typeof fileDef.emptyContent === 'string') fileDef.emptyContent = JSON.parse(fileDef.emptyContent);
+            } catch (error) {
+                console.warn(`Failed to parse existing content for ${fileDef.filename}:`, error);
+            }
+
+            // Calculate similarity using the new key-by-key comparison
+            const similarity = this.calculateJsonSimilarity(newContent, existingContent);
+
+            // console.log(`\n\nAdditional file similarity for ${fileDef.filename}: ${similarity}`);
+            // console.log('New:', JSON.stringify(newContent, null, 2));
+            // console.log('Existing:', JSON.stringify(existingContent, null, 2));
+            // console.log('Empty template:', JSON.stringify(fileDef.emptyContent, null, 2));
+
+            if (similarity < 1) {
+                // Determine whether the change is an addition, removal, or modification
+                const changeType = this.determineChangeType(
+                    newContent, 
+                    existingContent, 
+                    fileDef.emptyContent
+                );
+                
+                changes.push({
+                    file: fileDef.filename,
+                    type: changeType,
+                    similarity: similarity
+                });
+            }
+        }
+
+        return changes;
+    }
+
+    /**
+ * Determines the type of change by comparing new and existing content
+ * @param {any} newContent - The new content
+ * @param {any} existingContent - The existing content
+ * @param {any} emptyContent - The template for empty content
+ * @returns {string} - The type of change: 'ADDED', 'REMOVED', or 'MODIFIED'
+ */
+    determineChangeType(newContent, existingContent, emptyContent) {
+        // Helper function to check if content is effectively empty
+        const isEffectivelyEmpty = (content, emptyTemplate) => {
+            // If content is null or undefined, it's empty
+            if (content === null || content === undefined) return true;
+
+            // Check if content is equal to the empty template
+            const contentStr = JSON.stringify(content);
+            const emptyStr = JSON.stringify(emptyTemplate);
+            return contentStr === emptyStr;
+        };
+
+        // Check if new content is effectively empty (null, undefined, or equal to emptyContent)
+        const isNewEmpty = isEffectivelyEmpty(newContent, emptyContent);
+
+        // Check if existing content is effectively empty (null, undefined, or equal to emptyContent)
+        const isExistingEmpty = isEffectivelyEmpty(existingContent, emptyContent);
+
+        // Determine change type based on emptiness
+        if (isExistingEmpty && !isNewEmpty) {
+            return 'ADDED';      // Content was added (didn't exist before)
+        } else if (!isExistingEmpty && isNewEmpty) {
+            return 'REMOVED';    // Content was removed (existed before)
+        } else {
+            return 'MODIFIED';   // Content was changed
+        }
+    }
+
+    /**
+     * Calculates similarity between two JSON objects by comparing keys
+     * @param {Object|Array} newContent - The new JSON content
+     * @param {Object|Array} existingContent - The existing JSON content
+     * @returns {number} - Similarity score (0 to 1) where 1 is identical
+     */
+    calculateJsonSimilarity(newContent, existingContent) {
+        // Handle arrays differently from objects
+        if (Array.isArray(newContent) && Array.isArray(existingContent)) {
+            // If both are empty arrays, they're identical
+            if (newContent.length === 0 && existingContent.length === 0) {
+                return 1;
+            }
+
+            // If one is empty but the other isn't, they're completely different
+            if (newContent.length === 0 || existingContent.length === 0) {
+                return 0;
+            }
+
+            // For arrays, compare each item
+            const totalItems = Math.max(newContent.length, existingContent.length);
+            let similaritySum = 0;
+
+            for (let i = 0; i < totalItems; i++) {
+                // If item exists in both arrays, compare them
+                if (i < newContent.length && i < existingContent.length) {
+                    if (typeof newContent[i] === 'object' && typeof existingContent[i] === 'object') {
+                        // Recursive comparison for nested objects
+                        similaritySum += this.calculateJsonSimilarity(newContent[i], existingContent[i]);
+                    } else {
+                        // Direct comparison for primitive values
+                        similaritySum += (newContent[i] === existingContent[i]) ? 1 : 0;
+                    }
+                }
+                // If item exists in only one array, similarity is 0 for this item
+            }
+
+            return similaritySum / totalItems;
+        }
+
+        // Handle objects
+        if (typeof newContent === 'object' && newContent !== null &&
+            typeof existingContent === 'object' && existingContent !== null) {
+
+            // Get all unique keys from both objects
+            const allKeys = new Set([
+                ...Object.keys(newContent),
+                ...Object.keys(existingContent)
+            ]);
+
+            // If there are no keys, both are empty objects and identical
+            if (allKeys.size === 0) {
+                return 1;
+            }
+
+            let totalKeySimilarity = 0;
+
+            // Compare each key
+            for (const key of allKeys) {
+                const newHasKey = key in newContent;
+                const existingHasKey = key in existingContent;
+
+                // Rule 1: If one content has a value for a key and other doesn't, similarity is 0 for this key
+                if (newHasKey !== existingHasKey) {
+                    totalKeySimilarity += 0;
+                    continue;
+                }
+
+                const newValue = newContent[key];
+                const existingValue = existingContent[key];
+
+                // Rule 2: If both are empty (null, undefined, empty string, or empty object), similarity is 1 for this key
+                const newValueEmpty = this.isEmptyValue(newValue);
+                const existingValueEmpty = this.isEmptyValue(existingValue);
+
+                if (newValueEmpty && existingValueEmpty) {
+                    totalKeySimilarity += 1;
+                    continue;
+                }
+
+                // Rule 3: If both have content, compare deeper
+                if (typeof newValue === 'object' && newValue !== null &&
+                    typeof existingValue === 'object' && existingValue !== null) {
+                    // Recursive comparison for nested objects
+                    totalKeySimilarity += this.calculateJsonSimilarity(newValue, existingValue);
+                } else {
+                    // Direct string comparison for primitive values
+                    const newStr = String(newValue);
+                    const existingStr = String(existingValue);
+                    totalKeySimilarity += this.calculateSimilarity(newStr, existingStr);
+                }
+            }
+
+            // Return average similarity across all keys
+            return totalKeySimilarity / allKeys.size;
+        }
+
+        // If we got here, at least one isn't an object
+        // Use the original similarity check for non-objects
+        return this.calculateSimilarity(
+            JSON.stringify(newContent, null, 2),
+            JSON.stringify(existingContent, null, 2)
+        );
+    }
+
+    /**
+     * Determines if a value is considered "empty"
+     * @param {any} value - The value to check
+     * @returns {boolean} - True if the value is considered empty
+     */
+    isEmptyValue(value) {
+        // Null or undefined
+        if (value === null || value === undefined) return true;
+
+        // Empty string
+        if (typeof value === 'string' && value.trim() === '') return true;
+
+        // Empty array
+        if (Array.isArray(value) && value.length === 0) return true;
+
+        // Empty object (no keys)
+        if (typeof value === 'object' && Object.keys(value).length === 0) return true;
+
+        return false;
+    }
+
+    /**
+     * Preprocesses content for comparison
+     * @param {string} content - File content
+     * @returns {string} Preprocessed content
+     */
+    preprocessContent(content) {
+        if (typeof content !== 'string') {
+            content = String(content || '');
+        }
+
+        return content
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    /**
+     * Loads character manifest file
+     * @param {string} charPath - Path to character directory
+     * @returns {Promise<Object>} Manifest content
+     */
+    async loadManifest(charPath) {
+        try {
+            const manifest = await fs.readFile(
+                path.join(charPath, 'manifest.json'),
+                'utf8'
+            );
+            return JSON.parse(manifest);
+        } catch (error) {
+            return { author: null };
+        }
+    }
+
+    /**
+     * Reads file content
+     * @param {string} filePath - Path to file
+     * @returns {Promise<string|null>} File content or null if file doesn't exist
+     */
+    async readFileContent(filePath) {
+        try {
+            return await fs.readFile(filePath, 'utf8');
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Updates changelog for an existing character based on detected changes
+     * @param {string} characterPath - Path to character
+     * @param {Array} changes - Array of detected changes
+     * @returns {Promise<void>}
+     */
+    async updateChangelog(characterPath, changes) {
+        try {
+            // Define changelog path
+            const changelogPath = path.join(characterPath, 'changelog.json');
+            let changelog = {};
+
+            try {
+                // Try reading and parsing the existing changelog
+                const content = await fs.readFile(changelogPath, 'utf8');
+                changelog = JSON.parse(content);
+
+                // Ensure the changelog format is correct
+                if (!changelog.history || !Array.isArray(changelog.history)) {
+                    console.warn('Invalid changelog. Creating a default structure.');
+                    changelog = {
+                        currentVersion: '1.0.0',
+                        created: new Date().toISOString(),
+                        lastUpdated: new Date().toISOString(),
+                        history: []
+                    };
+                }
+            } catch (error) {
+                // If the file doesn't exist or is invalid, create a new changelog
+                console.warn(`Error reading changelog: ${error.message}. Creating a new one.`);
+                changelog = {
+                    currentVersion: '1.0.0',
+                    created: new Date().toISOString(),
+                    lastUpdated: new Date().toISOString(),
+                    history: []
+                };
+            }
+
+            // Bump the version
+            const newVersion = bumpVersion(changelog.currentVersion);
+
+            // Add a new entry to the history
+            changelog.history.push({
+                version: newVersion,
+                date: new Date().toISOString(),
+                type: "update",
+                changes: changes.map(change => `${change.type} - ${change.file} (similarity: ${Math.round(change.similarity * 100) / 100}%)`)
+            });
+
+            // Update metadata
+            changelog.currentVersion = newVersion;
+            changelog.lastUpdated = new Date().toISOString();
+
+            // Write back to the file
+            await fs.writeFile(changelogPath, JSON.stringify(changelog, null, 2));
+
+            console.log(`Updated changelog for ${path.basename(characterPath)} to version ${newVersion}`);
+        } catch (error) {
+            console.error(`Error updating changelog: ${error.message}`);
+        }
+    }
+}
+
+/**
+ * Example usage in your existing processCharacter function
+ * @param {Object} characterData - Character data from JSON
+ * @param {Object} metadata - Character metadata
+ * @param {Object} CONFIG - Global configuration
+ */
+async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
+    // // Create similarity checker with configs
+    // const similarityChecker = new CharacterSimilarityChecker(
+    //     CONFIG.SIMILARITY || SIMILARITY_CONFIG,
+    //     CONFIG
+    // );
+
+    // Analyze character against existing ones
+    const analysis = await similarityChecker.analyzeCharacter(
+        characterData,
+        metadata.characterName,
+        metadata.authorName,
+        metadata.authorId
+    );
+
+    //console.log(`Full Analysis result for ${metadata.characterName}: ${JSON.stringify(analysis, null, 2)}`);
+    // console.log(`Similarity analysis for ${metadata.characterName}:`, {
+    //     isDuplicate: analysis.isDuplicate,
+    //     isFork: analysis.isFork,
+    //     isUpdate: analysis.isUpdate,
+    //     overallSimilarity: analysis.overallSimilarity,
+    //     bestMatch: analysis.bestMatchPath ? path.basename(analysis.bestMatchPath) : 'None'
+    // });
+
+    if (analysis.isDuplicate) {
+        // Handle duplicate case
+        //console.log(`Duplicate of existing character: ${metadata.characterName}`);
+
+        // Set destination path to the same as the existing character
+        return {
+            isExisting: true,
+            type: 'DUPLICATE',
+            destinationPath: analysis.bestMatchPath,
+            changes: analysis.changes
+        };
+    }
+
+    if (analysis.isUpdate) {
+        // Handle update case
+        console.log(`Updating existing character changelog: ${metadata.characterName}`);
+
+        // Update changelog with detected changes
+        await similarityChecker.updateChangelog(analysis.bestMatchPath, analysis.changes);
+
+        // Set destination path to the same as the existing character
+        return {
+            isExisting: true,
+            type: 'UPDATE',
+            destinationPath: analysis.bestMatchPath,
+            changes: analysis.changes
+        };
+    }
+
+    if (analysis.isFork) {
+        // Handle fork case
+        //console.log(`Found fork of existing character: ${metadata.characterName}`);
+
+        // Get base path of original character to use in manifest
+        const originalCharName = path.basename(analysis.bestMatchPath);
+
+        return {
+            isExisting: false,
+            type: 'FORK',
+            forkedFrom: originalCharName,
+            forkedPath: analysis.bestMatchPath,
+            similarities: analysis.similarities,
+            changes: analysis.changes
+        };
+    }
+
+    // Not a fork or update
+    return {
+        isExisting: false,
+        type: 'NEW'
+    };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -772,7 +1503,7 @@ function fixRating(parsedJson) {
 /**
  * Get list of character folders to process
  */
-async function getCharacterFolders() {
+async function getNewCharacterFolders() {
     try {
         // Read directory contents
         const folders = await fs.readdir(CONFIG.SOURCE_PATH);
@@ -808,6 +1539,29 @@ async function getCharacterFolders() {
 }
 
 /**
+ * Get list of character folders to process
+ */
+async function getExistingCharacterFolders() {
+    try {
+        // Read directory contents
+        const folders = await fs.readdir(CONFIG.SOURCE_PATH);
+
+        // Filter out hidden files (starting with '.')
+        const filteredFolders = folders.filter(folder => !folder.startsWith('.'));
+
+        // Log found files/folders for debugging
+        //console.log("Found files/folders:", filter);
+
+        return filter;
+
+
+    } catch (err) {
+        console.error(`Error reading directory ${CONFIG.SOURCE_PATH}:`, err.message);
+        throw err;
+    }
+}
+
+/**
  * Determine destination path based on AI analysis
  * @param {object} aiAnalysis - Analysis results from AI
  */
@@ -825,7 +1579,7 @@ function determineDestinationPath(aiAnalysis, folder) {
 
     // Send to manual review
     if (manualReview) {
-        filePath = path.join(parentDir, CONFIG.PATHS.MANUAL_REVIEW);
+        filePath = path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.MANUAL_REVIEW);
         FileHandler.writeJson(path.join(filePath, folder, 'aiAnalysis.json'), aiAnalysis)
         return filePath;
     }
@@ -841,9 +1595,9 @@ function determineDestinationPath(aiAnalysis, folder) {
         if (charState === 'quarantine') {
             return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.QUARANTINE);
         } else if (aiAnalysis.charState.toLowerCase() === 'invalid') {
-            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_INVALID);
+            return path.join(parentDir, CONFIG.PATHS.DISCARDED_INVALID);
         } else {
-            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.DISCARDED_ERROR);
+            return path.join(parentDir, CONFIG.PATHS.DISCARDED_ERROR);
         }
     }
 }
@@ -868,18 +1622,18 @@ async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
         const folder = metadata.folderName;
         const link = metadata.link;
 
-        // // Checking for folders with same name
-        // for (const checkPath of possiblePaths) {
-        //     const ckPath = path.join(checkPath, folder);
-        //     const fullPath = path.join(CONFIG.OUTPUT_PATH, ckPath);
-        //     try {
-        //         await fs.access(fullPath);
-        //         console.log(`Found duplicate folder on ${fullPath}`);
-        //         return ckPath;
-        //     } catch {
-        //         // Path doesn't exist, continue checking
-        //     }
-        // }
+        // Checking for folders with same name
+        for (const checkPath of possiblePaths) {
+            const ckPath = path.join(checkPath, folder);
+            const fullPath = path.join(CONFIG.OUTPUT_PATH, ckPath);
+            try {
+                await fs.access(fullPath);
+                //console.log(`Found duplicate folder on ${fullPath}`);
+                return { duplicatePath: fullPath, duplicateType: "folder" };
+            } catch {
+                // Path doesn't exist, continue checking
+            }
+        }
 
         // Check for repeating links in existingLinks
         const duplicateLink = existingLinks.find(existing =>
@@ -892,7 +1646,7 @@ async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
 
         if (duplicateLink) {
             console.log(`Duplicate link found in ${duplicateLink.path}`);
-            return duplicateLink.path;
+            return { duplicatePath: duplicateLink.path, duplicateType: "link" };
         }
 
         return false;
@@ -907,30 +1661,58 @@ async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
  * @param {string} folder - Character folder name
  * @param {string} existingPath - Path to existing character
  */
-async function removeDuplicate(folder, existingPath, metadata) {
+async function removeDuplicate(folder, existingPath, metadata, fileHash = null) {
     try {
         const sourcePath = path.join(CONFIG.SOURCE_PATH, folder)
         // Gets parent directory of source path
         const parentDir = path.dirname(CONFIG.SOURCE_PATH);
         const duplicatePath = path.join(parentDir, CONFIG.PATHS.DISCARDED_DUPLICATE, folder);
-        const referenceContent = {
-            originPath: sourcePath,
-            existingPath: existingPath,
-            destinationPath: duplicatePath,
-            duplicateDate: new Date().toISOString()
-        };
+        let referenceContent;
+
+        if (fileHash && !existingPath) {
+            referenceContent = {
+                originPath: sourcePath,
+                existingHash: fileHash,
+                destinationPath: duplicatePath,
+                duplicateDate: new Date().toISOString()
+            };
+        } else if (!fileHash && existingPath) {
+            referenceContent = {
+                originPath: sourcePath,
+                existingPath: existingPath,
+                destinationPath: duplicatePath,
+                duplicateDate: new Date().toISOString()
+            }
+        } else {
+            referenceContent = {
+                originPath: sourcePath,
+                existingPath: existingPath,
+                existingHash: fileHash,
+                destinationPath: duplicatePath,
+                duplicateDate: new Date().toISOString()
+            }
+        }
 
         const newMetadata = [{ ...metadata }];
         const fileId = metadata.fileId
 
         // Move duplicated files
-        console.log(`Moving and copying duplicated character files from: "${sourcePath}" to "${duplicatePath}"`)
+        console.log(`    Moving and copying duplicated character files from: "${sourcePath}" to "${duplicatePath}"`)
 
-        // Move gz file
-        await FileHandler.move(
-            path.join(sourcePath, fileId),
-            path.join(duplicatePath, fileId)
-        );
+        try {
+            // Move gz file
+            await FileHandler.move(
+                path.join(sourcePath, fileId),
+                path.join(duplicatePath, fileId),
+                true
+            );
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                console.warn(`  File Id ${fileId} was not found to delete on ${folder}.`);
+            } else {
+                throw error;
+            }
+        }
 
         // Copy captured message
         await FileHandler.copy(
@@ -956,15 +1738,17 @@ async function removeDuplicate(folder, existingPath, metadata) {
  * @returns {Promise<string>} The computed hash as a hexadecimal string.
  */
 async function calculateFileHash(fileBuffer, algorithm = 'sha256') {
+    // console.log('Calculating file hash...');
     try {
         // Create a hash instance
         const hash = crypto.createHash(algorithm);
 
         // Update hash with the file data
         hash.update(fileBuffer);
-
+        const fileHash = hash.digest('hex');
         // Return the final hash as a hex string
-        return hash.digest('hex');
+        // console.log('File hash calculated successfully:', fileHash);
+        return fileHash;
     } catch (error) {
         console.error('Error calculating file hash:', error.message);
         throw error;
@@ -996,8 +1780,8 @@ function checkForDuplicateHash(existingLinks, fileHash) {
  * @param {string} fileName - File name
  */
 async function extractCharacterData(folder, fileName, existingLinks, retry = false) {
-    console.log(`Extracting character data from ${fileName} in folder ${folder}`);
-    console.log(`folder: ${folder}, fileName: ${fileName}`);
+    //console.log(`Extracting character data from ${fileName} in folder ${folder}`);
+    //console.log(`folder: ${folder}, fileName: ${fileName}`);
     const gzPath = path.join(CONFIG.SOURCE_PATH, folder, fileName);
     let gzBuffer;
 
@@ -1007,7 +1791,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
     } catch (error) {
         // If the file is not found, trigger download
         if (error.code === 'ENOENT') {
-            console.error(`File ${fileName} not found. Downloading...`);
+            console.error(`    File ${fileName} not found. Downloading...`);
             await downloadFile(folder, fileName);  // Implement the actual download function
             gzBuffer = await fs.readFile(gzPath);  // Try reading again after downloading
         } else {
@@ -1017,11 +1801,11 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
     }
 
     // Calculate file hash
-    const fileHash = await calculateFileHash(gzBuffer);
+    const hash = await calculateFileHash(gzBuffer);
 
-    if (checkForDuplicateHash(existingLinks, fileHash)) {
-        console.log(`           Duplicate file hash found for: ${charName}`);
-        return {characterdata:'duplicate',fileHash: fileHash};
+    if (checkForDuplicateHash(existingLinks, hash)) {
+        console.log(`           Duplicate file hash found for: ${fileName}`);
+        return { characterData: 'duplicate', fileHash: hash };
     }
 
     let unzipped;
@@ -1037,12 +1821,16 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
             // If retry flag is set, prevent infinite recursion
             if (retry) {
                 console.error('Download failed. Retrying extraction without download.');
-                return {characterdata: null ,fileHash: null};  // Return null to indicate failure
+                return { characterData: null, fileHash: null };  // Return null to indicate failure
             }
 
             // Download the file and attempt extraction again
             await downloadFile(folder, fileName);
-            return {characterdata: extractCharacterData(folder, fileName, existingLinks, true),fileHash: null};  // Retry after downloading
+            const retryResult = await extractCharacterData(folder, fileName, existingLinks, true);
+            return {
+                characterData: retryResult.characterData,
+                fileHash: retryResult.fileHash || hash
+            };
         } else {
             // Re-throw any other unexpected errors
             throw error;
@@ -1050,7 +1838,7 @@ async function extractCharacterData(folder, fileName, existingLinks, retry = fal
     }
 
     // Return the uncompressed data as a JSON object
-    return {characterdata: JSON.parse(unzipped.toString()),fileHash: null};
+    return { characterData: JSON.parse(unzipped.toString()), fileHash: hash };
 }
 
 /**
@@ -1065,7 +1853,7 @@ async function downloadFile(dir, filename) {
 
         const response = await fetch(download_url);
         if (!response.ok) {
-            throw new Error(`       Download failed: ${response.status}`);
+            throw new Error(`        Download failed: ${response.status}`);
         }
 
         // Convert response to buffer
@@ -1080,7 +1868,7 @@ async function downloadFile(dir, filename) {
         console.log(`        Download successfully saved on: ${filePath}`);
         return filePath;
     } catch (error) {
-        console.error('     Failed to download file:', error.message);
+        console.error('        Failed to download file:', error.message);
         throw error;
     }
 }
@@ -1093,7 +1881,7 @@ async function downloadFile(dir, filename) {
  * @param {object} aiAnalysis - AI analysis results
  * @param {string} destinationPath - Destination path
  */
-async function createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, img, fileHash) {
+async function createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, img, fileHash, forkAnalysis) {
 
     // Create character files
     const importFileName = `character_${folder}.gz`
@@ -1101,18 +1889,19 @@ async function createCharacterStructure(folder, metadata, message, characterData
     const charFiles = await createCharacterFiles(characterInfo, importFileName, img)
 
     // Create manifest
-    const manifest = createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash);
-
-    // Create changelog
-    const changelog = createChangelog(message);
+    const manifest = createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash, forkAnalysis);
 
     // Prepare files to commit
     const filename = metadata.fileId;
     const files = {
         'manifest.json': JSON.stringify(manifest, null, 2),
-        'changelog.json': JSON.stringify(changelog, null, 2),
         [filename]: await util.promisify(gzip)(JSON.stringify(characterData))
     };
+
+    // Create and add changelog only if it's NOT an update
+    if (forkAnalysis.type !== 'UPDATE') {
+        files['changelog.json'] = JSON.stringify(createChangelog(message), null, 2);
+    }
 
     // Add character files to the list of files
     Object.entries(charFiles).forEach(([filePath, content]) => {
@@ -1267,7 +2056,7 @@ async function createCharacterFiles(characterInfo, importFileName, img) {
  * @param {object} aiAnalysis - AI analysis results
  * @param {object} img - Image Link
  */
-function createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash) {
+function createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash, forkAnalysis) {
 
     console.log("    Creating manifest")
 
@@ -1282,13 +2071,14 @@ function createManifest(metadata, message, characterData, aiAnalysis, charFiles,
     return {
         name: characterData?.addCharacter?.name || '',
         description: aiAnalysis.description,
-        author: message.username || message.userNickname || message.publicId || 'Anonymous',
-        authorId: message.userId,
+        author: message.username || message.userNickname || 'Anonymous',
+        authorId: message.publicId,
         source: 'SCRAPER',
         imageUrl: imgUrl || '',
         shareUrl: metadata.link,
         shareLinkFileHash: fileHash || '',
         downloadPath: downloadPath,
+        forkedFrom: forkAnalysis.forkedPath || '',
         shapeShifter_Pulls: 0,
         galleryChat_Clicks: 0,
         galleryDownload_Clicks: 0,
@@ -1351,17 +2141,20 @@ async function updateCharacterIndex(characterPath, manifest) {
         const indexContent = await fs.readFile(indexPath, 'utf8');
         const indexData = JSON.parse(indexContent);
 
-        //const relativePath = path.relative(CONFIG.OUTPUT_PATH, characterPath);
-        const relativePath = path.relative(characterPath);
-        const newEntry = { path: relativePath, manifest };
+        // const relativePath = path.relative(CONFIG.OUTPUT_PATH, characterPath);
+        // const newEntry = { path: relativePath, manifest };
 
-        const existingIndex = indexData.findIndex(item => item.path === relativePath);
+        const newEntry = { path: characterPath, manifest };
+
+        //const existingIndex = indexData.findIndex(item => item.path === relativePath);
+        const existingIndex = indexData.findIndex(item => item.path === characterPath);
         if (existingIndex !== -1) {
             indexData[existingIndex] = newEntry;
         } else {
             indexData.push(newEntry);
         }
 
+        console.log("    Writing updated index.json to:", indexPath);
         await fs.writeFile(indexPath, JSON.stringify(indexData, null, 2));
     } catch (error) {
         console.error('Error updating index.json:', error);
@@ -1386,7 +2179,7 @@ async function processCharacters() {
             process.exit(0);
         }
 
-        const characterFolders = await getCharacterFolders();
+        const characterFolders = await getNewCharacterFolders();
         console.log(`Found ${characterFolders.length} characters to process`);
         const foldersToProcess = characterFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
 
@@ -1446,34 +2239,84 @@ async function processCharacter(folder, existingLinks) {
             }
         }
 
-        //console.log("    Unique metadata:", uniqueMetadata);
-
         // Get total items to process
-        const totalItems = uniqueMetadata.length;
+        let totalItems = uniqueMetadata.length;
+
+        //console.log(`    ${totalItems} Unique metadata:`, JSON.stringify(uniqueMetadata));
 
         // Iterate over unique metadata
         for (const item of uniqueMetadata) {
             try {
-                //console.log(`    Processing item: ${JSON.stringify(item)} with link: ${item.link}`);
+                console.log(`    Processing file: ${item.fileId} with link: ${item.link}`);
 
-                // Check for duplicate - TODO FIX TO DEAL WITH CHARACTER FOLDER
-                const isDuplicate = await checkDuplicateLinksAndFolder(item, existingLinks);
-                if (isDuplicate) {
-                    await removeDuplicate(folder, isDuplicate, item);
-                    totalItems --;
+                // Check if link or folder is a duplicate
+                const { duplicateType, duplicatePath } = await checkDuplicateLinksAndFolder(item, existingLinks);
+                // duplicatePath: sfw/2B_and_A2 by f2956d4fbdec4339c178
+
+                // Check if link is duplicate
+                if (duplicateType === 'link') {
+                    console.log(`    Removing ${item.fileId} from folder ${folder} due to duplicate link.`);
+                    await removeDuplicate(folder, duplicatePath, item);
+                    totalItems--;
+                    stats.duplicate++;
                     continue;
                 }
 
+                // Access or download gzfile to extract data to perform more checks
                 // Get Gz fileId
                 const gzFile = item.fileId;
 
                 // Extract Gz content or download if corrupted / missing
-                const {characterData, fileHash} = await extractCharacterData(folder, gzFile, existingLinks);
+                const { characterData, fileHash } = await extractCharacterData(folder, gzFile, existingLinks);
 
+
+                // Check if hash is duplicate
                 if (characterData === 'duplicate') {
-                    console.log(`    Skipping duplicated character ${item.characterName_Sanitized} by ${item.authorName}.`);
+                    console.log(`    Removing ${item.fileId} from folder ${folder} due to duplicate hash.`);
+                    await removeDuplicate(folder, null, item, fileHash);
                     totalItems--;
+                    stats.duplicate++;
                     continue;
+                }
+
+                // Check if folder is duplicate
+                if (duplicateType === 'folder') {
+                    console.log(`    Found existing folder ${duplicatePath} for ${item.characterName}.`);
+                    // Check if is 
+                    const duplicateCheck = similarityChecker.compareCharacterWithExisting(characterData, item.authorName, item.authorId, duplicatePath)
+                    if (duplicateCheck.isDuplicate && !duplicateCheck.isUpdate) {
+                        console.log(`    Removing ${item.fileId} from folder ${folder} due to ${duplicateCheck.overallSimilarity * 100}% similarity.`);
+                        await removeDuplicate(folder, duplicatePath, item, fileHash);
+                        totalItems--;
+                        stats.duplicate++;
+                        continue;
+                    }
+                }
+
+                /* ---------------------------- SIMILARITY CHECK ---------------------------- */
+                // Check for forks/updates before processing
+                const forkAnalysis = await checkForForkAndUpdate(characterData, item, CONFIG);
+                //console.log(`Fork analysis: ${JSON.stringify(forkAnalysis)}`);
+
+                if (forkAnalysis.isExisting && forkAnalysis.type === 'DUPLICATE') {
+                    // This is an update to an existing character
+                    console.log(`    Removing ${item.fileId} from folder ${folder} due to similarity type: ${forkAnalysis.type}.`);
+                    await removeDuplicate(folder, duplicatePath, item, fileHash);
+                    totalItems--;
+                    stats.duplicate++;
+                    continue;
+                }
+
+                if (forkAnalysis.isExisting && forkAnalysis.type === 'UPDATE') {
+                    // This is an update to an existing character
+                    console.log(`Character ${item.name} is an UPDATE to existing character. Similarity: ${forkAnalysis.overallSimilarity * 100}%`);
+                    stats.updated++;
+                }
+
+                // If it's a fork, add that information to the manifest
+                if (forkAnalysis.type === 'FORK') {
+                    console.log(`Character ${item.name} is an FORK of existing character. Similarity: ${forkAnalysis.overallSimilarity * 100}%.\nForked character: ${forkAnalysis.forkedFrom}`);
+                    stats.forked++;
                 }
 
                 // Read capturedMessage.json
@@ -1520,7 +2363,7 @@ async function processCharacter(folder, existingLinks) {
                         errMsg = 'Image was not generated. Skipping character.'
                         console.error(errMsg)
                         //throw new Error(errMsg);
-                        stats.errors.push({ folder, error: error.message });
+                        stats.errors.push({ folder, error: errMsg });
                         continue;
                     }
 
@@ -1534,7 +2377,7 @@ async function processCharacter(folder, existingLinks) {
                 }
 
                 const destinationPath = determineDestinationPath(aiAnalysis, folder);
-                await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, fileHash);
+                await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, fileHash, forkAnalysis);
 
 
                 // Copy capturedMessage.json
@@ -1576,17 +2419,16 @@ async function processCharacter(folder, existingLinks) {
         // Only remove the folder after processing if there are no more items to process
         if (totalItems === 0) {
             // Remove the folder from source after 
-            console.log(`Removing folder ${folder} from source after processing`);
-            //await FileHandler.removeDirectory(path.join(CONFIG.SOURCE_PATH, folder));
+            console.log(`    Removing folder ${folder} from source after processing`);
+            await FileHandler.removeDirectory(path.join(CONFIG.SOURCE_PATH, folder));
         }
 
-        console.log(`processedLinks: ${JSON.stringify(processedLinks)}`);
-
         // Return all processed links
+        console.log(`    Added items: ${processedLinks.length} of ${uniqueMetadata.length}. Unprocessed items: ${totalItems}`);
         return processedLinks;
 
     } catch (error) {
-        console.error(`Error processing character in folder ${folder}:`, error);
+        console.error(` Error processing character in folder ${folder}:`, error);
         stats.errors.push({ folder, error: error.message });
     }
 }
@@ -1595,6 +2437,12 @@ async function processCharacter(folder, existingLinks) {
 /*                             AUXILIARY FUNCTIONS                            */
 /* -------------------------------------------------------------------------- */
 
+function bumpVersion(version) {
+    const parts = version.split('.').map(num => parseInt(num, 10));
+    if (parts.length !== 3) return '1.0.0'; // Fallback if version is invalid
+    parts[2]++; // Increment patch version
+    return parts.join('.');
+}
 
 async function getLinksFromIndex() {
     try {
@@ -1687,7 +2535,7 @@ function printStats() {
 /* -------------------------------------------------------------------------- */
 
 const quotaManager = new QuotaManager();
-
+const similarityChecker = new CharacterSimilarityChecker();
 async function main() {
     try {
         await quotaManager.init();
