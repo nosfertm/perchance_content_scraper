@@ -1297,6 +1297,8 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
     - Some categories are marked as required (required: true)
     - Some categories are only for NSFW content (nsfw_only: true)
     - Use tags from either 'general' or 'nsfw' lists as appropriate
+    - '{{char}}' is a placeholder for the character's name
+    - '{{user}}' is a placeholder for the user's role with the character
 
     Character State Rules:
     - 'valid': (Default Value) Character has complete, appropriate and coherent data
