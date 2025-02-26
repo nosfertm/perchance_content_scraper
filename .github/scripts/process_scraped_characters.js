@@ -164,6 +164,7 @@ let stats = {
     duplicate: 0,
     updated: 0,
     forked: 0,
+    missingImage: 0,
     errors: []
 };
 
@@ -2483,8 +2484,7 @@ async function processCharacter(folder, existingLinks) {
                     } else {
                         errMsg = 'Image was not generated. Skipping character.'
                         console.error(errMsg)
-                        //throw new Error(errMsg);
-                        stats.errors.push({ folder, error: errMsg });
+                        stats.missingImage++;
                         continue;
                     }
 
@@ -2691,6 +2691,9 @@ function printStats() {
     console.log(`Quarantine: ${stats.quarantine}`);
     console.log(`Invalid: ${stats.invalid}`);
     console.log(`Duplicate: ${stats.duplicate}`);
+    console.log(`Updated: ${stats.updated}`);
+    console.log(`Forked: ${stats.forked}`);
+    console.log(`Missing Image: ${stats.missingImage}`);
     console.log(`Errors: ${stats.errors.length}`);
 
     if (stats.errors.length > 0) {
