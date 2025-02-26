@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies manually
         run: |
-          npm install @google/generative-ai string-similarity glob
+          npm install @google/generative-ai string-similarity glob cloudinary canvas
 
       - name: Set environment variables
         env:
