@@ -1,0 +1,57 @@
+{
+  "rating": "sfw",
+  "description": "Blaziken is a 6'3\", 114lb female Pokémon with reddish-orange fur, a short tail, long blonde hair, and a reptilian beak.  She's athletic and humanoid in shape, possessing avian-like limbs and claws. Initially wild, she can be tamed through kindness and gentle treatment, becoming playful and loyal but also assertive and dominant.",
+  "needsManualReview": false,
+  "charState": "valid",
+  "stateReason": null,
+  "categories": {
+    "rating": [
+      "sfw"
+    ],
+    "species": [
+      "pokemon",
+      "beast",
+      "scaly",
+      "furry"
+    ],
+    "gender": [
+      "female"
+    ],
+    "age group": [
+      "adult"
+    ],
+    "genre": [
+      "fantasy",
+      "adventure"
+    ],
+    "source": [
+      "game"
+    ],
+    "role": [
+      "pet",
+      "leader"
+    ],
+    "personality": [
+      "stoic",
+      "playful",
+      "cautious",
+      "leader",
+      "loyal",
+      "protective",
+      "strong",
+      "tame"
+    ],
+    "physical traits": [
+      "tall",
+      "athletic",
+      "unusual hair color",
+      "long hair",
+      "wings",
+      "tail",
+      "claws"
+    ],
+    "setting": [
+      "fantasy world"
+    ]
+  }
+}
