@@ -344,7 +344,7 @@ class QuotaManager {
     constructor() {
         this.quotaFile = FILE_OPS.QUOTA_FILE;
         this.quotas = {};
-        
+
         // Initialize quotas with default values for all APIs
         Object.keys(API_CONFIG).forEach(api => {
             this.quotas[api] = {
@@ -361,7 +361,7 @@ class QuotaManager {
     async init() {
         try {
             const savedQuotas = await FileHandler.readJson(this.quotaFile);
-            
+
             // Merge saved quotas with default values for any missing APIs
             Object.keys(API_CONFIG).forEach(api => {
                 if (!savedQuotas[api]) {
@@ -372,7 +372,7 @@ class QuotaManager {
                     };
                 }
             });
-            
+
             this.quotas = savedQuotas;
             await this.saveQuotas();
         } catch (err) {
@@ -1280,6 +1280,10 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
         return uploadResult.secure_url;
     } catch (error) {
         console.error('Error on sending image to Cloudinary:', error.message);
+        if (API_CONFIG[api].endExecutionOnFail) {
+            console.error('Critical API failure. Halting execution.');
+            process.exit(1);
+        }
         return null;
     }
 }
@@ -1725,7 +1729,7 @@ function determineDestinationPath(aiAnalysis, folder) {
     // Send to manual review
     if (manualReview) {
         filePath = path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.MANUAL_REVIEW);
-        FileHandler.writeJson(path.join(filePath, folder, 'aiAnalysis.json'), aiAnalysis)
+        //FileHandler.writeJson(path.join(filePath, folder, 'aiAnalysis.json'), aiAnalysis)
         return filePath;
     }
 
@@ -1738,7 +1742,7 @@ function determineDestinationPath(aiAnalysis, folder) {
     } else {
         // If not valid, send to invalid or quarantine
         if (charState === 'quarantine') {
-            return path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.QUARANTINE);
+            return path.join(parentDir, CONFIG.PATHS.QUARANTINE);
         } else if (aiAnalysis.charState.toLowerCase() === 'invalid') {
             return path.join(parentDir, CONFIG.PATHS.DISCARDED_INVALID);
         } else {
@@ -2497,19 +2501,38 @@ async function processCharacter(folder, existingLinks) {
 
                 // Check if the avatar URL is empty
                 if (!avatarUrl) {
-                    console.log("    Missing avatar. Trying to generate.");
+                    console.log("    Missing avatar. Trying find one inside folder or generating a new one.");
 
-                    // Try to generate a new image
-                    const generatedImage = await generateImage(aiAnalysis);
+                    // Try to find an avatar file in the folder
+                    const avatarFiles = glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*'));
+                    if (avatarFiles.length > 0) {
+                        console.log("    Found local avatar file:", avatarFiles[0]);
+                        try {
+                            // Read the image file and convert to base64
+                            const imageBuffer = await fs.readFile(avatarFiles[0]);
+                            const mimeType = path.extname(avatarFiles[0]).substring(1);
+                            const tmpImg = `data:image/${mimeType};base64,${imageBuffer.toString('base64')}`;
 
-                    // Upload the generated image
-                    if (generatedImage) {
-                        finalImage = await uploadImage(generatedImage, folder);
+                            // Upload the image
+                            finalImage = await uploadImage(tmpImg, folder);
+                        } catch (error) {
+                            console.error("    Error processing local avatar:", error, ". Skipping character.");
+                            stats.missingImage++;
+                            continue;
+                        }
                     } else {
-                        errMsg = 'Image was not generated. Skipping character.'
-                        console.error(errMsg)
-                        stats.missingImage++;
-                        continue;
+                        // Try to generate a new image
+                        const generatedImage = await generateImage(aiAnalysis);
+
+                        // Upload the generated image
+                        if (generatedImage) {
+                            finalImage = await uploadImage(generatedImage, folder);
+                        } else {
+                            errMsg = 'Image was not generated. Skipping character.'
+                            console.error(errMsg)
+                            stats.missingImage++;
+                            continue;
+                        }
                     }
 
                 }
@@ -2544,7 +2567,7 @@ async function processCharacter(folder, existingLinks) {
                     [{
                         folderName: folder,
                         characterName: item.characterName || "Unnamed",
-                        characterName_Sanitized: item.characterName ? sanitizeFileName(item.characterName) : "Unnamed",
+                        characterName_Sanitized: item.characterName_Sanitized ? item.characterName_Sanitized : item.characterName ? sanitizeFileName(item.characterName) : "Unnamed",
                         fileId: item.fileId,
                         link: item.link,
                         authorName: item.authorName || "Anonymous",
@@ -2552,6 +2575,9 @@ async function processCharacter(folder, existingLinks) {
                         shareLinkFileHash: fileHash || item.shareLinkFileHash || "",
                     }]
                 );
+
+                // Write aiAnalysis.json
+                FileHandler.writeJson(path.join(destinationPath, folder, 'aiAnalysis.json'), aiAnalysis)
 
                 updateStats(aiAnalysis.rating);
 
@@ -2595,6 +2621,54 @@ async function processCharacter(folder, existingLinks) {
 /* -------------------------------------------------------------------------- */
 /*                             AUXILIARY FUNCTIONS                            */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * Sanitizes a string while preserving readable characters
+ * @param {string} str - String to sanitize
+ * @returns {string} Sanitized string safe for filesystem use
+ */
+function sanitizeString(str) {
+    if (!str) return 'unnamed';
+
+    return str
+        .normalize('NFKD')                          // Normalize Unicode to decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '')              // Remove diacritical marks (accents)
+        .replace(/[\p{C}\p{Zl}\p{Zp}\p{Cf}]+/gu, '')  // Remove control characters, invisible characters, and formatting characters
+        .replace(/[\/\\:*?"<>|#@!%^&=`[\]{}$;,+]+/g, '') // Remove problematic characters for OS, URLs, and databases
+        .replace(/\s{2,}/g, ' ') // Replace multiple spaces with a single space
+        .replace(/\s+/g, '_')                     // Replace all spaces with underscores
+        .replace(/[^a-zA-Z0-9\p{L}\p{M}\p{N}_-]/gu, '') // Allow only safe characters
+        .replace(/_{2,}/g, '_')                      // Replace multiple underscores with a single one
+        .replace(/^[-_ ]+|[-_ ]+$/g, '')             // Trim leading/trailing underscores, dashes, and spaces
+        .trim();                                     // Trim spaces at the beginning and end
+}
+
+function sanitizeFileName(fileName) {
+    if (!fileName) {
+        console.error('Error: File name is empty or null.');
+        return 'unnamed';
+    }
+
+    // Split the file name into name and extension using the last '.' as separator
+    const lastDotIndex = fileName.lastIndexOf('.');
+
+    // If no dot is found, treat the whole filename as the name with no extension
+    const name = lastDotIndex === -1 ? fileName : fileName.slice(0, lastDotIndex);
+    const extension = lastDotIndex === -1 ? '' : fileName.slice(lastDotIndex);  // Keep the dot with the extension
+
+    // Sanitize the name part
+    const sanitizedName = sanitizeString(name);
+
+    // If the sanitized name is empty, log an error and return a default value
+    if (!sanitizedName) {
+        console.error('Error: Sanitized file name is empty.');
+        return 'unnamed' + extension;  // Return default name with the original extension
+    }
+
+    // Recombine sanitized name with the extension
+    return `${sanitizedName}${extension}`;
+}
+
 
 function bumpVersion(version) {
     const parts = version.split('.').map(num => parseInt(num, 10));
