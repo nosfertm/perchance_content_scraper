@@ -121,7 +121,7 @@ const API_CONFIG = {
         maxCalls: 1,
         maxRetries: 3,
         timeBetweenRetries: 3000,
-        endExecutionOnFail: true
+        endExecutionOnFail: false
     },
     freeimage: {
         token: process.env.FREEIMAGE_TOKEN,
@@ -1161,7 +1161,7 @@ async function uploadImage_old(img, api = 'freeimage') {
         if (!(await quotaManager.checkQuota(api))) {
             if (API_CONFIG[api].endExecutionOnFail) {
                 console.error(`${api} API quota exceeded. Halting execution.`);
-                process.exit(1);
+                process.exit(0);
             } else {
                 console.warn(`    ${api} API quota exceeded.`);
                 return null;
