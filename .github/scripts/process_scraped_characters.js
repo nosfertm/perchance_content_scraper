@@ -2525,18 +2525,32 @@ async function processCharacter(folder, existingLinks) {
                 await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, fileHash, forkAnalysis);
 
 
-                // Copy capturedMessage.json
+                //Copy capturedMessage.json
                 await fs.copyFile(
                     path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE),
-                    //path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, CONFIG.MESSAGE_FILE)
                     path.join(destinationPath, folder, CONFIG.MESSAGE_FILE)
                 );
 
                 // Copy metadata.json
-                await fs.copyFile(
-                    path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE),
-                    //path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, CONFIG.METADATA_FILE)
-                    path.join(destinationPath, folder, CONFIG.METADATA_FILE)
+                // await fs.copyFile(
+                //     path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE),
+                //     //path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, CONFIG.METADATA_FILE)
+                //     path.join(destinationPath, folder, CONFIG.METADATA_FILE)
+                // );
+
+                // Write metadata.json
+                await FileHandler.writeJson(
+                    path.join(destinationPath, folder, CONFIG.METADATA_FILE),
+                    [{
+                        folderName: folder,
+                        characterName: item.characterName || "Unnamed",
+                        characterName_Sanitized: item.characterName ? sanitizeFileName(item.characterName) : "Unnamed",
+                        fileId: item.fileId,
+                        link: item.link,
+                        authorName: item.authorName || "Anonymous",
+                        authorId: item.authorId || "Anonymous",
+                        shareLinkFileHash: fileHash || item.shareLinkFileHash || "",
+                    }]
                 );
 
                 updateStats(aiAnalysis.rating);
