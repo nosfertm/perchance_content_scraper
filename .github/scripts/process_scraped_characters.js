@@ -344,6 +344,15 @@ class QuotaManager {
     constructor() {
         this.quotaFile = FILE_OPS.QUOTA_FILE;
         this.quotas = {};
+        
+        // Initialize quotas with default values for all APIs
+        Object.keys(API_CONFIG).forEach(api => {
+            this.quotas[api] = {
+                dailyCalls: 0,
+                lastReset: new Date().toISOString(),
+                lastCall: new Date().toISOString()
+            };
+        });
     }
 
     /**
@@ -351,11 +360,25 @@ class QuotaManager {
      */
     async init() {
         try {
-            this.quotas = await FileHandler.readJson(this.quotaFile);
+            const savedQuotas = await FileHandler.readJson(this.quotaFile);
+            
+            // Merge saved quotas with default values for any missing APIs
+            Object.keys(API_CONFIG).forEach(api => {
+                if (!savedQuotas[api]) {
+                    savedQuotas[api] = {
+                        dailyCalls: 0,
+                        lastReset: new Date().toISOString(),
+                        lastCall: new Date().toISOString()
+                    };
+                }
+            });
+            
+            this.quotas = savedQuotas;
+            await this.saveQuotas();
         } catch (err) {
             console.error(`Error loading quotas:`, err);
 
-            // Initial quota structure with lastCall tracking
+            // Initial quota structure with lastCall tracking (suggested to be removed)
             this.quotas = Object.keys(API_CONFIG).reduce((acc, api) => {
                 acc[api] = {
                     dailyCalls: 0,
@@ -364,6 +387,8 @@ class QuotaManager {
                 };
                 return acc;
             }, {});
+
+
             await this.saveQuotas();
         }
     }
