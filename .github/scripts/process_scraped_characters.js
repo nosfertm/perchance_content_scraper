@@ -1159,8 +1159,13 @@ async function uploadImage_old(img, api = 'freeimage') {
 
     try {
         if (!(await quotaManager.checkQuota(api))) {
-            console.log('FreeImage API quota exceeded. Skipping image upload.');
-            return null;
+            if (API_CONFIG[api].endExecutionOnFail) {
+                console.error(`${api} API quota exceeded. Halting execution.`);
+                process.exit(1);
+            } else {
+                console.warn(`    ${api} API quota exceeded.`);
+                return null;
+            }
         }
 
         //console.log('Sending request with data length:', imgData.length);
@@ -1195,8 +1200,13 @@ async function uploadImage_old(img, api = 'freeimage') {
 async function uploadImage(img, fileName = null, api = 'cloudinary') {
     try {
         if (!(await quotaManager.checkQuota(api))) {
-            console.log('FreeImage API quota exceeded. Skipping image upload.');
-            return null;
+            if (API_CONFIG[api].endExecutionOnFail) {
+                console.error(`${api} API quota exceeded. Halting execution.`);
+                process.exit(1);
+            } else {
+                console.warn(`    ${api} API quota exceeded.`);
+                return null;
+            }
         }
 
         // Handle base64 data URL format
@@ -1296,8 +1306,13 @@ async function generateImage(aiAnalysis, api = 'pigimage') {
     if (!prompt || prompt.trim() === '') return null;
 
     if (!(await quotaManager.checkQuota(api))) { // Check for quota
-        console.log('PigImage API quota exceeded. Skipping image generation.');
-        return null;
+            if (API_CONFIG[api].endExecutionOnFail) {
+                console.error(`${api} API quota exceeded. Halting execution.`);
+                process.exit(1);
+            } else {
+                console.warn(`    ${api} API quota exceeded.`);
+                return null;
+            }
     }
 
     try {
@@ -1408,8 +1423,13 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     // Check Gemini API quota
     if (!(await quotaManager.checkQuota('gemini'))) {
-        console.log('Gemini API quota exceeded. Halting execution.');
-        process.exit(0);
+            if (API_CONFIG[api].endExecutionOnFail) {
+                console.error(`${api} API quota exceeded. Halting execution.`);
+                process.exit(0);
+            } else {
+                console.warn(`    ${api} API quota exceeded.`);
+                return null;
+            }
     }
 
     // Input validation
@@ -2324,9 +2344,13 @@ async function processCharacters() {
 
         // Check Gemini API quota
         if (!(await quotaManager.checkQuota('gemini'))) {
-            // TODO exit based on config
-            console.log('Gemini API quota exceeded. Halting execution.');
-            process.exit(0);
+            if (API_CONFIG[api].endExecutionOnFail) {
+                console.error(`${api} API quota exceeded. Halting execution.`);
+                process.exit(0);
+            } else {
+                console.warn(`    ${api} API quota exceeded.`);
+                return null;
+            }
         }
 
         const characterFolders = await getNewCharacterFolders();
@@ -2528,7 +2552,7 @@ async function processCharacter(folder, existingLinks) {
                         if (generatedImage) {
                             finalImage = await uploadImage(generatedImage, folder);
                         } else {
-                            errMsg = 'Image was not generated. Skipping character.'
+                            errMsg = '    Image was not generated or found locally. Skipping character.'
                             console.error(errMsg)
                             stats.missingImage++;
                             continue;
@@ -2609,7 +2633,7 @@ async function processCharacter(folder, existingLinks) {
         }
 
         // Return all processed links
-        console.log(`    Added items: ${processedLinks.length} of ${uniqueMetadata.length}. Unprocessed items: ${totalItems}`);
+        console.log(`Added items: ${processedLinks.length} of ${uniqueMetadata.length}. Unprocessed items: ${totalItems}`);
         return processedLinks;
 
     } catch (error) {
