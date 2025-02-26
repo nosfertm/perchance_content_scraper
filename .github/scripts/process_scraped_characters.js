@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.1';
+const scriptVersion = '2.2';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 50,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 5,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -108,7 +108,7 @@ const API_CONFIG = {
     gemini: {
         token: process.env.GEMINI_TOKEN,
         model: 'gemini-1.5-flash',
-        rateLimit: 50,  // Calls per minute
+        rateLimit: 45,  // Calls per minute
         maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
         timeBetweenRetries: 3000, // Time in ms between retries
@@ -121,7 +121,7 @@ const API_CONFIG = {
         maxCalls: 1,
         maxRetries: 3,
         timeBetweenRetries: 3000,
-        endExecutionOnFail: false
+        endExecutionOnFail: true
     },
     freeimage: {
         token: process.env.FREEIMAGE_TOKEN,
@@ -131,6 +131,18 @@ const API_CONFIG = {
         maxRetries: 3,
         timeBetweenRetries: 3000,
         endExecutionOnFail: false
+    },
+    cloudinary: {
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+        folder: 'perchance_scrape_uploads',
+        // Quota management - these values can be adjusted as needed
+        rateLimit: 500,  // TODO - Change to 8
+        maxCalls: 7500,  // TODO - Change to 250
+        maxRetries: 3,
+        timeBetweenRetries: 3000,
+        endExecutionOnFail: true
     }
 };
 
@@ -167,9 +179,10 @@ const zlib = require('zlib');
 const crypto = require('crypto');
 const stringSimilarity = require('string-similarity');
 const glob = require('glob').sync;
+const cloudinary = require('cloudinary').v2; // Import Cloudinary SDK
+const { createCanvas, loadImage } = require('canvas');
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-//const { json } = require('stream/consumers');
 
 // Promisify 'gunzip'
 const gunzipAsync = promisify(gunzip);
@@ -178,6 +191,13 @@ const gzip = util.promisify(zlib.gzip);
 // API Config
 const genAI = new GoogleGenerativeAI(API_CONFIG.gemini.token);
 const model = genAI.getGenerativeModel({ model: API_CONFIG.gemini.model });
+
+// Configure Cloudinary with credentials from API_CONFIG
+cloudinary.config({
+    cloud_name: API_CONFIG.cloudinary.cloud_name,
+    api_key: API_CONFIG.cloudinary.api_key,
+    api_secret: API_CONFIG.cloudinary.api_secret
+});
 
 /* -------------------------------------------------------------------------- */
 /*                                   CLASSES                                  */
@@ -726,11 +746,11 @@ class CharacterSimilarityChecker {
             if (similarity < 1) {
                 // Determine whether the change is an addition, removal, or modification
                 const changeType = this.determineChangeType(
-                    newContent, 
-                    existingContent, 
+                    newContent,
+                    existingContent,
                     fileDef.emptyContent
                 );
-                
+
                 changes.push({
                     file: fileDef.filename,
                     type: changeType,
@@ -1099,7 +1119,7 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
 /*                                  API CALLS                                 */
 /* -------------------------------------------------------------------------- */
 
-async function uploadImage(img, api = 'freeimage') {
+async function uploadImage_old(img, api = 'freeimage') {
 
     // Handle base64
     const imgData = img.includes('base64,')
@@ -1137,6 +1157,104 @@ async function uploadImage(img, api = 'freeimage') {
         }
     } catch (error) {
         console.error('Error on sending image:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Uploads an image to Cloudinary with optimization
+ * @param {string} img - Base64 image data or data URL
+ * @param {string} api - API service to use (default: 'cloudinary')
+ * @returns {Promise<string|null>} - URL of the uploaded image or null if failed
+ */
+async function uploadImage(img, fileName = null, api = 'cloudinary') {
+    try {
+        if (!(await quotaManager.checkQuota(api))) {
+            console.log('FreeImage API quota exceeded. Skipping image upload.');
+            return null;
+        }
+
+        // Handle base64 data URL format
+        let imgData = img;
+        let originalFormat = 'jpeg'; // Default format
+
+        if (img.includes('base64,')) {
+            // Get the format from the data URL
+            const formatMatch = img.match(/data:image\/([a-zA-Z0-9]+);base64,/);
+            originalFormat = formatMatch ? formatMatch[1].toLowerCase() : 'jpeg';
+        } else {
+            // If it's just base64 without the data URL prefix, add it back
+            imgData = `data:image/jpeg;base64,${img}`;
+        }
+
+        // Calculate size of the original image in KB
+        const originalBase64Data = imgData.split('base64,')[1];
+        const originalSizeInBytes = Buffer.from(originalBase64Data, 'base64').length;
+        const originalSizeInKB = Math.round(originalSizeInBytes / 1024);
+
+        //console.log(`Original image: ${originalFormat}, ${originalSizeInKB}KB`);
+
+        // Optimize image
+        let optimizationResult;
+        let uploadDataURL;
+        let uploadFormat = 'webp'; // Default upload format
+
+        try {
+            // Try to optimize to WebP with default configuration
+            optimizationResult = await optimizeImage(imgData);
+
+            // Only use the optimized image if it's actually smaller
+            if (optimizationResult.sizeInKB < originalSizeInKB) {
+                uploadDataURL = optimizationResult.dataURL;
+                uploadFormat = optimizationResult.format;
+                console.log(`   Using optimized image: ${optimizationResult.sizeInKB}KB (${Math.round((1 - optimizationResult.sizeInKB / originalSizeInKB) * 100)}% smaller)`);
+            } else {
+                console.log(`   Optimized image (${optimizationResult.sizeInKB}KB) is larger than original (${originalSizeInKB}KB). Using original.`);
+                uploadDataURL = imgData;
+                uploadFormat = originalFormat;
+            }
+        } catch (error) {
+            console.error('   Error optimizing image:', error.message);
+            // Continue with the original image if optimization fails
+            uploadDataURL = imgData;
+            uploadFormat = originalFormat;
+        }
+
+        // Extract the base64 data without the prefix for Cloudinary upload
+        const base64Data = uploadDataURL.split('base64,')[1];
+        const sanitizedFileName = fileName ? fileName.replace(/\s+/g, "_").trim() : `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+        const imgName = `img_${sanitizedFileName}`;
+
+        // Upload to Cloudinary using the SDK with explicit format
+        const uploadResult = await new Promise((resolve, reject) => {
+            cloudinary.uploader.upload(
+                `data:image/${uploadFormat};base64,${base64Data}`,
+                {
+                    folder: API_CONFIG.cloudinary.folder,
+                    resource_type: 'image',
+                    // Explicitly set output format to WebP to avoid automatic conversion to PNG
+                    format: 'webp',
+                    // Generate a unique public ID based on timestamp and random string
+                    public_id: imgName,
+                    // Apply some basic transformations
+                    transformation: [
+                        { quality: "auto:good" } // Use Cloudinary's automatic quality setting
+                    ]
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+        });
+
+        await quotaManager.incrementQuota(api);
+        console.log('    Successfully uploaded image to Cloudinary.\n   URL:', uploadResult.secure_url);
+
+        // Return the secure HTTPS URL
+        return uploadResult.secure_url;
+    } catch (error) {
+        console.error('Error on sending image to Cloudinary:', error.message);
         return null;
     }
 }
@@ -2361,7 +2479,7 @@ async function processCharacter(folder, existingLinks) {
 
                     // Upload the generated image
                     if (generatedImage) {
-                        finalImage = await uploadImage(generatedImage);
+                        finalImage = await uploadImage(generatedImage, folder);
                     } else {
                         errMsg = 'Image was not generated. Skipping character.'
                         console.error(errMsg)
@@ -2374,7 +2492,7 @@ async function processCharacter(folder, existingLinks) {
                 // Check if the avatar URL is a Base64 image
                 else if (avatarUrl.startsWith("data:image")) {
                     console.log("    Avatar is a Base64 image. Uploading to freeimage.");
-                    finalImage = await uploadImage(avatarUrl);
+                    finalImage = await uploadImage(avatarUrl, folder);
                 } else {
                     finalImage = avatarUrl
                 }
@@ -2482,16 +2600,66 @@ async function getLinksFromIndex() {
 }
 
 /**
- * Shuffle array for a random order
- * @param {array} array - Array to be shuffled
+ * Resizes a base64 image to a specified width while maintaining aspect ratio
+ * @param {string} dataURL - The base64 data URL of the image
+ * @param {number} maxWidth - Maximum width in pixels (default: 512)
+ * @param {number} maxHeight - Maximum height in pixels (default: 768)
+ * @param {string} format - Output format (default: 'webp')
+ * @param {number} quality - Output quality (default: 80)
+ * @returns {Promise<Object>} - Object with optimized image as a base64 data URL and format
  */
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+async function optimizeImage(dataURL, maxWidth = 512, maxHeight = 768, format = 'webp', quality = 80) {
+    // Create a promise wrapper around the image optimization process
+    return new Promise((resolve, reject) => {
+        try {
+            // Load the image from the data URL
+            loadImage(dataURL).then(img => {
+                // Calculate new dimensions while maintaining aspect ratio
+                let width = img.width;
+                let height = img.height;
+
+                // Scale down if image exceeds maximum dimensions
+                if (width > maxWidth || height > maxHeight) {
+                    const ratioWidth = maxWidth / width;
+                    const ratioHeight = maxHeight / height;
+                    const ratio = Math.min(ratioWidth, ratioHeight);
+
+                    width = Math.floor(width * ratio);
+                    height = Math.floor(height * ratio);
+                }
+
+                // Create canvas with the new dimensions
+                const canvas = createCanvas(width, height);
+                const ctx = canvas.getContext('2d');
+
+                // Draw the image on the canvas with the new dimensions
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to specified format with quality setting
+                // For WebP, explicitly set the quality parameter
+                const optimizedDataURL = canvas.toDataURL(`image/${format}`, quality / 100);
+
+                // Calculate size of the optimized image in KB
+                const base64Data = optimizedDataURL.split('base64,')[1];
+                const sizeInBytes = Buffer.from(base64Data, 'base64').length;
+                const sizeInKB = Math.round(sizeInBytes / 1024);
+
+                //console.log(`Optimized image: ${width}x${height}, ${format}, ${quality}% quality, ${sizeInKB}KB`);
+
+                resolve({
+                    dataURL: optimizedDataURL,
+                    format: format,
+                    width: width,
+                    height: height,
+                    sizeInKB: sizeInKB
+                });
+            }).catch(err => reject(err));
+        } catch (error) {
+            reject(error);
+        }
+    });
 }
+
 
 /**
  * Update processing statistics
