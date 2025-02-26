@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 5,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 10,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -481,7 +481,7 @@ class QuotaManager {
 
         // If a cooldown is needed, execute it and update the last call time
         if (maxCooldown > 0 && apiRequiringMaxCooldown) {
-            console.log(`Executing cooldown of ${maxCooldown}ms for critical API ${apiRequiringMaxCooldown}`);
+            console.log(`    Executing cooldown of ${maxCooldown}ms for critical API ${apiRequiringMaxCooldown}`);
             await new Promise(resolve => setTimeout(resolve, maxCooldown));
         }
     }
