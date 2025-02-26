@@ -136,8 +136,7 @@ const API_CONFIG = {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
         api_key: process.env.CLOUDINARY_API_KEY,
         api_secret: process.env.CLOUDINARY_API_SECRET,
-        folder: 'perchance_scrape_uploads',
-        // Quota management - these values can be adjusted as needed
+        folder: 'scrape/perchance_comments',
         rateLimit: 500,  // TODO - Change to 8
         maxCalls: 7500,  // TODO - Change to 250
         maxRetries: 3,
