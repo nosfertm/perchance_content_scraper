@@ -145,6 +145,14 @@ const API_CONFIG = {
     }
 };
 
+// Default thresholds for NSFW content detection
+const defaultNsfwThresholds = {
+  Porn: 0.7,
+  Sexy: 0.8,
+  Hentai: 0.7
+  // You can add or remove categories as needed
+};
+
 // File operations configuration
 const FILE_OPS = {
     QUOTA_FILE: 'api_quotas.json',
@@ -181,6 +189,9 @@ const stringSimilarity = require('string-similarity');
 const glob = require('glob').sync;
 const cloudinary = require('cloudinary').v2; // Import Cloudinary SDK
 const { createCanvas, loadImage } = require('canvas');
+const tf = require('@tensorflow/tfjs-node');
+const nsfw = require('nsfwjs');
+let nsfwModel = null;
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -1754,7 +1765,7 @@ async function getExistingCharacterFolders() {
  * Determine destination path based on AI analysis
  * @param {object} aiAnalysis - Analysis results from AI
  */
-function determineDestinationPath(aiAnalysis, folder) {
+function determineDestinationPath(aiAnalysis, isNsfw = false) {
 
     // Ensure the keys are valid
     const charState = aiAnalysis.charState ? aiAnalysis.charState.toLowerCase() : null;
@@ -1776,7 +1787,7 @@ function determineDestinationPath(aiAnalysis, folder) {
     // Check the state
     if (charState === 'valid') {
         // If valid, send to the appropriate folder
-        return rating === 'sfw'
+        return rating === 'sfw' && !isNsfw
             ? path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.VALIDATED_SFW)
             : path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.VALIDATED_NSFW);
     } else {
@@ -2069,12 +2080,12 @@ async function downloadFile(dir, filename) {
  * @param {object} aiAnalysis - AI analysis results
  * @param {string} destinationPath - Destination path
  */
-async function createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, img, fileHash, forkAnalysis) {
+async function createCharacterStructure(folder, metadata, message, characterData, aiAnalysis, destinationPath, img, bgImg, fileHash, forkAnalysis) {
 
     // Create character files
     const importFileName = `character_${folder}.gz`
     const characterInfo = characterData.addCharacter || {};
-    const charFiles = await createCharacterFiles(characterInfo, importFileName, img)
+    const charFiles = await createCharacterFiles(characterInfo, importFileName, img, bgImg)
 
     // Create manifest
     const manifest = createManifest(metadata, message, characterData, aiAnalysis, charFiles, destinationPath, folder, importFileName, fileHash, forkAnalysis);
@@ -2126,12 +2137,17 @@ async function createCharacterStructure(folder, metadata, message, characterData
  * @param {string} fileName - A name for files, in a pattern 'Character by Author'
  * @returns {Promise<Object>} Dictionary of created files and their content
  */
-async function createCharacterFiles(characterInfo, importFileName, img) {
+async function createCharacterFiles(characterInfo, importFileName, img, bgImg) {
     console.log("\n    Creating character files:")
 
     // Replace avatar.url with img if avatar exists
     if (characterInfo.avatar && typeof characterInfo.avatar === 'object' && img) {
         characterInfo.avatar.url = img;
+    }
+
+    // Replace background.url with img if bgImg exists
+    if (characterInfo.scene && typeof characterInfo.scene === 'object' && bgImg) {
+        characterInfo.scene.background.url = bgImg;
     }
 
     const files = {};
@@ -2356,6 +2372,84 @@ async function updateCharacterIndex(characterPath, manifest) {
 /*                            CHARACTER PROCESSING                            */
 /* -------------------------------------------------------------------------- */
 
+// Initialize the NSFW model (call this at the beginning of your application)
+async function initializeNSFWModel() {
+    if (!nsfwModel) {
+      nsfwModel = await nsfw.load();
+      console.log("NSFW detection model loaded successfully");
+    }
+    return nsfwModel;
+  }
+  
+  /**
+   * Checks an array of images for NSFW content
+   * @param {Array} images - Array of image URLs or base64 strings
+   * @param {Object} nsfwThresholds - Optional custom thresholds for each category
+   * @returns {Promise<Object>} - Returns { isNSFW, results } where isNSFW is true/false/null and results contains detailed analysis
+   */
+  async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds) {
+    // Convert input to array if it's not already
+    const imageArray = Array.isArray(images) ? images : [images];
+    
+    // Prepare results array
+    const predictionResults = [];
+    
+    try {
+      // Make sure the model is loaded
+      if (!nsfwModel) {
+        await initializeNSFWModel();
+      }
+      
+      // Process each image in the array
+      for (const image of imageArray) {
+        let img;
+        
+        // Load image
+        img = await loadImage(image);
+        
+        // Create a canvas with the image dimensions
+        const canvas = createCanvas(img.width, img.height);
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the image on the canvas
+        ctx.drawImage(img, 0, 0);
+        
+        // Run the NSFW detection
+        const predictions = await nsfwModel.classify(canvas);
+        
+        // Store the image and its predictions in results
+        const imageResult = {
+          image: image,
+          predictions: predictions,
+          containsNSFW: false
+        };
+        
+        // Check if any category exceeds its threshold
+        for (const prediction of predictions) {
+          const { className, probability } = prediction;
+          
+          // Check if this class is in our thresholds object
+          if (className in nsfwThresholds && probability > nsfwThresholds[className]) {
+            console.log(`       NSFW content detected: ${className} with probability ${probability}`);
+            imageResult.containsNSFW = true;
+          }
+        }
+        
+        predictionResults.push(imageResult);
+      }
+      
+      // Determine if any image contains NSFW content
+      const isNSFW = predictionResults.some(result => result.containsNSFW);
+      
+      return { isNSFW, predictionResults };
+    } catch (error) {
+      console.error('Error checking images for NSFW content:', error);
+      // In case of error, return null as requested
+      return { isNSFW: null, predictionResults };
+    }
+  }
+  
+
 // Update main function to use shuffled array
 async function processCharacters() {
     console.log(`Starting character processing ${scriptVersion}...\n`);
@@ -2542,8 +2636,9 @@ async function processCharacter(folder, existingLinks) {
                 }
 
                 // Variable to check character image condition
+                const backgroundUrl = characterData?.addCharacter?.scene?.background?.url || "";
                 const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
-                let finalImage;
+                let finalImage, finalBackground;
 
                 // Check if the avatar URL is empty
                 if (!avatarUrl) {
@@ -2580,32 +2675,37 @@ async function processCharacter(folder, existingLinks) {
                             continue;
                         }
                     }
-
                 }
-                // Check if the avatar URL is a Base64 image
-                else if (avatarUrl.startsWith("data:image")) {
-                    console.log("    Avatar is a Base64 image. Uploading to freeimage.");
-                    finalImage = await uploadImage(avatarUrl, folder);
+                // Check if the avatar or background image URL is a Base64 image
+                else if (avatarUrl.startsWith("data:image") || backgroundUrl.startsWith("data:image")) {
+                    
+                    // If the avatar is a Base64 image, upload it to the api
+                    if (avatarUrl.startsWith("data:image")) {
+                        console.log("    Avatar is a Base64 image. Uploading to freeimage.");
+                        finalImage = await uploadImage(avatarUrl, folder);
+                    } 
+                    
+                    // If the background is a Base64 image, upload it to the api
+                    if (backgroundUrl.startsWith("data:image")) {
+                        console.log("    Background is a Base64 image. Uploading to freeimage.");
+                        finalBackground = await uploadImage(backgroundUrl, folder);
+                    }
                 } else {
-                    finalImage = avatarUrl
+                    finalImage = avatarUrl;
+                    finalBackground = backgroundUrl;
                 }
 
-                const destinationPath = determineDestinationPath(aiAnalysis, folder);
-                await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, fileHash, forkAnalysis);
+                const { isNSFW, predictionResults } = await checkImageForNSFW([finalImage, finalBackground]);
+                const destinationPath = determineDestinationPath(aiAnalysis, isNSFW);
+                await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, finalBackground, fileHash, forkAnalysis);
 
+                /* ------------------------------- WRITE FILES ------------------------------ */
 
                 //Copy capturedMessage.json
                 await fs.copyFile(
                     path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE),
                     path.join(destinationPath, folder, CONFIG.MESSAGE_FILE)
                 );
-
-                // Copy metadata.json
-                // await fs.copyFile(
-                //     path.join(CONFIG.SOURCE_PATH, folder, CONFIG.METADATA_FILE),
-                //     //path.join(CONFIG.OUTPUT_PATH, destinationPath, folder, CONFIG.METADATA_FILE)
-                //     path.join(destinationPath, folder, CONFIG.METADATA_FILE)
-                // );
 
                 // Write metadata.json
                 await FileHandler.writeJson(
@@ -2616,14 +2716,19 @@ async function processCharacter(folder, existingLinks) {
                         characterName_Sanitized: item.characterName_Sanitized ? item.characterName_Sanitized : item.characterName ? sanitizeFileName(item.characterName) : "Unnamed",
                         fileId: item.fileId,
                         link: item.link,
+                        shareLinkFileHash: fileHash || item.shareLinkFileHash || "",
                         authorName: item.authorName || "Anonymous",
                         authorId: item.authorId || "Anonymous",
-                        shareLinkFileHash: fileHash || item.shareLinkFileHash || "",
                     }]
                 );
 
                 // Write aiAnalysis.json
                 FileHandler.writeJson(path.join(destinationPath, folder, 'aiAnalysis.json'), aiAnalysis)
+
+                // Write nsfwjsPredictions.json
+                FileHandler.writeJson(path.join(destinationPath, folder, 'nsfwjsPredictions.json'), predictionResults)
+
+                /* ---------------------------- FINISH PROCESSING --------------------------- */
 
                 updateStats(aiAnalysis.rating);
 
