@@ -1260,9 +1260,9 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
             if (optimizationResult.sizeInKB < originalSizeInKB) {
                 uploadDataURL = optimizationResult.dataURL;
                 uploadFormat = optimizationResult.format;
-                console.log(`   Using optimized image: ${optimizationResult.sizeInKB}KB (${Math.round((1 - optimizationResult.sizeInKB / originalSizeInKB) * 100)}% smaller)`);
+                console.log(`    Using optimized image: ${optimizationResult.sizeInKB}KB (${Math.round((1 - optimizationResult.sizeInKB / originalSizeInKB) * 100)}% smaller)`);
             } else {
-                console.log(`   Optimized image (${optimizationResult.sizeInKB}KB) is larger than original (${originalSizeInKB}KB). Using original.`);
+                console.log(`    Optimized image (${optimizationResult.sizeInKB}KB) is larger than original (${originalSizeInKB}KB). Using original.`);
                 uploadDataURL = imgData;
                 uploadFormat = originalFormat;
             }
@@ -1302,7 +1302,7 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
         });
 
         await quotaManager.incrementQuota(api);
-        console.log('    Successfully uploaded image to Cloudinary.\n   URL:', uploadResult.secure_url);
+        console.log('    Successfully uploaded image to Cloudinary.'); // \n    URL:', uploadResult.secure_url);
 
         // Return the secure HTTPS URL
         return uploadResult.secure_url;
@@ -2376,7 +2376,7 @@ async function updateCharacterIndex(characterPath, manifest) {
 async function initializeNSFWModel() {
     if (!nsfwModel) {
         //nsfwModel = await nsfw.load();
-        nsfwModel = await nsfw.load(undefined, { size: 299 });
+        nsfwModel = await nsfw.load(undefined, { size: 224 });
         console.log("NSFW detection model loaded successfully");
     }
     return nsfwModel;
@@ -2781,7 +2781,7 @@ async function processCharacter(folder, existingLinks) {
 
                     // If the avatar is a Base64 image, upload it to the api
                     if (avatarUrl.startsWith("data:image")) {
-                        console.log("    Avatar is a Base64 image. Uploading to freeimage.");
+                        console.log("    Avatar is a Base64 image. Uploading it.");
                         finalImage = await uploadImage(avatarUrl, folder);
                     }
 
