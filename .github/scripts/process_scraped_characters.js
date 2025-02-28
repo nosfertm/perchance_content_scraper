@@ -1497,7 +1497,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
     5. **Manual Review (needsManualReview)**:
     - **Type**: boolean
     - **Purpose**: 
-        - true: The character contains BORDERLINE ILLEGAL content, or lacks sufficient data.
+        - true: The character contains **BORDERLINE ILLEGAL** content, or **lacks sufficient data**. Do not flag for manual review based only on morality, sexual content (explicit or suggestive) or lewdness.
         - false: Default value.
 
     6. **Categories (categories)**:
@@ -2375,8 +2375,7 @@ async function updateCharacterIndex(characterPath, manifest) {
 // Initialize the NSFW model (call this at the beginning of your application)
 async function initializeNSFWModel() {
     if (!nsfwModel) {
-        //nsfwModel = await nsfw.load();
-        nsfwModel = await nsfw.load(undefined, { size: 224 });
+        nsfwModel = await nsfw.load();
         console.log("NSFW detection model loaded successfully");
     }
     return nsfwModel;
