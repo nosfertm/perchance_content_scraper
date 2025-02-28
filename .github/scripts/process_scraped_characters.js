@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.5';
+const scriptVersion = '2.6';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 10,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 5,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -147,10 +147,10 @@ const API_CONFIG = {
 
 // Default thresholds for NSFW content detection
 const defaultNsfwThresholds = {
-  Porn: 0.7,
-  Sexy: 0.8,
-  Hentai: 0.7
-  // You can add or remove categories as needed
+    Porn: 0.7,
+    Sexy: 0.8,
+    Hentai: 0.7
+    // You can add or remove categories as needed
 };
 
 // File operations configuration
@@ -191,6 +191,7 @@ const cloudinary = require('cloudinary').v2; // Import Cloudinary SDK
 const { createCanvas, loadImage } = require('canvas');
 const tf = require('@tensorflow/tfjs-node');
 const nsfw = require('nsfwjs');
+const axios = require('axios');
 let nsfwModel = null;
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -1528,13 +1529,13 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     ### Character's data:
 
-    Here is the character ${characterName ? ' ('+characterName+') ' : ''} description:
+    Here is the character ${characterName ? ' (' + characterName + ') ' : ''} description:
     ${roleInstruction.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
 
     Here is the character reminder:
     ${reminder.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
 
-    Here is the role user ${userCharacterName ? ' ('+userCharacterName+') ' : ''} plays with this character ${characterName ? ' ('+characterName+') ' : ''}:
+    Here is the role user ${userCharacterName ? ' (' + userCharacterName + ') ' : ''} plays with this character ${characterName ? ' (' + characterName + ') ' : ''}:
     ${userRole.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
 
     Available categories:
@@ -2374,80 +2375,179 @@ async function updateCharacterIndex(characterPath, manifest) {
 // Initialize the NSFW model (call this at the beginning of your application)
 async function initializeNSFWModel() {
     if (!nsfwModel) {
-      nsfwModel = await nsfw.load();
-      console.log("NSFW detection model loaded successfully");
+        nsfwModel = await nsfw.load();
+        console.log("NSFW detection model loaded successfully");
     }
     return nsfwModel;
-  }
-  
-  /**
-   * Checks an array of images for NSFW content
-   * @param {Array} images - Array of image URLs or base64 strings
-   * @param {Object} nsfwThresholds - Optional custom thresholds for each category
-   * @returns {Promise<Object>} - Returns { isNSFW, results } where isNSFW is true/false/null and results contains detailed analysis
-   */
-  async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds) {
+}
+
+/**
+ * Helper function to safely load images from various sources
+ * @param {string} source - URL, base64 string or file path
+ * @returns {Promise<Object>} - Image data in a format usable by TensorFlow
+ */
+async function safeLoadImage(source) {
+    try {
+        // For URLs, download the image first to handle potential format issues
+        if (source.startsWith('http') || source.startsWith('https')) {
+            console.log(`Loading image from URL: ${source}`);
+
+            // Get the image data via axios
+            const response = await axios.get(source, { responseType: 'arraybuffer' });
+
+            // Get the content type from headers (for debugging)
+            const contentType = response.headers['content-type'];
+            console.log(`Image content type: ${contentType}`);
+
+            // For TensorFlow.js we can use the buffer directly
+            return tf.node.decodeImage(new Uint8Array(response.data), 3);
+        }
+        // For base64 images
+        else if (source.startsWith('data:image')) {
+            console.log('Loading image from base64 string');
+            const img = await loadImage(source);
+            const canvas = createCanvas(img.width, img.height);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            return tf.browser.fromPixels(canvas);
+        }
+        // For file paths
+        else {
+            console.log(`Loading image from file: ${source}`);
+            const data = await fs.readFile(source);
+            return tf.node.decodeImage(new Uint8Array(data), 3);
+        }
+    } catch (error) {
+        // Create a detailed error log
+        console.error(`Error loading image from ${source.substring(0, 50)}...`);
+        console.error(`Error type: ${error.name}`);
+        console.error(`Error message: ${error.message}`);
+
+        if (error.response) {
+            console.error(`HTTP Status: ${error.response.status}`);
+            console.error(`Response headers:`, error.response.headers);
+        }
+
+        throw error;
+    }
+}
+
+/**
+ * Checks an array of images for NSFW content
+ * @param {Array} images - Array of image URLs or base64 strings
+ * @param {Object} nsfwThresholds - Optional custom thresholds for each category
+ * @returns {Promise<Object>} - Returns { isNSFW, results } where isNSFW is true/false/null and results contains detailed analysis
+ */
+async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds) {
+    // Check if the input is not empty
+    if (!images || images.length === 0) {
+        console.error('No images provided for NSFW detection');
+        return { isNSFW: null, predictionResults: [] };
+    }
+
     // Convert input to array if it's not already
     const imageArray = Array.isArray(images) ? images : [images];
-    
+
     // Prepare results array
     const predictionResults = [];
-    
+
     try {
-      // Make sure the model is loaded
-      if (!nsfwModel) {
-        await initializeNSFWModel();
-      }
-      
-      // Process each image in the array
-      for (const image of imageArray) {
-        let img;
-        
-        // Load image
-        img = await loadImage(image);
-        
-        // Create a canvas with the image dimensions
-        const canvas = createCanvas(img.width, img.height);
-        const ctx = canvas.getContext('2d');
-        
-        // Draw the image on the canvas
-        ctx.drawImage(img, 0, 0);
-        
-        // Run the NSFW detection
-        const predictions = await nsfwModel.classify(canvas);
-        
-        // Store the image and its predictions in results
-        const imageResult = {
-          image: image,
-          predictions: predictions,
-          containsNSFW: false
-        };
-        
-        // Check if any category exceeds its threshold
-        for (const prediction of predictions) {
-          const { className, probability } = prediction;
-          
-          // Check if this class is in our thresholds object
-          if (className in nsfwThresholds && probability > nsfwThresholds[className]) {
-            console.log(`       NSFW content detected: ${className} with probability ${probability}`);
-            imageResult.containsNSFW = true;
-          }
+        // Make sure the model is loaded
+        if (!nsfwModel) {
+            await initializeNSFWModel();
         }
-        
-        predictionResults.push(imageResult);
-      }
-      
-      // Determine if any image contains NSFW content
-      const isNSFW = predictionResults.some(result => result.containsNSFW);
-      
-      return { isNSFW, predictionResults };
+
+        // Process each image in the array
+        for (const image of imageArray) {
+            try {
+                // Skip empty image strings
+                if (!image || (typeof image === "string" && image.trim() === "")) continue;
+
+                // Extract file extension if it's a URL (for diagnostics)
+                let fileExtension = '';
+                if (image.startsWith('http') || image.startsWith('https')) {
+                    const urlParts = image.split('.');
+                    if (urlParts.length > 1) {
+                        fileExtension = urlParts[urlParts.length - 1].split('?')[0].toLowerCase();
+                    }
+                }
+
+                // Load the image using our safe function that handles multiple formats
+                const tensor = await safeLoadImage(image);
+
+                // Run the NSFW detection directly on the tensor
+                const predictions = await nsfwModel.classify(tensor);
+
+                // Clean up the tensor to prevent memory leaks
+                tensor.dispose();
+
+                // Store the image and its predictions in results
+                const imageResult = {
+                    image: image,
+                    fileType: fileExtension,
+                    predictions: predictions,
+                    containsNSFW: false,
+                    error: null
+                };
+
+                // Check if any category exceeds its threshold
+                for (const prediction of predictions) {
+                    const { className, probability } = prediction;
+
+                    // Check if this class is in our thresholds object
+                    if (className in nsfwThresholds && probability > nsfwThresholds[className]) {
+                        console.log(`NSFW content detected: ${className} with probability ${probability}`);
+                        imageResult.containsNSFW = true;
+                    }
+                }
+
+                predictionResults.push(imageResult);
+            } catch (imageError) {
+                // Individual image errors should not stop the entire process
+                console.error(`Error processing specific image: ${image.substring(0, 100)}...`);
+                console.error(`Specific error: ${imageError.message}`);
+
+                predictionResults.push({
+                    image: image,
+                    predictions: [],
+                    containsNSFW: null,
+                    error: {
+                        message: imageError.message,
+                        stack: imageError.stack,
+                        name: imageError.name
+                    }
+                });
+            }
+        }
+
+        // Determine if any image contains NSFW content
+        // If some images failed but others were successfully analyzed, we can still get partial results
+        const successfulResults = predictionResults.filter(result => result.error === null);
+        const hasNsfw = successfulResults.some(result => result.containsNSFW);
+        const allFailed = successfulResults.length === 0;
+
+        const isNSFW = allFailed ? null : hasNsfw;
+
+        return {
+            isNSFW,
+            predictionResults,
+            successCount: successfulResults.length,
+            failCount: predictionResults.length - successfulResults.length,
+            allFailed
+        };
     } catch (error) {
-      console.error('Error checking images for NSFW content:', error);
-      // In case of error, return null as requested
-      return { isNSFW: null, predictionResults };
+        console.error('Fatal error in NSFW detection:', error);
+        return {
+            isNSFW: null,
+            predictionResults,
+            error: {
+                message: error.message,
+                stack: error.stack
+            }
+        };
     }
-  }
-  
+}
+
 
 // Update main function to use shuffled array
 async function processCharacters() {
@@ -2677,13 +2777,13 @@ async function processCharacter(folder, existingLinks) {
                 }
                 // Check if the avatar or background image URL is a Base64 image
                 else if (avatarUrl.startsWith("data:image") || backgroundUrl.startsWith("data:image")) {
-                    
+
                     // If the avatar is a Base64 image, upload it to the api
                     if (avatarUrl.startsWith("data:image")) {
                         console.log("    Avatar is a Base64 image. Uploading to freeimage.");
                         finalImage = await uploadImage(avatarUrl, folder);
-                    } 
-                    
+                    }
+
                     // If the background is a Base64 image, upload it to the api
                     if (backgroundUrl.startsWith("data:image")) {
                         console.log("    Background is a Base64 image. Uploading to freeimage.");
@@ -2694,7 +2794,7 @@ async function processCharacter(folder, existingLinks) {
                     finalBackground = backgroundUrl;
                 }
 
-                const { isNSFW, predictionResults } = await checkImageForNSFW([finalImage, finalBackground]);
+                const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Analyze both original avatar and background to avoid downloading a image we just uploaded
                 const destinationPath = determineDestinationPath(aiAnalysis, isNSFW);
                 await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, finalBackground, fileHash, forkAnalysis);
 
