@@ -1812,14 +1812,14 @@ function determineDestinationPath(aiAnalysis, isNsfw = false) {
  * @param {string} folder - Character folder name
  * @returns {Promise<boolean>} - Whether character exists
  */
-async function checkDuplicateLinksAndFolder(metadata, existingLinks) {
+async function checkDuplicateLinksAndFolder(metadata, existingLinks, folderName) {
     try {
 
         // Get all paths from CONFIG.PATHS dynamically
         const possiblePaths = Object.values(CONFIG.PATHS);
 
         // Set variables
-        const folder = metadata.folderName;
+        const folder = metadata.folderName || folderName;
         const link = metadata.link;
 
         // Checking for folders with same name
@@ -2538,7 +2538,7 @@ async function processCharacter(folder, existingLinks) {
                 console.log(`    Processing file: ${item.fileId} with link: ${item.link}`);
 
                 // Check if link or folder is a duplicate
-                const { duplicateType, duplicatePath } = await checkDuplicateLinksAndFolder(item, existingLinks);
+                const { duplicateType, duplicatePath } = await checkDuplicateLinksAndFolder(item, existingLinks, folder);
                 // duplicatePath: sfw/2B_and_A2 by f2956d4fbdec4339c178
 
                 // Check if link is duplicate
