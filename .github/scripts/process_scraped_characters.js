@@ -192,13 +192,6 @@ const gzip = util.promisify(zlib.gzip);
 const genAI = new GoogleGenerativeAI(API_CONFIG.gemini.token);
 const model = genAI.getGenerativeModel({ model: API_CONFIG.gemini.model });
 
-// Configure Cloudinary with credentials from API_CONFIG
-cloudinary.config({
-    cloud_name: API_CONFIG.cloudinary.cloud_name,
-    api_key: API_CONFIG.cloudinary.api_key,
-    api_secret: API_CONFIG.cloudinary.api_secret
-});
-
 /* -------------------------------------------------------------------------- */
 /*                                   CLASSES                                  */
 /* -------------------------------------------------------------------------- */
@@ -1199,6 +1192,19 @@ async function uploadImage_old(img, api = 'freeimage') {
  */
 async function uploadImage(img, fileName = null, api = 'cloudinary') {
     try {
+        // Configure Cloudinary with credentials from API_CONFIG
+        cloudinary.config({
+            cloud_name: API_CONFIG.cloudinary.cloud_name,
+            api_key: API_CONFIG.cloudinary.api_key,
+            api_secret: API_CONFIG.cloudinary.api_secret
+        });
+
+        // After the cloudinary.config() call
+        if (!API_CONFIG.cloudinary.api_key) {
+            console.error('Cloudinary API key not found in environment variables');
+            process.exit(1);
+        }
+
         if (!(await quotaManager.checkQuota(api))) {
             if (API_CONFIG[api].endExecutionOnFail) {
                 console.error(`${api} API quota exceeded. Halting execution.`);
@@ -1306,13 +1312,13 @@ async function generateImage(aiAnalysis, api = 'pigimage') {
     if (!prompt || prompt.trim() === '') return null;
 
     if (!(await quotaManager.checkQuota(api))) { // Check for quota
-            if (API_CONFIG[api].endExecutionOnFail) {
-                console.error(`${api} API quota exceeded. Halting execution.`);
-                process.exit(1);
-            } else {
-                console.warn(`    ${api} API quota exceeded.`);
-                return null;
-            }
+        if (API_CONFIG[api].endExecutionOnFail) {
+            console.error(`${api} API quota exceeded. Halting execution.`);
+            process.exit(1);
+        } else {
+            console.warn(`    ${api} API quota exceeded.`);
+            return null;
+        }
     }
 
     try {
@@ -1419,17 +1425,17 @@ async function analyzeCharacterWithAI() {
  * @param {Array} categories - Array of category objects with name, description, and tags
  * @returns {Promise<string>} - Stringified JSON with character classification
  */
-async function classifyCharacter(roleInstruction = '', reminder = '', userRole = '', categories, api = 'gemini') {
+async function classifyCharacter(roleInstruction = '', reminder = '', userRole = '', characterName = '', userCharacterName = '', categories, api = 'gemini') {
 
     // Check Gemini API quota
     if (!(await quotaManager.checkQuota('gemini'))) {
-            if (API_CONFIG[api].endExecutionOnFail) {
-                console.error(`${api} API quota exceeded. Halting execution.`);
-                process.exit(0);
-            } else {
-                console.warn(`    ${api} API quota exceeded.`);
-                return null;
-            }
+        if (API_CONFIG[api].endExecutionOnFail) {
+            console.error(`${api} API quota exceeded. Halting execution.`);
+            process.exit(0);
+        } else {
+            console.warn(`    ${api} API quota exceeded.`);
+            return null;
+        }
     }
 
     // Input validation
@@ -1454,58 +1460,72 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
     // Construct the prompt with updated instructions
     const prompt = `
-    Analyze the following character description and perform a comprehensive validation.
-    Determine whether it is SFW (Safe for Work) or NSFW (Not Safe for Work) and validate the character state.
-    Create a brief description of the character with their appearance and categorize them according to the available categories.
+    Analyze the following character data and perform a comprehensive validation using the following structure:
 
-    Important rules:
-    - You can use multiple tags from each category
-    - For NSFW characters, create a description that appropriately reflects their NSFW nature
-    - Some categories are marked as required (required: true)
-    - Some categories are only for NSFW content (nsfw_only: true)
-    - Use tags from either 'general' or 'nsfw' lists as appropriate
-    - '{{char}}' is a placeholder for the character's name
-    - '{{user}}' is a placeholder for the user's role with the character
+    ### **Validation Criteria**
+    1. **Rating (rating)**:
+    - **Type**: string (enum: "sfw" | "nsfw")
+    - **Purpose**: Indicates whether the character is Safe for Work (SFW) or Not Safe for Work (NSFW).
+    
+    2. **Character State (charState)**:
+    - **Type**: string (enum: "valid" | "invalid" | "quarantine")
+    - **Purpose**:
+        - "valid": Default. Character has complete, appropriate, and coherent data.
+        - "invalid": Character is nonsensical, trolling, or otherwise unusable.
+        - "quarantine": Character contains ILLEGAL content (distinct from merely immoral or NSFW content).
 
-    Character State Rules:
-    - 'valid': (Default Value) Character has complete, appropriate and coherent data
-    - 'invalid': Character is broken, trolling content, or otherwise unusable
-    - 'quarantine': Character contains ILLEGAL content (distinct from immoral content)
+    3. **Description (description)**:
+    - **Type**: string
+    - **Purpose**: A concise, one-paragraph description of the character.
 
-    Needs manual review Rules:
-    - true: Character has EXTREME NSFW content, or the data isn't enough to fill the other fields
-    - false: Default value
+    4. **State Reason (stateReason)**:
+    - **Type**: string
+    - **Purpose**: If the character is "invalid", "quarantine", or requires manual review, this must explains why.
 
-    Guidelines for determining character state:
-    1. Verify the content is not trolling or nonsensical
-    2. Ensure no illegal content is present
-    3. Confirm the character data is complete and coherent
+    5. **Manual Review (needsManualReview)**:
+    - **Type**: boolean
+    - **Purpose**: 
+        - true: The character contains BORDERLINE ILLEGAL content, or lacks sufficient data.
+        - false: Default value.
 
-    Return only a JSON formatted response with the following structure:
+    6. **Categories (categories)**:
+    - **Type**: object<string, array<string>>
+    - **Purpose**: Each category name is a key, and its value is an array of matching tags.
+    - **Rules**:
+        - Use multiple tags from each category as needed.
+        - Categories marked (required: true) must always be present.
+        - Categories marked (nsfw_only: true) apply only to NSFW characters.
+        - Tags must be selected from either 'general' or 'nsfw' lists based on the character.
+        - You can create new categories and tags, keeping the structure, as long they are adequate.
+
+
+    ### **ATTENTION:**
+    - **DO NOT** include Markdown, extra formatting, explanations, or anything outside the JSON response.
+    - Your analysis must be rely on legality rather than morality.
+
+    ### **Return Format**:
+    - Return a **pure stringified JSON** object with the following structure:
     {
-        "rating": "sfw" | "nsfw",  // For this key, ignore the available categories format and answer strictly with either 'sfw' or 'nsfw'.
-        "description": "<a comprehensive concise description, no more than 1 paragraph>",
+        "rating": "sfw" | "nsfw",
+        "description": "<Concise one-paragraph summary>",
         "needsManualReview": boolean,
-        "charState": "valid" | "invalid" | "quarantine",  // States for validation of the content
-        "stateReason": "<reason for state if not valid or why it needs manual review>",  // Explanation for the invalid, quarantined or manual review state
+        "charState": "valid" | "invalid" | "quarantine",
+        "stateReason": "<If not valid or needs manual review, explain why>",
         "categories": {
-            "<category_name>": ["<matching tags>"]  // // Each category or tag name must be in lowercase
+            "<category_name>": ["<matching tags>"]
         }
-}
+    }
 
+    ### Character's data:
 
-
-    Do not include markdown, further explanation or anything else. 
-    ATTENTION: Return only pure stringified JSON!
-
-    Here is the character description:
-    ${roleInstruction}
+    Here is the character ${characterName ? ' ('+characterName+') ' : ''} description:
+    ${roleInstruction.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
 
     Here is the character reminder:
-    ${reminder}
+    ${reminder.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
 
-    Here is the role user plays with this character:
-    ${userRole}
+    Here is the role user ${userCharacterName ? ' ('+userCharacterName+') ' : ''} plays with this character ${characterName ? ' ('+characterName+') ' : ''}:
+    ${userRole.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
 
     Available categories:
     ${JSON.stringify(categoriesMap, null, 2)}
@@ -2507,13 +2527,15 @@ async function processCharacter(folder, existingLinks) {
                 // console.log("User Avatar:", JSON.stringify(characterData?.userCharacter?.avatar || ''));
                 // console.log("\n\n")
 
+                const characterName = characterData?.addCharacter?.name || '';
+                const userCharacterName = characterData?.userCharacter?.name || '';
                 const roleInstruction = characterData?.addCharacter?.roleInstruction || '';
                 const reminder = characterData?.addCharacter?.reminderMessage || '';
                 const userRole = characterData?.userCharacter?.roleInstruction || '';
                 const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
 
                 //const aiAnalysis = await analyzeCharacterWithAI(characterData);
-                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, categories)
+                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories)
                 if (!aiAnalysis) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
                     throw new Error(errMsg);
