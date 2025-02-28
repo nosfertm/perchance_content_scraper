@@ -50,7 +50,10 @@ jobs:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-        run: node .github/scripts/process_scraped_characters.js 
+        run: node .github/scripts/process_scraped_characters.js
+        
+      - name: Run script to update categories
+        run: node .github/scripts/append_new_categories.js
 
       - name: Remove node_modules and package-lock.json
         run: |
