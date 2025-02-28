@@ -10,6 +10,8 @@ on:
       # Only trigger when these specific files change
       - 'ai-character-chat/characters/index.json'
       - 'categories.json'
+      - 'ai-character-chat/characters/nsfw/**'
+      - 'ai-character-chat/characters/sfw/**'
 
 # Define permissions needed for the workflow
 permissions:
@@ -41,6 +43,8 @@ jobs:
         run: |
           # Create directories if they don't exist
           mkdir -p target-repo/ai-character-chat/characters/
+          mkdir -p target-repo/ai-character-chat/characters/nsfw/
+          mkdir -p target-repo/ai-character-chat/characters/sfw/
           
           # Copy files if they exist in source
           if [ -f source-repo/ai-character-chat/characters/index.json ]; then
@@ -49,6 +53,15 @@ jobs:
           
           if [ -f source-repo/categories.json ]; then
             cp source-repo/categories.json target-repo/
+          fi
+          
+          # Copy all files from nsfw and sfw directories
+          if [ -d source-repo/ai-character-chat/characters/nsfw ]; then
+            cp -r source-repo/ai-character-chat/characters/nsfw/* target-repo/ai-character-chat/characters/nsfw/ 2>/dev/null || true
+          fi
+          
+          if [ -d source-repo/ai-character-chat/characters/sfw ]; then
+            cp -r source-repo/ai-character-chat/characters/sfw/* target-repo/ai-character-chat/characters/sfw/ 2>/dev/null || true
           fi
           
       # Step 4: Create Pull Request with changes
@@ -65,5 +78,7 @@ jobs:
             Files updated:
             - ai-character-chat/characters/index.json
             - categories.json
+            - ai-character-chat/characters/nsfw/**
+            - ai-character-chat/characters/sfw/**
           branch: sync-shared-files
           delete-branch: true
