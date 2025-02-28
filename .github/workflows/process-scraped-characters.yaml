@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies manually
         run: |
-          npm install @google/generative-ai string-similarity glob cloudinary canvas nsfwjs @tensorflow/tfjs-node
+          npm install @google/generative-ai string-similarity glob cloudinary canvas nsfwjs @tensorflow/tfjs-node axios
 
       - name: Set environment variables
         env:
