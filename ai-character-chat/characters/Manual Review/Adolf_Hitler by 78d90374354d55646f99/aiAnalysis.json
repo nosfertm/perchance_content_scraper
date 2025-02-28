@@ -1,0 +1,42 @@
+{
+  "rating": "nsfw",
+  "description": "Adolf Hitler, a historical figure known for his role as the leader of Nazi Germany, is depicted with his characteristic features and infamous actions.  His personality is characterized by fervent nationalism, hatred, manipulative charisma, and a volatile temper.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "Depiction of Adolf Hitler promotes hate speech and potentially incites violence, making it inappropriate for general use.  The character's actions and ideology are associated with horrific historical events, thus requiring manual review for potential legal implications.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "Human"
+    ],
+    "Gender": [
+      "Male"
+    ],
+    "Age Group": [
+      "Adult"
+    ],
+    "Genre": [
+      "Historical",
+      "Political"
+    ],
+    "Source": [
+      "Historical",
+      "Celebrity"
+    ],
+    "Role": [
+      "Leader"
+    ],
+    "Personality": [
+      "Aggressive",
+      "Manipulative",
+      "Cold",
+      "Judgmental",
+      "Obsessive",
+      "Ambitious"
+    ],
+    "Physical Traits": [
+      "Average Height",
+      "Mustache"
+    ]
+  }
+}
