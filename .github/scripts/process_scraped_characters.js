@@ -659,7 +659,7 @@ class CharacterSimilarityChecker {
             result.overallSimilarity >= this.config.overallThreshold_Update;
 
         // Determine if it's a fork based on similarity thresholds
-        result.isFork = !result.isUpdate &&
+        result.isFork = !result.isDuplicate &&
             result.overallSimilarity >= this.config.overallThreshold_Fork;
 
         // If it's a fork/update, check additional files for changes
@@ -1101,7 +1101,8 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
             isExisting: true,
             type: 'DUPLICATE',
             destinationPath: analysis.bestMatchPath,
-            changes: analysis.changes
+            changes: analysis.changes,
+            overallSimilarity: analysis.overallSimilarity
         };
     }
 
@@ -1117,7 +1118,8 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
             isExisting: true,
             type: 'UPDATE',
             destinationPath: analysis.bestMatchPath,
-            changes: analysis.changes
+            changes: analysis.changes,
+            overallSimilarity: analysis.overallSimilarity
         };
     }
 
@@ -1134,7 +1136,8 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
             forkedFrom: originalCharName,
             forkedPath: analysis.bestMatchPath,
             similarities: analysis.similarities,
-            changes: analysis.changes
+            changes: analysis.changes,
+            overallSimilarity: analysis.overallSimilarity
         };
     }
 
@@ -2795,8 +2798,13 @@ async function processCharacter(folder, existingLinks) {
                     finalBackground = backgroundUrl;
                 }
 
-                const { isNSFW, predictionResults } = await checkImageForNSFW([finalImage, finalBackground]);
+                // Check for NSFW content in the images
+                const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Use the original images to avoid having to download them again
+
+                // Determine destination path based on aiAnalysis and NSFW image analysis
                 const destinationPath = determineDestinationPath(aiAnalysis, isNSFW);
+
+                // Create character structure in destination
                 await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, finalBackground, fileHash, forkAnalysis);
 
                 /* ------------------------------- WRITE FILES ------------------------------ */
