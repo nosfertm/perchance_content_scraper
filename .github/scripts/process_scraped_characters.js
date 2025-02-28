@@ -2375,7 +2375,8 @@ async function updateCharacterIndex(characterPath, manifest) {
 // Initialize the NSFW model (call this at the beginning of your application)
 async function initializeNSFWModel() {
     if (!nsfwModel) {
-        nsfwModel = await nsfw.load();
+        //nsfwModel = await nsfw.load();
+        nsfwModel = await nsfw.load(undefined, { size: 299 });
         console.log("NSFW detection model loaded successfully");
     }
     return nsfwModel;
@@ -2390,21 +2391,21 @@ async function safeLoadImage(source) {
     try {
         // For URLs, download the image first to handle potential format issues
         if (source.startsWith('http') || source.startsWith('https')) {
-            console.log(`Loading image from URL: ${source}`);
+            //console.log(`Loading image from URL: ${source}`);
 
             // Get the image data via axios
             const response = await axios.get(source, { responseType: 'arraybuffer' });
 
             // Get the content type from headers (for debugging)
             const contentType = response.headers['content-type'];
-            console.log(`Image content type: ${contentType}`);
+            //console.log(`Image content type: ${contentType}`);
 
             // For TensorFlow.js we can use the buffer directly
             return tf.node.decodeImage(new Uint8Array(response.data), 3);
         }
         // For base64 images
         else if (source.startsWith('data:image')) {
-            console.log('Loading image from base64 string');
+            //console.log('Loading image from base64 string');
             const img = await loadImage(source);
             const canvas = createCanvas(img.width, img.height);
             const ctx = canvas.getContext('2d');
@@ -2413,7 +2414,7 @@ async function safeLoadImage(source) {
         }
         // For file paths
         else {
-            console.log(`Loading image from file: ${source}`);
+            //console.log(`Loading image from file: ${source}`);
             const data = await fs.readFile(source);
             return tf.node.decodeImage(new Uint8Array(data), 3);
         }
@@ -2551,7 +2552,7 @@ async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds)
 
 // Update main function to use shuffled array
 async function processCharacters() {
-    console.log(`Starting character processing ${scriptVersion}...\n`);
+    console.log(`\n\nStarting character processing v${scriptVersion}...\n`);
 
     try {
 
