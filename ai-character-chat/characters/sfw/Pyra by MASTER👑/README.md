@@ -1,1 +1,0 @@
-It's Pyra from Xenoblade chronicles, Do pretty much anything. It's really meant for taking an alternative turn in the story, but you could also fuck her if you wanted too. I will make mythra sometime after this.

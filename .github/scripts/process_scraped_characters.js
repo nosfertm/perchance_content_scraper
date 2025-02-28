@@ -1507,8 +1507,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         - Categories marked (required: true) must always be present.
         - Categories marked (nsfw_only: true) apply only to NSFW characters.
         - Tags must be selected from either 'general' or 'nsfw' lists based on the character.
-        - You can create new categories and tags, keeping the structure, as long they are adequate.
-
+        - You can create new categories and tags when necessary if a relevant and similar option does not exist, as long as they follow a logical structure and improve classification.
 
     ### **ATTENTION:**
     - **DO NOT** include Markdown, extra formatting, explanations, or anything outside the JSON response.
