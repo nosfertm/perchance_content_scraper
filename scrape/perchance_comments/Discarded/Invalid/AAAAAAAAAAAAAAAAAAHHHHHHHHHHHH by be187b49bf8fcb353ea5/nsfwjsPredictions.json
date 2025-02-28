@@ -1,0 +1,28 @@
+[
+  {
+    "image": "https://media.tenor.com/VNWQe01dPgYAAAAM/screaming-shower.gif",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.6994344592094421
+      },
+      {
+        "className": "Porn",
+        "probability": 0.28090983629226685
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.014371098950505257
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.0026791715063154697
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.0026053881738334894
+      }
+    ],
+    "containsNSFW": false
+  }
+]
