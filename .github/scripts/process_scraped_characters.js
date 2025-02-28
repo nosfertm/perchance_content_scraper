@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.6';
+const scriptVersion = '2.7';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 5,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 10,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -1504,6 +1504,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
     - **Type**: object<string, array<string>>
     - **Purpose**: Each category name is a key, and its value is an array of matching tags.
     - **Rules**:
+        - Always in lower case
         - Use multiple tags from each category as needed.
         - Categories marked (required: true) must always be present.
         - Categories marked (nsfw_only: true) apply only to NSFW characters.
@@ -2634,7 +2635,7 @@ async function processCharacter(folder, existingLinks) {
         // Iterate over unique metadata
         for (const item of uniqueMetadata) {
             try {
-                console.log(`    Processing file: ${item.fileId} with link: ${item.link}`);
+                console.log(`-----\n    Processing file: ${item.fileId} with link: ${item.link}`);
 
                 // Check if link or folder is a duplicate
                 const { duplicateType, duplicatePath } = await checkDuplicateLinksAndFolder(item, existingLinks, folder);
@@ -2794,7 +2795,7 @@ async function processCharacter(folder, existingLinks) {
                     finalBackground = backgroundUrl;
                 }
 
-                const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Analyze both original avatar and background to avoid downloading a image we just uploaded
+                const { isNSFW, predictionResults } = await checkImageForNSFW([finalImage, finalBackground]);
                 const destinationPath = determineDestinationPath(aiAnalysis, isNSFW);
                 await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, finalBackground, fileHash, forkAnalysis);
 
