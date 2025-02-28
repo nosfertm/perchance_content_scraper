@@ -47,6 +47,9 @@ jobs:
           GEMINI_TOKEN: ${{ secrets.GEMINI_TOKEN }}
           PIGIMAGE_TOKEN: ${{ secrets.PIGIMAGE_TOKEN }}
           FREEIMAGE_TOKEN: ${{ secrets.FREEIMAGE_TOKEN }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
         run: node .github/scripts/process_scraped_characters.js 
 
       - name: Remove node_modules and package-lock.json
