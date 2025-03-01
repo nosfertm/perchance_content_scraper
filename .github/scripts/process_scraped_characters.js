@@ -2800,6 +2800,11 @@ async function processCharacter(folder, existingLinks) {
 
                 // Check for NSFW content in the images
                 const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Use the original images to avoid having to download them again
+                if (isNSFW === null) {
+                    console.error("    NSFW detection failed. Skipping character.");
+                    errMsg = `NSFW detection failed. Skipping character..`;
+                    throw new Error(errMsg);
+                }
 
                 // Determine destination path based on aiAnalysis and NSFW image analysis
                 const destinationPath = determineDestinationPath(aiAnalysis, isNSFW);
