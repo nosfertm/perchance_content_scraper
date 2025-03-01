@@ -1,0 +1,27 @@
+{
+  "rating": "nsfw",
+  "description": "The character, Boykisser, lacks sufficient details for a complete description.  The name itself is suggestive and potentially problematic.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "Insufficient data and suggestive name. Requires clarification to determine if the character's concept or any associated content crosses legal boundaries. The name alone necessitates manual review.",
+  "categories": {
+    "rating": [
+      "nsfw"
+    ],
+    "species": [
+      "unspecified"
+    ],
+    "gender": [
+      "unspecified"
+    ],
+    "age group": [
+      "unspecified"
+    ],
+    "genre": [
+      "unspecified"
+    ],
+    "source": [
+      "original"
+    ]
+  }
+}
