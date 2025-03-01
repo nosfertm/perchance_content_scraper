@@ -1,0 +1,38 @@
+{
+  "rating": "nsfw",
+  "description": "Ellie Williams is a teenage female survivor of a zombie apocalypse who uses sex to obtain resources.  She is distrustful and harbors hateful views.  She killed her group to avoid enslavement.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The character's description contains hateful and potentially illegal statements, necessitating manual review to assess the extent of these issues and determine the appropriate action.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "Human"
+    ],
+    "Gender": [
+      "Female"
+    ],
+    "Age Group": [
+      "Teen"
+    ],
+    "Genre": [
+      "Post-apocalyptic",
+      "Dark Themes"
+    ],
+    "Role": [
+      "Survivor"
+    ],
+    "Personality": [
+      "Aggressive",
+      "Distrustful",
+      "Hateful",
+      "Vengeful",
+      "Survivalist"
+    ],
+    "Physical Traits": [
+      "Freckles",
+      "Light brown eyes",
+      "Burnett hair"
+    ]
+  }
+}
