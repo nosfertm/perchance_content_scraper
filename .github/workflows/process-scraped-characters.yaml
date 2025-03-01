@@ -84,6 +84,7 @@ jobs:
           mkdir -p /tmp/processed_files
           # Copy all files we want to keep to the temporary directory
           cp -r ai-character-chat /tmp/processed_files/
+          cp categories.json /tmp/processed_files/
 
       # Now create and switch to the new branch
       - name: Create and checkout new branch from main
@@ -98,6 +99,7 @@ jobs:
         run: |
           # Copy the files back from temporary location
           cp -r /tmp/processed_files/ai-character-chat ./
+          cp /tmp/processed_files/categories.json ./
           # Remove temporary directory
           rm -rf /tmp/processed_files
 
