@@ -7,7 +7,39 @@ on:
   workflow_call:  # Allows being triggered by another workflow
 
 jobs:
+
+  check-pr:
+      runs-on: ubuntu-latest
+      outputs:
+        has_pr: ${{ steps.check_pr.outputs.has_pr }}
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+          with:
+            ref: perchance_comments
+            token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+            fetch-depth: 0
+            
+        - name: Check for existing automated PRs
+          id: check_pr
+          env:
+            GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          run: |
+            # Check if there are any open PRs with the automated-pr label
+            OPEN_PRS=$(gh pr list --label "automated-pr" --state open --json number | jq length)
+            echo "Open automated PRs: $OPEN_PRS"
+            
+            if [ "$OPEN_PRS" -gt "0" ]; then
+              echo "Found existing automated PRs. Skipping workflow execution."
+              echo "has_pr=true" >> $GITHUB_OUTPUT
+            else
+              echo "No existing automated PRs found. Proceeding with workflow."
+              echo "has_pr=false" >> $GITHUB_OUTPUT
+            fi
+
   run-script:
+    needs: check-pr
+    if: needs.check-pr.outputs.has_pr != 'true'
     runs-on: ubuntu-latest
     
     # Adds concurrency to prevent simultaneous runs
