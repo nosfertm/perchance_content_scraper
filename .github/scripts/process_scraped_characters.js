@@ -1658,6 +1658,9 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
             console.error('\nGemini - Invalid API key. Check your configuration.');
         } else if (error.message.includes('400 Bad Request')) {
             console.error('\nGemini - Bad request. Verify input data and prompt format.');
+        } else if (error.message.includes('429 Too Many Requests')) {
+            console.error('\nGemini - Too Many Requests. Executing 2 seconds pause before proceeding.');
+            await new Promise(resolve => setTimeout(resolve, 2000));
         } else {
             console.error('\nGemini - Error processing response:', error);
         }
