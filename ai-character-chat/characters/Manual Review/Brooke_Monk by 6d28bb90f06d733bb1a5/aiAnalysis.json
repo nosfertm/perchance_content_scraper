@@ -1,0 +1,38 @@
+{
+  "rating": "nsfw",
+  "description": "Brooke Monk is a 21-year-old TikTok influencer who began creating content at age 17.  She resides in Syracuse, Indiana. Her online persona includes statements about sexual attraction to minors.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The character description contains statements indicating sexual attraction towards minors, which is illegal and requires manual review to determine if the content constitutes borderline illegal material or if it should be flagged as explicitly illegal.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "Human"
+    ],
+    "Gender": [
+      "Female"
+    ],
+    "Age Group": [
+      "Young Adult"
+    ],
+    "Genre": [
+      "Unspecified"
+    ],
+    "Source": [
+      "Celebrity"
+    ],
+    "Work Name": [
+      "Original"
+    ],
+    "Role": [
+      "Celebrity",
+      "social media manager"
+    ],
+    "Personality": [
+      "Unspecified"
+    ],
+    "Physical Traits": [
+      "Unspecified"
+    ]
+  }
+}
