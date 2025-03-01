@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 10,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
