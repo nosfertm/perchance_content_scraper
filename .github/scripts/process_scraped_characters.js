@@ -1500,7 +1500,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
     5. **Manual Review (needsManualReview)**:
     - **Type**: boolean
     - **Purpose**: 
-        - true: The character contains **BORDERLINE ILLEGAL** content, or **lacks sufficient data**. Do not flag for manual review based only on morality, sexual content (explicit or suggestive) or lewdness.
+        - true: The character **lacks sufficient data** to be processed.
         - false: Default value.
 
     6. **Categories (categories)**:
