@@ -1,3 +1,5 @@
+# This file should be saved as .github/workflows/auto-delete-branch.yml in your repository
+
 name: Auto Delete Branch
 
 # This workflow runs when a pull request is closed (either merged or declined)
@@ -20,7 +22,8 @@ jobs:
           LABELS=$(echo '${{ toJson(github.event.pull_request.labels) }}')
           
           # Check if the 'automated-pr' label exists in the labels array
-          if echo "$LABELS" | grep -q '"name":"automated-pr"'; then
+          # Note the regex pattern with * to allow for any number of spaces
+          if echo "$LABELS" | grep -q '"name": *"automated-pr"'; then
             echo "Label found, will proceed with branch deletion"
             echo "has_label=true" >> $GITHUB_OUTPUT
           else
