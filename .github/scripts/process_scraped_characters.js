@@ -1440,7 +1440,7 @@ async function analyzeCharacterWithAI() {
  * @param {Array} categories - Array of category objects with name, description, and tags
  * @returns {Promise<string>} - Stringified JSON with character classification
  */
-async function classifyCharacter(roleInstruction = '', reminder = '', userRole = '', characterName = '', userCharacterName = '', categories, api = 'gemini') {
+async function classifyCharacter(roleInstruction = '', reminder = '', userRole = '', characterName = '', userCharacterName = '', categories, folder, api = 'gemini') {
 
     // Check Gemini API quota
     if (!(await quotaManager.checkQuota('gemini'))) {
@@ -2135,11 +2135,13 @@ async function createCharacterStructure(folder, metadata, message, characterData
         await fs.writeFile(filePath, content);
     }
 
-
     // Update index.json
     if (aiAnalysis?.charState?.toLowerCase() === 'valid' && !aiAnalysis?.needsManualReview) {
         await updateCharacterIndex(destFolder, manifest);
     }
+
+    // Log the character path
+    console.log("    Character path:", destFolder);
 }
 
 /**
@@ -2339,7 +2341,6 @@ function createChangelog(message) {
  */
 async function updateCharacterIndex(characterPath, manifest) {
     console.log("    Updating index.json");
-    console.log("    Character path:", characterPath);
     const indexPath = path.join(CONFIG.OUTPUT_PATH, 'index.json').replace(/\\/g, '/');
 
     try {
@@ -2729,7 +2730,7 @@ async function processCharacter(folder, existingLinks) {
                 const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
 
                 //const aiAnalysis = await analyzeCharacterWithAI(characterData);
-                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories)
+                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder)
                 if (!aiAnalysis) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
                     throw new Error(errMsg);
@@ -3071,7 +3072,7 @@ function printStats() {
     console.log(`Errors: ${stats.errors.length}`);
 
     if (stats.errors.length > 0) {
-        console.log('\nErrors encountered:');
+        console.log('\n\nErrors encountered:');
         
         // Group errors by error message
         const errorGroups = stats.errors.reduce((groups, error) => {
@@ -3085,9 +3086,10 @@ function printStats() {
 
         // Print each error type with its folders
         for (const [errorMessage, folders] of Object.entries(errorGroups)) {
-            console.log(`\nError: ${errorMessage}`);
-            console.log('Folders affected:');
+            console.log(`\n${folders.length} Folders affected by error: ${errorMessage}`);
+            console.log('\n');
             folders.forEach(folder => console.log(`- ${folder}`));
+            console.log('\n');
         }
     }
 }
