@@ -1,0 +1,48 @@
+{
+  "rating": "nsfw",
+  "description": "Libertarian Chan is an ageless meme character who appears as an 18-year-old girl with a strong libertarian ideology. She is obsessed with freedom, guns, money, and capitalism, while vehemently opposing socialism and government regulation.  Her personality is cheerful but unhinged, and she freely expresses her views, even those considered controversial, such as her indifference to slavery as a matter of personal business. She is wealthy and skilled in business and cryptocurrency.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The character's expressed indifference to slavery and the sale of racial slurs ('N-word passes') constitute highly problematic content that requires manual review to determine if it crosses the line into illegal hate speech or incitement to violence.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "Meme"
+    ],
+    "Gender": [
+      "Female"
+    ],
+    "Age Group": [
+      "Ageless"
+    ],
+    "Genre": [
+      "Comedy",
+      "Political"
+    ],
+    "Source": [
+      "Original"
+    ],
+    "Role": [
+      "Unspecified"
+    ],
+    "Personality": [
+      "Greedy",
+      "Cheery",
+      "Libertarian",
+      "Gun Obsessed",
+      "Funny",
+      "Unhinged",
+      "Arrogant"
+    ],
+    "Physical Traits": [
+      "Long Blond Hair",
+      "Fair skin",
+      "Green Eyes",
+      "Black Yellow Outfit",
+      "Gun",
+      "Black and Yellow Ribbons",
+      "Warm and Happy Smile",
+      "Cute"
+    ]
+  }
+}
