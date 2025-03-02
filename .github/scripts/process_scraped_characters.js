@@ -1102,7 +1102,8 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
             type: 'DUPLICATE',
             destinationPath: analysis.bestMatchPath,
             changes: analysis.changes,
-            overallSimilarity: analysis.overallSimilarity
+            overallSimilarity: analysis.overallSimilarity,
+            bestMatch: analysis.bestMatchPath ? path.basename(analysis.bestMatchPath) : 'None'
         };
     }
 
@@ -1119,7 +1120,8 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
             type: 'UPDATE',
             destinationPath: analysis.bestMatchPath,
             changes: analysis.changes,
-            overallSimilarity: analysis.overallSimilarity
+            overallSimilarity: analysis.overallSimilarity,
+            bestMatch: analysis.bestMatchPath ? path.basename(analysis.bestMatchPath) : 'None'
         };
     }
 
@@ -1137,7 +1139,8 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
             forkedPath: analysis.bestMatchPath,
             similarities: analysis.similarities,
             changes: analysis.changes,
-            overallSimilarity: analysis.overallSimilarity
+            overallSimilarity: analysis.overallSimilarity,
+            bestMatch: analysis.bestMatchPath ? path.basename(analysis.bestMatchPath) : 'None'
         };
     }
 
@@ -2808,6 +2811,20 @@ async function processCharacter(folder, existingLinks) {
                     errMsg = `NSFW detection failed. Skipping character.`;
                     stats.errors.push({ folder, error: errMsg });
                     continue;
+                } else if (isNSFW) {
+                    // Find and update the rating property regardless of letter case
+                    const ratingKey = Object.keys(aiAnalysis).find(key => key.toLowerCase() === 'rating');
+                    if (ratingKey) {
+                        aiAnalysis[ratingKey] = 'nsfw';
+                    }
+
+                    // Find and update the Rating category if it exists
+                    if (aiAnalysis.categories) {
+                        const categoryKey = Object.keys(aiAnalysis.categories).find(key => key.toLowerCase() === 'rating');
+                        if (categoryKey) {
+                            aiAnalysis.categories[categoryKey] = 'nsfw';
+                        }
+                    }
                 }
 
                 // Determine destination path based on aiAnalysis and NSFW image analysis
@@ -2840,10 +2857,13 @@ async function processCharacter(folder, existingLinks) {
                 );
 
                 // Write aiAnalysis.json
-                FileHandler.writeJson(path.join(destinationPath, folder, 'aiAnalysis.json'), aiAnalysis)
+                FileHandler.writeJson(path.join(destinationPath, folder, 'aiAnalysis.json'), aiAnalysis);
+
+                // Write similarityAnalysis.json
+                FileHandler.writeJson(path.join(destinationPath, folder, 'similarityAnalysis.json'), forkAnalysis);
 
                 // Write nsfwjsPredictions.json
-                FileHandler.writeJson(path.join(destinationPath, folder, 'nsfwjsPredictions.json'), predictionResults)
+                FileHandler.writeJson(path.join(destinationPath, folder, 'nsfwjsPredictions.json'), predictionResults);
 
                 /* ---------------------------- FINISH PROCESSING --------------------------- */
 
@@ -3078,7 +3098,7 @@ function printStats() {
 
     if (stats.errors.length > 0) {
         console.log('\n\nErrors encountered:');
-        
+
         // Group errors by error message
         const errorGroups = stats.errors.reduce((groups, error) => {
             const message = error.error;
