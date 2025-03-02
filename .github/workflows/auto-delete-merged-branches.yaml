@@ -7,6 +7,11 @@ on:
   pull_request:
     types: [closed]
     
+# Add explicit permissions for the GITHUB_TOKEN
+permissions:
+  contents: write  # Needed to delete branches
+  pull-requests: read  # Needed to read PR information
+
 jobs:
   delete-branch:
     # This job only runs if the PR was merged (not just closed without merging)
@@ -22,7 +27,7 @@ jobs:
           LABELS=$(echo '${{ toJson(github.event.pull_request.labels) }}')
           
           # Check if the 'automated-pr' label exists in the labels array
-          # Note the regex pattern with * to allow for any number of spaces
+          # Pattern allows for any number of spaces around the name
           if echo "$LABELS" | grep -q '"name": *"automated-pr"'; then
             echo "Label found, will proceed with branch deletion"
             echo "has_label=true" >> $GITHUB_OUTPUT
@@ -47,5 +52,4 @@ jobs:
             --method DELETE \
             repos/$REPO/git/refs/heads/$BRANCH_NAME
         env:
-          # Use the GitHub token provided by the workflow for authentication
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
