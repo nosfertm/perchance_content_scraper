@@ -1,0 +1,26 @@
+{
+  "name": "Me :D",
+  "description": "A simple character with no specific details provided.",
+  "author": "21 Savage",
+  "authorId": "c8f9706d66ff876dfb8f",
+  "source": "SCRAPER",
+  "imageUrl": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740934069/scrape/perchance_comments/img_Me_D_by_21_Savage.webp",
+  "shareUrl": "https://perchance.org/ai-character-chat?data=Me_:D~8265e311ec8bca7ff3e6e45577762f31.gz",
+  "shareLinkFileHash": "5c622e688e849b03b0b611981d3298ca8f04bf304b064e205487a2d476b9f4b8",
+  "downloadPath": "ai-character-chat/characters/Manual Review/Me_D by 21_Savage/character_Me_D by 21_Savage.gz",
+  "forkedFrom": "",
+  "shapeShifter_Pulls": 0,
+  "galleryChat_Clicks": 0,
+  "galleryDownload_Clicks": 0,
+  "groupSettings": {
+    "requires": [],
+    "recommends": []
+  },
+  "features": {
+    "customCode": [
+      "ai-character-chat/characters/Manual Review/Me_D by 21_Savage/src/customCode.js"
+    ],
+    "assets": []
+  },
+  "categories": {}
+}
