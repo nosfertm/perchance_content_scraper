@@ -6,13 +6,14 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '3.8';
+const scriptVersion = '3.9';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share"],
     maxMessagesPerChannel: 5200,
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
+    capturedCharactersFile: "capturedCharacters.json",
     targetBranch: process.env.TARGET_BRANCH || "main",
     outputDir: path.join("scrape", "perchance_comments", "Raw"),
     owner: process.env.GITHUB_REPOSITORY?.split('/')[0],
@@ -45,19 +46,6 @@ const octokit = new Octokit({
  * @param {string} str - String to sanitize
  * @returns {string} Sanitized string safe for filesystem use
  */
-// function sanitizeString(str) {
-//     if (!str.trim()) return 'unnamed';
-
-//     return str
-//         .normalize('NFKD')                // Normalize Unicode characters
-//         .replace(/[\u0300-\u036f]/g, '')  // Remove diacritical marks
-//         .replace(/[\u{1F300}-\u{1FAD6}]/gu, '') // Remove emojis
-//         .replace(/[^a-zA-Z0-9\s-]/g, '_') // Replace any non-alphanumeric chars (except spaces and hyphens) with underscore
-//         .replace(/\s+/g, ' ')            // Replace multiple spaces with single space
-//         .replace(/_{2,}/g, '_')          // Replace multiple underscores with single
-//         .replace(/^_|_$/g, '')           // Remove leading/trailing underscores
-//         .trim();                         // Trim whitespace
-// }
 function sanitizeString(str) {
     if (!str) return 'unnamed';
 
@@ -146,17 +134,17 @@ async function createOrUpdateFile(filePath, content, message, append = false, lo
             });
             sha = file.data.sha;
 
-            // If append mode and it's metadata.json, get existing content
-            if (append && path.basename(filePath) === 'metadata.json') {
+            // If append mode and it's a .json file, get existing content
+            if (append && path.extname(filePath) === '.json') {
                 existingContent = Buffer.from(file.data.content, 'base64').toString('utf8');
             }
         } catch (error) {
             if (error.status !== 404) throw error;
         }
 
-        // Handle content merging for metadata.json in append mode
+        // Handle content merging for JSON files in append mode
         let contentToUpload = content;
-        if (append && existingContent) {
+        if (append && existingContent && path.extname(filePath) === '.json') {
             // Parse existing and new content
             const existingData = JSON.parse(existingContent);
             const newData = JSON.parse(content);
@@ -531,7 +519,11 @@ async function saveCharacterData(characterInfo, message, existingLinks) {
                 name: charName || "",                       // Character name
                 shareUrl: characterInfo.link || "",               // Share URL
                 authorId: message.authorId || "",               // Author ID
-                shareLinkFileHash: fileHash || "" // File hash
+                shareLinkFileHash: fileHash || "", // File hash
+                authorName: message.username || message.userNickname || message.publicId || 'Anonymous',     // Author name
+                authorAvatar: message.userAvatarUrl || 'https://user-uploads.perchance.org/file/f3f799e2a2071112dfa4f0d5b24bbe8f.webp', // get the avatar of the sharer
+                messageTime: message.time || 0,
+                channel: message.folderName || 'Unknown'
             }
 
         } catch (error) {
@@ -628,8 +620,8 @@ async function processMessages() {
                     if (characterLinks.length !== uniqueLinks.length) {
                         console.log(`       ${duplicateCount} duplicate character links found in message.`);
                         console.log(`       Remaining: ${uniqueLinks.length} unique links to be processed.`);
-                    } 
-                    
+                    }
+
                     if (!uniqueLinks) {
                         console.log(`       No character links remaining in message after clean-up. Skipping message.`);
                         continue;
@@ -649,6 +641,14 @@ async function processMessages() {
                             // Add new links to the existing links array for duplicate checking
                             if (newLink) {
                                 existingLinks.push(newLink);
+
+                                // Save the new link to a json file
+                                await createOrUpdateFile(
+                                    CONFIG.capturedCharactersFile,
+                                    JSON.stringify(newLink),
+                                    'Update captured characters list',
+                                    true
+                                );
 
                                 // Update counters - now accounting for duplicates
                                 lastProcessed[channel].charactersFound_Total += characterLinks.length;
