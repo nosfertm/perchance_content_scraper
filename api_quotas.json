@@ -1,0 +1,22 @@
+{
+  "gemini": {
+    "dailyCalls": 593,
+    "lastReset": "2025-03-02T16:42:31.016Z",
+    "lastCall": "2025-03-02T22:27:06.750Z"
+  },
+  "pigimage": {
+    "dailyCalls": 1,
+    "lastReset": "2025-03-02T16:42:32.559Z",
+    "lastCall": "2025-03-02T16:42:35.541Z"
+  },
+  "freeimage": {
+    "dailyCalls": 68,
+    "lastReset": "2025-02-25T04:04:52.551Z",
+    "lastCall": "2025-02-25T15:45:14.978Z"
+  },
+  "cloudinary": {
+    "dailyCalls": 78,
+    "lastReset": "2025-03-02T16:42:35.558Z",
+    "lastCall": "2025-03-02T22:27:08.925Z"
+  }
+}
