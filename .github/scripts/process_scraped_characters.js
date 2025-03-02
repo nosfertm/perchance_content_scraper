@@ -2733,7 +2733,9 @@ async function processCharacter(folder, existingLinks) {
                 const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder)
                 if (!aiAnalysis) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
-                    throw new Error(errMsg);
+                    console.error(errMsg);
+                    stats.errors.push({ folder, error: errMsg });
+                    continue;
                 }
 
                 // Variable to check character image condition
@@ -2760,6 +2762,7 @@ async function processCharacter(folder, existingLinks) {
                         } catch (error) {
                             console.error("    Error processing local avatar:", error, ". Skipping character.");
                             stats.missingImage++;
+                            stats.errors.push({ folder, error: errMsg });
                             continue;
                         }
                     } else {
@@ -2774,6 +2777,7 @@ async function processCharacter(folder, existingLinks) {
                             FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), [])
                             console.error(errMsg)
                             stats.missingImage++;
+                            stats.errors.push({ folder, error: errMsg });
                             continue;
                         }
                     }
@@ -2801,8 +2805,9 @@ async function processCharacter(folder, existingLinks) {
                 const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Use the original images to avoid having to download them again
                 if (isNSFW === null) {
                     console.error("    NSFW detection failed. Skipping character.");
-                    errMsg = `NSFW detection failed. Skipping character..`;
-                    throw new Error(errMsg);
+                    errMsg = `NSFW detection failed. Skipping character.`;
+                    stats.errors.push({ folder, error: errMsg });
+                    continue;
                 }
 
                 // Determine destination path based on aiAnalysis and NSFW image analysis
