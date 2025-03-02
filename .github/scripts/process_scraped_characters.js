@@ -1658,8 +1658,13 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
             console.error('\nGemini - Invalid API key. Check your configuration.');
         } else if (error.message.includes('400 Bad Request')) {
             console.error('\nGemini - Bad request. Verify input data and prompt format.');
+        } else if (error.message.includes('Response was blocked due to PROHIBITED_CONTENT')) {
+            console.error('\nGemini - Response was blocked due to PROHIBITED_CONTENT.');
+            FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'), [])
+            await quotaManager.incrementQuota(api);
         } else if (error.message.includes('429 Too Many Requests')) {
             console.error('\nGemini - Too Many Requests. Executing 2 seconds pause before proceeding.');
+            await quotaManager.incrementQuota(api);
             await new Promise(resolve => setTimeout(resolve, 2000));
         } else {
             console.error('\nGemini - Error processing response:', error);
@@ -2177,15 +2182,9 @@ async function createCharacterFiles(characterInfo, importFileName, img, bgImg) {
     };
 
     // Create individual files based on format
-    // TODO: Replace avatar content with img variable
     for (const [field, formatType] of Object.entries(fieldFormats)) {
         if (characterInfo[field]) {
             let content = characterInfo[field];
-
-            // Replace url inside avatar.json for img
-            // if (field === 'avatar') {
-            //     content = { url: img };
-            // }
 
             if (formatType === 'json' || typeof content === 'object') {
                 content = JSON.stringify(content, null, 2);
@@ -2556,7 +2555,7 @@ async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds)
 }
 
 
-// Update main function to use shuffled array
+// MAIN FUNCTION
 async function processCharacters() {
     console.log(`\n\nStarting character processing v${scriptVersion}...\n`);
 
@@ -2576,11 +2575,6 @@ async function processCharacters() {
         const characterFolders = await getNewCharacterFolders();
         console.log(`Processing ${CONFIG.MAX_CHARACTERS_PER_RUN} of ${characterFolders.length} characters found to process`);
         const foldersToProcess = characterFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
-
-        // Shuffle folders and limit to MAX_CHARACTERS_PER_RUN
-        //const shuffledFolders = shuffleArray([...characterFolders]);    // TODO - Process by creating order
-        //const foldersToProcess = shuffledFolders.slice(0, CONFIG.MAX_CHARACTERS_PER_RUN);
-        //console.log(`Processing ${foldersToProcess}`);
 
         // Extract existing links from index.json
         const existingLinks = await getLinksFromIndex();
@@ -2776,6 +2770,7 @@ async function processCharacter(folder, existingLinks) {
                             finalImage = await uploadImage(generatedImage, folder);
                         } else {
                             errMsg = '    Image was not generated or found locally. Skipping character.'
+                            FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), [])
                             console.error(errMsg)
                             stats.missingImage++;
                             continue;
@@ -3077,9 +3072,23 @@ function printStats() {
 
     if (stats.errors.length > 0) {
         console.log('\nErrors encountered:');
-        stats.errors.forEach(error => {
-            console.log(`- ${error.folder}: ${error.error}`);
-        });
+        
+        // Group errors by error message
+        const errorGroups = stats.errors.reduce((groups, error) => {
+            const message = error.error;
+            if (!groups[message]) {
+                groups[message] = [];
+            }
+            groups[message].push(error.folder);
+            return groups;
+        }, {});
+
+        // Print each error type with its folders
+        for (const [errorMessage, folders] of Object.entries(errorGroups)) {
+            console.log(`\nError: ${errorMessage}`);
+            console.log('Folders affected:');
+            folders.forEach(folder => console.log(`- ${folder}`));
+        }
     }
 }
 
