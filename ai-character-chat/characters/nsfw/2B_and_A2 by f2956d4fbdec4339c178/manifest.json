@@ -4,10 +4,10 @@
   "author": "Anonymous",
   "authorId": "f2956d4fbdec4339c178",
   "source": "SCRAPER",
-  "imageUrl": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740775785/scrape/perchance_comments/img_2B_and_A2_by_f2956d4fbdec4339c178.jpg",
+  "imageUrl": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740946912/scrape/perchance_comments/img_2B_and_A2_by_f2956d4fbdec4339c178.jpg",
   "shareUrl": "https://perchance.org/ai-character-chat?data=2B_and_A2~8ce368711d243f035a4224db6bc67583.gz",
   "shareLinkFileHash": "fea4f89fe2863c5471540a0576f7dfb00f058e47a500b21b00979b14867541a8",
-  "downloadPath": "ai-character-chat/characters/sfw/2B_and_A2 by f2956d4fbdec4339c178/character_2B_and_A2 by f2956d4fbdec4339c178.gz",
+  "downloadPath": "ai-character-chat/characters/nsfw/2B_and_A2 by f2956d4fbdec4339c178/character_2B_and_A2 by f2956d4fbdec4339c178.gz",
   "forkedFrom": "",
   "shapeShifter_Pulls": 0,
   "galleryChat_Clicks": 0,
@@ -21,7 +21,7 @@
     "assets": []
   },
   "categories": {
-    "Rating": "sfw",
+    "Rating": "nsfw",
     "Species": [
       "Android"
     ],
