@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://files.catbox.moe/likzew.png",
+    "fileType": "png",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.9907456636428833
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.008006471209228039
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.0012274176115170121
+      },
+      {
+        "className": "Porn",
+        "probability": 0.000012654576494242065
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.000007647871825611219
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
