@@ -1,1 +1,4 @@
-"{\n  \"prompt\": \"Nothing\",\n  \"negativePrompt\": \"(low quality:2.0), (blurry:1.5), (artifacts:1.8), (bad anatomy:1.7)\"\n}"
+{
+  "prompt": "Nothing",
+  "negativePrompt": "low quality, blurry, deformed, poorly drawn hands, extra limbs, mutation, disfigured, out of frame, jpeg artifacts"
+}
