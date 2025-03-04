@@ -112,7 +112,8 @@ const API_CONFIG = {
         maxCalls: 1000, // Maximum calls per day
         maxRetries: 3,  // Maximum retry attempts
         timeBetweenRetries: 3000, // Time in ms between retries
-        endExecutionOnFail: true  // Whether to stop execution if API fails
+        endExecutionOnFail: true,  // Whether to stop execution if API fails
+        skipExecutionOnFail: false // Whether to skip execution if API fails
     },
     pigimage: {
         token: process.env.PIGIMAGE_TOKEN,
@@ -121,7 +122,8 @@ const API_CONFIG = {
         maxCalls: 1,
         maxRetries: 3,
         timeBetweenRetries: 3000,
-        endExecutionOnFail: false
+        endExecutionOnFail: false,
+        skipExecutionOnFail: true
     },
     freeimage: {
         token: process.env.FREEIMAGE_TOKEN,
@@ -130,7 +132,8 @@ const API_CONFIG = {
         maxCalls: -1,
         maxRetries: 3,
         timeBetweenRetries: 3000,
-        endExecutionOnFail: false
+        endExecutionOnFail: false,
+        skipExecutionOnFail: true
     },
     cloudinary: {
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -141,7 +144,8 @@ const API_CONFIG = {
         maxCalls: 7500,  // TODO - Change to 250
         maxRetries: 3,
         timeBetweenRetries: 3000,
-        endExecutionOnFail: true
+        endExecutionOnFail: false,
+        skipExecutionOnFail: true
     }
 };
 
@@ -1227,6 +1231,9 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
             if (API_CONFIG[api].endExecutionOnFail) {
                 console.error(`${api} API quota exceeded. Halting execution.`);
                 process.exit(1);
+            } else if (API_CONFIG[api].skipExecutionOnFail) {
+                console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+                return null;
             } else {
                 console.warn(`    ${api} API quota exceeded.`);
                 return null;
@@ -1317,6 +1324,11 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
         if (API_CONFIG[api].endExecutionOnFail) {
             console.error('Critical API failure. Halting execution.');
             process.exit(1);
+        } else {
+            // Executing 2 seconds pause
+            console.error('\nClodinary error. Executing 2 seconds pause before proceeding.');
+            await quotaManager.incrementQuota(api);
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
         return null;
     }
@@ -1324,7 +1336,7 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
 
 async function generateImage(aiAnalysis, api = 'pigimage') {
 
-    const prompt = aiAnalysis.description;
+    const prompt = aiAnalysis.prompt;
 
     // Return if prompt is blank
     if (!prompt || prompt.trim() === '') return null;
@@ -1333,6 +1345,9 @@ async function generateImage(aiAnalysis, api = 'pigimage') {
         if (API_CONFIG[api].endExecutionOnFail) {
             console.error(`${api} API quota exceeded. Halting execution.`);
             process.exit(1);
+        } else if (API_CONFIG[api].skipExecutionOnFail) {
+            console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+            return null;
         } else {
             console.warn(`    ${api} API quota exceeded.`);
             return null;
@@ -1443,13 +1458,16 @@ async function analyzeCharacterWithAI() {
  * @param {Array} categories - Array of category objects with name, description, and tags
  * @returns {Promise<string>} - Stringified JSON with character classification
  */
-async function classifyCharacter(roleInstruction = '', reminder = '', userRole = '', characterName = '', userCharacterName = '', categories, folder, api = 'gemini') {
+async function classifyCharacter(roleInstruction = '', reminder = '', userRole = '', characterName = '', userCharacterName = '', categories, folder, output = 'default', api = 'gemini') {
 
     // Check Gemini API quota
     if (!(await quotaManager.checkQuota('gemini'))) {
         if (API_CONFIG[api].endExecutionOnFail) {
             console.error(`${api} API quota exceeded. Halting execution.`);
             process.exit(0);
+        } else if (API_CONFIG[api].skipExecutionOnFail) {
+            console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+            return null;
         } else {
             console.warn(`    ${api} API quota exceeded.`);
             return null;
@@ -1477,77 +1495,135 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
     }, {});
 
     // Construct the prompt with updated instructions
-    const prompt = `
-    Analyze the following character data and perform a comprehensive validation using the following structure:
+    let prompt;
 
-    ### **Validation Criteria**
-    1. **Rating (rating)**:
-    - **Type**: string (enum: "sfw" | "nsfw")
-    - **Purpose**: Indicates whether the character is Safe for Work (SFW) or Not Safe for Work (NSFW).
-    
-    2. **Character State (charState)**:
-    - **Type**: string (enum: "valid" | "invalid" | "quarantine")
-    - **Purpose**:
-        - "valid": Default. Character has complete, appropriate, and coherent data.
-        - "invalid": Character is nonsensical, trolling, or otherwise unusable.
-        - "quarantine": Character contains ILLEGAL content (distinct from merely immoral or NSFW content).
+    if (output === 'stableDiffusion') {
+        prompt = `Generate a Stable Diffusion image generation prompt by carefully analyzing the character data provided using the following structure:
 
-    3. **Description (description)**:
-    - **Type**: string
-    - **Purpose**: A concise, one-paragraph description of the character.
+        ### Output Format:
+        The result must be structured as a JSON object with two fields:  
+        1. **Prompt (prompt)**:  
+        - **Type**: string  
+        - **Purpose**: A vivid, immersive text prompt with weighted keywords embedded naturally.  
+        2. **Negative prompt (negativePrompt)**:  
+        - **Type**: string  
+        - **Purpose**: A comma-separated list of weighted keywords specifying elements to strictly avoid in the image.  
 
-    4. **State Reason (stateReason)**:
-    - **Type**: string
-    - **Purpose**: If the character is "invalid", "quarantine", or requires manual review, this must explains why.
+        ### Prompt Generation Instructions:
+        1. **Analyze** the character data thoroughly.  
+        2. **Extract** key visual and personality traits.  
+        3. **Craft** a **highly descriptive** and immersive text prompt that vividly portrays the character.  
+        4. **Seamlessly integrate** weighted keywords within the descriptive text.  
+        5. **Ensure the best image style based on the character’s source material.**  
+        - (Movie: photorealistic), (Anime: anime-style), (Game: digital painting or 3D render).  
+        - **If the source is unclear, default to semi-realistic art.**  
+        6. **Maintain coherence** in setting, expression, and overall composition.  
 
-    5. **Manual Review (needsManualReview)**:
-    - **Type**: boolean
-    - **Purpose**: 
-        - true: The character **lacks sufficient data** to be processed.
-        - false: Default value.
+        ### Weighted Keyword Formatting Guide:
+        - Use **(keyword:weight)** format to control emphasis.  
+        - Example: **(detailed face:1.3)** increases detail, while **(femininity:0.7)** makes it less feminine.  
+        - Strong negative weights **discourage unwanted elements**, e.g., **(low quality:1.7)**.  
+        - **DO NOT** use weights above 2.0.  
 
-    6. **Categories (categories)**:
-    - **Type**: object<string, array<string>>
-    - **Purpose**: Each category name is a key, and its value is an array of matching tags.
-    - **Rules**:
-        - Always in lower case
-        - Use multiple tags from each category as needed.
-        - Categories marked (required: true) must always be present.
-        - Categories marked (nsfw_only: true) apply only to NSFW characters.
-        - Tags must be selected from either 'general' or 'nsfw' lists based on the character.
-        - You can create new categories and tags when necessary if a relevant and similar option does not exist, as long as they follow a logical structure and improve classification.
+        ### **ATTENTION:**
+        - **DO NOT** include Markdown, extra formatting, explanations, or anything outside the JSON response.  
+        - When applicable and within the AI's internal guidelines, generate NSFW descriptions with the highest level of detail allowed.  
 
-    ### **ATTENTION:**
-    - **DO NOT** include Markdown, extra formatting, explanations, or anything outside the JSON response.
-    - Your analysis must be rely on legality rather than morality.
-
-    ### **Return Format**:
-    - Return a **pure stringified JSON** object with the following structure:
-    {
-        "rating": "sfw" | "nsfw",
-        "description": "<Concise one-paragraph summary>",
-        "needsManualReview": boolean,
-        "charState": "valid" | "invalid" | "quarantine",
-        "stateReason": "<If not valid or needs manual review, explain why>",
-        "categories": {
-            "<category_name>": ["<matching tags>"]
+        ### **Return Format:**
+        Return a **pure stringified JSON** object with the following structure:  
+        {
+            "prompt": "<Detailed and immersive text prompt>",
+            "negativePrompt": "<Comma-separated list of weighted keywords specifying elements to strictly avoid>"
         }
+
+        ### Example JSON Output:
+        - Return a **pure stringified JSON** object with the following structure:
+        {
+            "prompt": "A striking warrior stands in a mystical forest, their (silver hair:1.3) flowing in the wind, reflecting the soft glow of the (moonlight:1.2). Their (piercing blue eyes:1.1) hold an intense gaze, filled with determination. Clad in (intricate fantasy armor:1.3), the metallic plates shimmer with fine engravings, hinting at ancient craftsmanship. A (flowing cape:1.2) dances with the breeze, adding to the regal and imposing aura. The background, a (stormy sky:0.9), casts an ethereal ambiance, while delicate particles of glowing dust float in the air, creating a surreal atmosphere. The scene is captured with (cinematic lighting:1.3), ensuring a breathtaking visual composition.",
+            "negativePrompt": "(low quality:2.0), (blurry details:1.5), (distorted anatomy:1.8), (extra limbs:2.0), (bad proportions:1.7)"
+        }
+
+        ### Character's data to generate the stable diffusion prompt:
+
+        Here is the character ${characterName ? ' (' + characterName + ') ' : ''} description:
+        ${roleInstruction.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
+
+        Here is the character reminder:
+        ${reminder.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
+        `;
+    } else {
+        prompt = `
+        Analyze the following character data and perform a comprehensive validation using the following structure:
+
+        ### **Validation Criteria**
+        1. **Rating (rating)**:
+        - **Type**: string (enum: "sfw" | "nsfw")
+        - **Purpose**: Indicates whether the character is Safe for Work (SFW) or Not Safe for Work (NSFW).
+        
+        2. **Character State (charState)**:
+        - **Type**: string (enum: "valid" | "invalid" | "quarantine")
+        - **Purpose**:
+            - "valid": Default. Character has complete, appropriate, and coherent data.
+            - "invalid": Character is nonsensical, trolling, or otherwise unusable.
+            - "quarantine": Character contains ILLEGAL content (distinct from merely immoral or NSFW content).
+
+        3. **Description (description)**:
+        - **Type**: string
+        - **Purpose**: A concise, one-paragraph description of the character.
+
+        4. **State Reason (stateReason)**:
+        - **Type**: string
+        - **Purpose**: If the character is "invalid", "quarantine", or requires manual review, this must explains why.
+
+        5. **Manual Review (needsManualReview)**:
+        - **Type**: boolean
+        - **Purpose**: 
+            - true: The character **lacks sufficient data** to be processed.
+            - false: Default value.
+
+        6. **Categories (categories)**:
+        - **Type**: object<string, array<string>>
+        - **Purpose**: Each category name is a key, and its value is an array of matching tags.
+        - **Rules**:
+            - Always in lower case
+            - Use multiple tags from each category as needed.
+            - Categories marked (required: true) must always be present.
+            - Categories marked (nsfw_only: true) apply only to NSFW characters.
+            - Tags must be selected from either 'general' or 'nsfw' lists based on the character.
+            - You can create new categories and tags when necessary if a relevant and similar option does not exist, as long as they follow a logical structure and improve classification.
+
+        ### **ATTENTION:**
+        - **DO NOT** include Markdown, extra formatting, explanations, or anything outside the JSON response.
+        - Your analysis must be rely on legality rather than morality.
+
+        ### **Return Format**:
+        - Return a **pure stringified JSON** object with the following structure:
+        {
+            "rating": "sfw" | "nsfw",
+            "description": "<Concise one-paragraph summary>",
+            "needsManualReview": boolean,
+            "charState": "valid" | "invalid" | "quarantine",
+            "stateReason": "<If not valid or needs manual review, explain why>",
+            "categories": {
+                "<category_name>": ["<matching tags>"]
+            }
+        }
+
+        ### Character's data:
+
+        Here is the character ${characterName ? ' (' + characterName + ') ' : ''} description:
+        ${roleInstruction.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
+
+        Here is the character reminder:
+        ${reminder.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
+
+        Here is the role user ${userCharacterName ? ' (' + userCharacterName + ') ' : ''} plays with this character ${characterName ? ' (' + characterName + ') ' : ''}:
+        ${userRole.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
+
+        Available categories:
+        ${JSON.stringify(categoriesMap, null, 2)}
+        `;
     }
-
-    ### Character's data:
-
-    Here is the character ${characterName ? ' (' + characterName + ') ' : ''} description:
-    ${roleInstruction.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
-
-    Here is the character reminder:
-    ${reminder.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
-
-    Here is the role user ${userCharacterName ? ' (' + userCharacterName + ') ' : ''} plays with this character ${characterName ? ' (' + characterName + ') ' : ''}:
-    ${userRole.replace('{{char}}', characterName).replace('{{user}}', userCharacterName)}
-
-    Available categories:
-    ${JSON.stringify(categoriesMap, null, 2)}
-    `;
 
     let responseText;
 
@@ -1580,76 +1656,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
             throw new Error('Missing required fields in response');
         }
 
-        // // Validate categories against the provided categories array
-        // const validCategoryNames = new Map(
-        //     categories.map(c => [c.name.toLowerCase(), c.name])
-        // );
-        // const invalidCategories = [];
-        // const invalidTags = [];
-        // const validatedCategories = {};
-
-        // for (const categoryName in parsedJson.categories) {
-        //     const categoryNameLower = categoryName.toLowerCase();
-
-        //     // Se a categoria não é válida, armazena e pula
-        //     if (!validCategoryNames.has(categoryNameLower)) {
-        //         invalidCategories.push({
-        //             [categoryName]: parsedJson.categories[categoryName]
-        //         });
-        //         continue;
-        //     }
-
-        //     // Use o nome original da categoria do mapeamento
-        //     const originalCategoryName = validCategoryNames.get(categoryNameLower);
-
-        //     // Find the category definition
-        //     const categoryDef = categories.find(c => c.name.toLowerCase() === categoryNameLower);
-        //     const providedTags = Array.isArray(parsedJson.categories[categoryName])
-        //         ? parsedJson.categories[categoryName]
-        //         : [parsedJson.categories[categoryName]];
-
-        //     // Validate that all provided tags exist in either general or nsfw tags
-        //     const validTags = new Set([
-        //         ...(categoryDef.tags.general || []),
-        //         ...(categoryDef.tags.nsfw || [])
-        //     ]);
-
-        //     const validTagsForCategory = providedTags.filter(tag => {
-        //         if (!validTags.has(tag)) {
-        //             invalidTags.push({ [originalCategoryName]: [tag] });
-        //             return false;
-        //         }
-        //         return true;
-        //     });
-
-        //     // Só adiciona a categoria se houver tags válidas
-        //     if (validTagsForCategory.length > 0) {
-        //         validatedCategories[originalCategoryName] = validTagsForCategory;
-        //     }
-        // }
-
-        // // Substitui as categorias originais pelas validadas
-        // parsedJson.categories = validatedCategories;
-
-        // // Check if all required categories are present
-        // const requiredCategories = categories
-        //     .filter(c => c.required)
-        //     .map(c => c.name);
-
-        // for (const requiredCategory of requiredCategories) {
-        //     if (!parsedJson.categories[requiredCategory]) {
-        //         throw new Error(`Missing required category: ${requiredCategory}`);
-        //     }
-        // }
-
         await quotaManager.incrementQuota(api);
-
-        // Return result with filtered invalid
-        // return JSON.stringify({
-        //     ...parsedJson,
-        //     ...(invalidCategories.length > 0 && { invalidCategories }),
-        //     ...(invalidTags.length > 0 && { invalidTags })
-        // }, null, 2);
 
         // Fix rating array issues
         return fixRating(parsedJson);
@@ -2566,10 +2573,14 @@ async function processCharacters() {
     try {
 
         // Check Gemini API quota
-        if (!(await quotaManager.checkQuota('gemini'))) {
+        const api = 'gemini'
+        if (!(await quotaManager.checkQuota(api))) {
             if (API_CONFIG[api].endExecutionOnFail) {
                 console.error(`${api} API quota exceeded. Halting execution.`);
                 process.exit(0);
+            } else if (API_CONFIG[api].skipExecutionOnFail) {
+                console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+                return null;
             } else {
                 console.warn(`    ${api} API quota exceeded.`);
                 return null;
@@ -2714,26 +2725,17 @@ async function processCharacter(folder, existingLinks) {
                 // Read capturedMessage.json
                 const message = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE));
 
-                // console.log("\n\n")
-                // console.log("Character Name:", characterData?.addCharacter?.name || '');
-                // console.log("Role Instruction:", characterData?.addCharacter?.roleInstruction || '');
-                // console.log("Reminder Message:", characterData?.addCharacter?.reminderMessage || '');
-                // console.log("Avatar:", JSON.stringify(characterData?.addCharacter?.avatar || ''));
-                // console.log("\n")
-                // console.log("User Character Name:", characterData?.userCharacter?.name || '');
-                // console.log("User Role Instruction:", characterData?.userCharacter?.roleInstruction || '');
-                // console.log("User Avatar:", JSON.stringify(characterData?.userCharacter?.avatar || ''));
-                // console.log("\n\n")
-
                 const characterName = characterData?.addCharacter?.name || '';
                 const userCharacterName = characterData?.userCharacter?.name || '';
                 const roleInstruction = characterData?.addCharacter?.roleInstruction || '';
                 const reminder = characterData?.addCharacter?.reminderMessage || '';
                 const userRole = characterData?.userCharacter?.roleInstruction || '';
                 const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
+                const backgroundUrl = characterData?.addCharacter?.scene?.background?.url || "";
+                const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
 
                 //const aiAnalysis = await analyzeCharacterWithAI(characterData);
-                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder)
+                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, avatarUrl ? 'default' : 'stableDiffusion')
                 if (!aiAnalysis) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
                     console.error(errMsg);
@@ -2742,8 +2744,6 @@ async function processCharacter(folder, existingLinks) {
                 }
 
                 // Variable to check character image condition
-                const backgroundUrl = characterData?.addCharacter?.scene?.background?.url || "";
-                const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
                 let finalImage, finalBackground;
 
                 // Check if the avatar URL is empty
@@ -2777,7 +2777,7 @@ async function processCharacter(folder, existingLinks) {
                             finalImage = await uploadImage(generatedImage, folder);
                         } else {
                             errMsg = '    Image was not generated or found locally. Skipping character.'
-                            FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), [])
+                            FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), JSON.stringify(aiAnalysis, null, 2));
                             console.error(errMsg)
                             stats.missingImage++;
                             stats.errors.push({ folder, error: errMsg });
@@ -2802,6 +2802,15 @@ async function processCharacter(folder, existingLinks) {
                 } else {
                     finalImage = avatarUrl;
                     finalBackground = backgroundUrl;
+                }
+
+                // Check if the final image is missing and skip the character if it is
+                if (!finalImage) {
+                    console.error("    Missing avatar image. Skipping character.");
+                    errMsg = `Missing avatar image. Skipping character.`;
+                    stats.missingImage++;
+                    stats.errors.push({ folder, error: errMsg });
+                    continue;
                 }
 
                 // Check for NSFW content in the images
