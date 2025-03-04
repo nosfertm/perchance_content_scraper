@@ -2777,7 +2777,7 @@ async function processCharacter(folder, existingLinks) {
                             finalImage = await uploadImage(generatedImage, folder);
                         } else {
                             errMsg = '    Image was not generated or found locally. Skipping character.'
-                            FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), JSON.stringify(aiAnalysis, null, 2));
+                            FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), aiAnalysis);
                             console.error(errMsg)
                             stats.missingImage++;
                             stats.errors.push({ folder, error: errMsg });
