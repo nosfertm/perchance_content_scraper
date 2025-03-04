@@ -1511,8 +1511,8 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
         ### Prompt Generation Instructions:
         1. **Analyze** the character data thoroughly.  
-        2. **Extract** key visual and personality traits.  
-        3. **Craft** a **highly descriptive** and immersive text prompt that vividly portrays the character.  
+        2. **Extract** key visual and personality traits. 
+        3. **Craft** a **highly descriptive** and immersive text prompt that vividly portrays the character.  Add seemly obvious information, as gender, species (if not human), etc.
         4. **Seamlessly integrate** weighted keywords within the descriptive text.  
         5. **Ensure the best image style based on the character’s source material.**  
         - (Movie: photorealistic), (Anime: anime-style), (Game: digital painting or 3D render).  
@@ -1539,8 +1539,8 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         ### Example JSON Output:
         - Return a **pure stringified JSON** object with the following structure:
         {
-            "prompt": "A striking warrior stands in a mystical forest, their (silver hair:1.3) flowing in the wind, reflecting the soft glow of the (moonlight:1.2). Their (piercing blue eyes:1.1) hold an intense gaze, filled with determination. Clad in (intricate fantasy armor:1.3), the metallic plates shimmer with fine engravings, hinting at ancient craftsmanship. A (flowing cape:1.2) dances with the breeze, adding to the regal and imposing aura. The background, a (stormy sky:0.9), casts an ethereal ambiance, while delicate particles of glowing dust float in the air, creating a surreal atmosphere. The scene is captured with (cinematic lighting:1.3), ensuring a breathtaking visual composition.",
-            "negativePrompt": "(low quality:2.0), (blurry details:1.5), (distorted anatomy:1.8), (extra limbs:2.0), (bad proportions:1.7)"
+            "prompt": "AA formidable (male:1.8) warrior named Viktor stands in a mystical forest, his (short silver hair:1.5) tousled by the wind, gleaming under the cold glow of the (moonlight:1.2). His (sharp, chiseled jawline:1.4) and (piercing blue eyes:1.3) radiate an unwavering intensity, exuding strength and command. His (rugged, battle-worn face:1.4) carries the marks of countless victories. Clad in (heavy, battle-scarred fantasy armor:1.5), the engraved metallic plates bear the weight of history and power. A (tattered yet majestic cape:1.3) billows behind him, reinforcing his imposing presence. The background, a (storm-laden sky:1.1), crackles with distant lightning, casting dramatic shadows over the battlefield. Embers and dust swirl in the air, remnants of a fierce conflict. The scene is captured with (cinematic lighting:1.3), ensuring a breathtaking, heroic composition. (portrait:1.3)",
+            "negativePrompt": "(low quality:2.0), (blurry details:1.5), (distorted anatomy:1.8), (extra limbs:2.0), (bad proportions:1.7), (androgynous:1.8), (feminine features:2.0), (soft facial structure:1.8), (slender physique:1.7), (delicate hands:1.8), (thin limbs:1.7), (narrow shoulders:1.8), (weak jawline:2.0), (small frame:1.8)"
         }
 
         ### Character's data to generate the stable diffusion prompt:
