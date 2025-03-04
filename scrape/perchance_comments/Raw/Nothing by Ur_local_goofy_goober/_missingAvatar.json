@@ -1,4 +1,4 @@
 {
   "prompt": "Nothing",
-  "negativePrompt": "low quality, blurry, deformed, poorly drawn hands, extra limbs, mutation, disfigured, out of frame, jpeg artifacts"
+  "negativePrompt": "low quality:2.0, blurry:1.5, deformed:1.8, poorly drawn hands:1.7, poorly drawn face:1.7"
 }
