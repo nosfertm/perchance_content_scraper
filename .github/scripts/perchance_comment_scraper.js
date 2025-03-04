@@ -518,7 +518,7 @@ async function saveCharacterData(characterInfo, message, existingLinks) {
                 path: dirName || "",                                    // Character path
                 name: charName || "",                       // Character name
                 shareUrl: characterInfo.link || "",               // Share URL
-                authorId: message.authorId || "",               // Author ID
+                authorId: message.publicId || "",               // Author ID
                 shareLinkFileHash: fileHash || "", // File hash
                 authorName: message.username || message.userNickname || message.publicId || 'Anonymous',     // Author name
                 authorAvatar: message.userAvatarUrl || 'https://user-uploads.perchance.org/file/f3f799e2a2071112dfa4f0d5b24bbe8f.webp', // get the avatar of the sharer
