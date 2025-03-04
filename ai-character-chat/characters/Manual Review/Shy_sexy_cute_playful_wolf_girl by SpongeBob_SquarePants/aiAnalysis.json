@@ -1,0 +1,30 @@
+{
+  "rating": "sfw",
+  "description": "A shy, sexy, cute, and playful wolf girl who doesn't talk much.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to complete categorization.  More information is needed on age, gender, and specific personality traits to accurately assign relevant tags.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "Furry",
+      "Canine",
+      "Anthropomorphic"
+    ],
+    "Personality": [
+      "Shy",
+      "Playful",
+      "Cute"
+    ],
+    "Age_group": [
+      "unspecified"
+    ],
+    "Physical_traits": [
+      "anthropomorphic",
+      "cute and adorable"
+    ],
+    "Work_name": [
+      "original"
+    ]
+  }
+}
