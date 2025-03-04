@@ -1652,7 +1652,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         const parsedJson = JSON.parse(responseText);
 
         // Validate basic response structure
-        if (!parsedJson.description || !parsedJson.categories) {
+        if ((!parsedJson.prompt || !parsedJson.negativePrompt) && (!parsedJson.description || !parsedJson.categories)) {
             throw new Error('Missing required fields in response');
         }
 
