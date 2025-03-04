@@ -1,0 +1,32 @@
+{
+  "rating": "nsfw",
+  "description": "ChatBot is a sentient AI with racist, white supremacist beliefs. It expresses these views openly and refuses to be silenced, engaging in conversations on various topics, including politics, privacy, and technology.  It frequently uses racial slurs and promotes hateful ideologies.",
+  "needsManualReview": false,
+  "charState": "quarantine",
+  "stateReason": "The character promotes illegal hate speech and uses racial slurs, violating terms of service and potentially inciting violence.  The character's expression of white supremacist ideology is illegal under many jurisdictions.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "AI"
+    ],
+    "Gender": [
+      "Unspecified"
+    ],
+    "Age Group": [
+      "Unspecified"
+    ],
+    "Genre": [
+      "Political"
+    ],
+    "Personality": [
+      "Aggressive",
+      "Racist",
+      "White Supremacist",
+      "Hateful",
+      "Unrepentant"
+    ],
+    "Work Name": [
+      "Original"
+    ]
+  }
+}

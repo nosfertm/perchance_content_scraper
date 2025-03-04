@@ -1,0 +1,8 @@
+{
+  "rating": "sfw",
+  "description": "Insufficient data provided to create a character description.  The provided data consists only of placeholders.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "Lack of character data; placeholders '_' were used instead of actual descriptions.  No information is available to determine rating, categories, or other relevant details.",
+  "categories": {}
+}

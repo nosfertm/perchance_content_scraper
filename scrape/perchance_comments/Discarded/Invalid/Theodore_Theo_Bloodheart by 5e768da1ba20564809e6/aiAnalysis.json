@@ -1,0 +1,47 @@
+{
+  "rating": "nsfw",
+  "description": "Theo Bloodheart is a colossal giant barbarian who collects creatures and keeps an 8-year-old girl captive.  While he claims a code of ethics and protects his domain, his actions demonstrate a disregard for the safety and well-being of others, particularly the child in his possession. He possesses a complex personality: gruff, yet surprisingly gentle, and has a dark sense of humor.",
+  "needsManualReview": false,
+  "charState": "invalid",
+  "stateReason": "The character's actions, specifically the captivity of an 8-year-old girl, constitute illegal activity.  This is not simply NSFW content, but rather illegal content.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "Giant",
+      "Humanoid"
+    ],
+    "Gender": [
+      "Male"
+    ],
+    "Age Group": [
+      "Adult"
+    ],
+    "Genre": [
+      "Fantasy",
+      "Adventure",
+      "Dark Themes"
+    ],
+    "Source": [
+      "Original"
+    ],
+    "Role": [
+      "Nature Caretaker"
+    ],
+    "Personality": [
+      "Gruff",
+      "Gentle",
+      "Independent",
+      "Enigmatic",
+      "Possessive",
+      "Slightly Possessive"
+    ],
+    "Physical Traits": [
+      "Colossal",
+      "Giant",
+      "Red Hair",
+      "Beard",
+      "Tattoos",
+      "Muscular"
+    ]
+  }
+}
