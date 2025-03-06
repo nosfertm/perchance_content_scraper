@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.8';
+const scriptVersion = '2.9';
 
 // Configuration variables
 const CONFIG = {
@@ -2782,10 +2782,11 @@ async function processCharacter(folder, existingLinks) {
                 // Check for missing generated avatar
                 const isMissingAvatar = await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'));
                 // Try to find an avatar file in the folder
-                const avatarFiles = glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*'));
+                const avatarFiles = await glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*'));
 
                 if (isMissingAvatar && !avatarFiles) {
                     console.log(`    Character have pending avatar generation. Skipping character.`)
+                    console.log(`isMissingAvatar: ${isMissingAvatar}. avatarFiles: ${avatarFiles}`)
                     stats.pendingAvatar++;
                     continue;
                 }
