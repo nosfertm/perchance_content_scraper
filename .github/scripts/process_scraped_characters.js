@@ -2778,14 +2778,20 @@ async function processCharacter(folder, existingLinks) {
                 console.log(`-----\n    Processing file: ${item.fileId} with link: ${item.link}`);
 
                 /* - CHECK IF FOLDER WAS SKIPPED BEFORE DUE TO ANY PROBLEM AND SKIP IT AGAIN - */
+
                 // Check for missing generated avatar
-                if (await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'))) {
+                const isMissingAvatar = await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'));
+                // Try to find an avatar file in the folder
+                const avatarFiles = glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*'));
+
+                if (isMissingAvatar && !avatarFiles) {
                     console.log(`    Character have pending avatar generation. Skipping character.`)
                     stats.pendingAvatar++;
                     continue;
                 }
                 // Check for prohibited content
-                if (await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'))) {
+                const isProhibitedContent = await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'));
+                if (isProhibitedContent) {
                     console.log(`    Character have pending prohibited content issues.`)
                     // Move folder to manual review
                     const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
@@ -2917,8 +2923,7 @@ async function processCharacter(folder, existingLinks) {
                 if (!avatarUrl) {
                     console.log("    Missing avatar. Trying find one inside folder or generating a new one.");
 
-                    // Try to find an avatar file in the folder
-                    const avatarFiles = glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*'));
+                    // Check if there is any avatar file
                     if (avatarFiles.length > 0) {
                         console.log("    Found local avatar file:", avatarFiles[0]);
                         try {
