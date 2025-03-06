@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.9';
+const scriptVersion = '3.0';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 300,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 50,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -2782,9 +2782,9 @@ async function processCharacter(folder, existingLinks) {
                 // Check for missing generated avatar
                 const isMissingAvatar = await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'));
                 // Try to find an avatar file in the folder
-                const avatarFiles = await glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*'));
+                const avatarFiles = await glob(path.join(CONFIG.SOURCE_PATH, folder, 'avatar.*')) || [];
 
-                if (isMissingAvatar && !avatarFiles) {
+                if (isMissingAvatar && avatarFiles.length === 0) {
                     console.log(`    Character have pending avatar generation. Skipping character.`)
                     console.log(`isMissingAvatar: ${isMissingAvatar}. avatarFiles: ${avatarFiles}`)
                     stats.pendingAvatar++;
@@ -2987,7 +2987,7 @@ async function processCharacter(folder, existingLinks) {
                 }
 
                 // Check for NSFW content in the images
-                const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Use the original images to avoid having to download them again
+                const { isNSFW, predictionResults } = await checkImageForNSFW([finalImage, finalBackground]); // Use the original images to avoid having to download them again
                 // Check if there was an error with the first image specifically
                 const firstImageResult = predictionResults[0]; // This will be the result for the avatarUrl
 
