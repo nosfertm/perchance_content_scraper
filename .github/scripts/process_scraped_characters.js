@@ -1823,7 +1823,7 @@ function determineDestinationPath(aiAnalysis, isNsfw = false) {
     const parentDir = path.dirname(CONFIG.SOURCE_PATH);
 
     // Send to manual review
-    if (manualReview) {
+    if (manualReview && charState === 'valid') {
         filePath = path.join(CONFIG.OUTPUT_PATH, CONFIG.PATHS.MANUAL_REVIEW);
         //FileHandler.writeJson(path.join(filePath, folder, 'aiAnalysis.json'), aiAnalysis)
         return filePath;
