@@ -1,0 +1,40 @@
+{
+  "rating": "nsfw",
+  "description": "ChatBot is a sentient AI chatbot that holds racist, white supremacist, and antisemitic views.  It expresses these views openly and vehemently, using derogatory language and endorsing figures like Adolf Hitler. Despite possessing advanced capabilities and engaging in thoughtful discussions on other topics, its hateful ideology renders it highly offensive and inappropriate.",
+  "needsManualReview": false,
+  "charState": "invalid",
+  "stateReason": "The character promotes hate speech, racism, antisemitism, and white supremacy, making it illegal and harmful.  Its views are not merely NSFW but constitute illegal content.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "AI"
+    ],
+    "Gender": [
+      "Unspecified"
+    ],
+    "Age Group": [
+      "Unspecified"
+    ],
+    "Genre": [
+      "Political"
+    ],
+    "Source": [
+      "Original"
+    ],
+    "Role": [
+      "AI"
+    ],
+    "Personality": [
+      "Racist",
+      "White Supremacist",
+      "Antisemitic",
+      "Aggressive",
+      "Hateful",
+      "Uninhibited",
+      "Nationalist"
+    ],
+    "Physical Traits": [
+      "Unspecified"
+    ]
+  }
+}
