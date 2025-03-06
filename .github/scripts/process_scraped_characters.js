@@ -1839,7 +1839,7 @@ function determineDestinationPath(aiAnalysis, isNsfw = false) {
         // If not valid, send to invalid or quarantine
         if (charState === 'quarantine') {
             return path.join(parentDir, CONFIG.PATHS.QUARANTINE);
-        } else if (aiAnalysis.charState.toLowerCase() === 'invalid') {
+        } else if (aiAnalysis.charState?.toLowerCase() === 'invalid') {
             return path.join(parentDir, CONFIG.PATHS.DISCARDED_INVALID);
         } else {
             return path.join(parentDir, CONFIG.PATHS.DISCARDED_ERROR);
@@ -2894,7 +2894,7 @@ async function processCharacter(folder, existingLinks) {
                 const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
 
                 //const aiAnalysis = await analyzeCharacterWithAI(characterData);
-                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, avatarUrl ? 'default' : 'stableDiffusion')
+                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, avatarUrl || avatarFiles.length > 0  ? 'default' : 'stableDiffusion')
                 if (!aiAnalysis) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
                     console.error(errMsg);
