@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '2.7';
+const scriptVersion = '2.8';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 300,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 10,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -176,6 +176,8 @@ let stats = {
     updated: 0,
     forked: 0,
     missingImage: 0,
+    pendingAvatar: 0,
+    pendingProhibitedContent: 0,
     errors: []
 };
 
@@ -194,8 +196,9 @@ const glob = require('glob').sync;
 const cloudinary = require('cloudinary').v2; // Import Cloudinary SDK
 const { createCanvas, loadImage } = require('canvas');
 const tf = require('@tensorflow/tfjs-node');
-const nsfw = require('nsfwjs');
 const axios = require('axios');
+const sharp = require('sharp');
+const nsfw = require('nsfwjs');
 let nsfwModel = null;
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -218,6 +221,20 @@ const model = genAI.getGenerativeModel({ model: API_CONFIG.gemini.model });
  * Manages all file system operations in one place
  */
 class FileHandler {
+    /**
+     * Check if a file exists
+     * @param {string} filePath - Path to the file
+     * @returns {Promise<boolean>} - True if the file exists, false otherwise
+     */
+    static async existsFile(filePath) {
+        try {
+            await fs.access(filePath);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     /**
      * Read a file's contents
      * @param {string} filePath - Path to the file
@@ -1151,7 +1168,12 @@ async function checkForForkAndUpdate(characterData, metadata, CONFIG) {
     // Not a fork or update
     return {
         isExisting: false,
-        type: 'NEW'
+        type: 'NEW',
+        isDuplicate: analysis.isDuplicate,
+        isFork: analysis.isFork,
+        isUpdate: analysis.isUpdate,
+        overallSimilarity: analysis.overallSimilarity,
+        bestMatch: analysis.bestMatchPath ? path.basename(analysis.bestMatchPath) : 'None'
     };
 }
 
@@ -1232,7 +1254,7 @@ async function uploadImage(img, fileName = null, api = 'cloudinary') {
                 console.error(`${api} API quota exceeded. Halting execution.`);
                 process.exit(1);
             } else if (API_CONFIG[api].skipExecutionOnFail) {
-                console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+                console.warn(`    ${api} API quota exceeded. Skipping execution.`);
                 return null;
             } else {
                 console.warn(`    ${api} API quota exceeded.`);
@@ -1346,7 +1368,7 @@ async function generateImage(aiAnalysis, api = 'pigimage') {
             console.error(`${api} API quota exceeded. Halting execution.`);
             process.exit(1);
         } else if (API_CONFIG[api].skipExecutionOnFail) {
-            console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+            console.warn(`    ${api} API quota exceeded. Skipping execution.`);
             return null;
         } else {
             console.warn(`    ${api} API quota exceeded.`);
@@ -1466,7 +1488,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
             console.error(`${api} API quota exceeded. Halting execution.`);
             process.exit(0);
         } else if (API_CONFIG[api].skipExecutionOnFail) {
-            console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+            console.warn(`    ${api} API quota exceeded. Skipping execution.`);
             return null;
         } else {
             console.warn(`    ${api} API quota exceeded.`);
@@ -1672,6 +1694,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
             console.error('\nGemini - Response was blocked due to PROHIBITED_CONTENT.');
             FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'), [])
             await quotaManager.incrementQuota(api);
+            return 'PROHIBITED_CONTENT'
         } else if (error.message.includes('429 Too Many Requests')) {
             console.error('\nGemini - Too Many Requests. Executing 2 seconds pause before proceeding.');
             await quotaManager.incrementQuota(api);
@@ -2407,21 +2430,111 @@ async function safeLoadImage(source) {
     try {
         // For URLs, download the image first to handle potential format issues
         if (source.startsWith('http') || source.startsWith('https')) {
-            //console.log(`Loading image from URL: ${source}`);
+            try {
+                // Get the image data via axios
+                const response = await axios.get(source, { responseType: 'arraybuffer' });
 
-            // Get the image data via axios
-            const response = await axios.get(source, { responseType: 'arraybuffer' });
+                // Get the content type from headers
+                const contentType = response.headers['content-type'];
 
-            // Get the content type from headers (for debugging)
-            const contentType = response.headers['content-type'];
-            //console.log(`Image content type: ${contentType}`);
+                // Treat webp format
+                let finalData = response.data;
 
-            // For TensorFlow.js we can use the buffer directly
-            return tf.node.decodeImage(new Uint8Array(response.data), 3);
+                if (contentType === 'image/webp' || source.includes('.webp')) {
+                    // Use Sharp to convert WebP to PNG format
+                    const sharpImage = sharp(new Uint8Array(response.data));
+                    const pngBuffer = await sharpImage.png().toBuffer();
+                    finalData = pngBuffer;
+                }
+
+                // For URLs that are GIFs or content that is identified as GIFs
+                if (source.includes('.gif') || contentType === 'image/gif') {
+                    try {
+                        // Use Sharp to extract the first frame of the GIF and convert to PNG
+                        const sharpImage = sharp(new Uint8Array(response.data), { animated: true });
+                        // Extract first frame
+                        const firstFrame = await sharpImage.toFormat('png').toBuffer();
+                        finalData = firstFrame;
+                    } catch (gifError) {
+                        console.error("Error processing GIF:", gifError.message);
+                        const formatError = new Error("GIF processing error");
+                        formatError.code = 'GIF_ERROR';
+                        throw formatError;
+                    }
+                }
+
+                // For TensorFlow.js we can use the buffer directly
+                return tf.node.decodeImage(new Uint8Array(finalData), 3);
+            } catch (error) {
+                // Check specifically for 404 errors
+                if (error.response && error.response.status === 404) {
+                    // Create a custom error for 404 status
+                    const notFoundError = new Error("Image not found (404)");
+                    notFoundError.status = 404;
+                    throw notFoundError;
+                }
+                // Re-throw other errors
+                throw error;
+            }
         }
         // For base64 images
         else if (source.startsWith('data:image')) {
             //console.log('Loading image from base64 string');
+
+            // Handle WebP in base64 format
+            if (source.startsWith('data:image/webp')) {
+                // Extract the base64 data from the data URI
+                const base64Data = source.split(',')[1];
+                // Convert base64 to buffer
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                try {
+                    // Use Sharp to convert WebP to PNG
+                    const sharpImage = sharp(buffer);
+                    const pngBuffer = await sharpImage.png().toBuffer();
+
+                    // Create a new PNG base64 data URI
+                    const pngBase64 = pngBuffer.toString('base64');
+                    const pngDataUri = `data:image/png;base64,${pngBase64}`;
+
+                    // Load the converted PNG image
+                    const img = await loadImage(pngDataUri);
+                    const canvas = createCanvas(img.width, img.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    return tf.browser.fromPixels(canvas);
+                } catch (webpError) {
+                    console.error("Error converting WebP base64:", webpError.message);
+                    throw new Error("Unsupported image type: WebP base64 conversion failed");
+                }
+            }
+
+            // Gif handling
+            if (source.startsWith('data:image/gif')) {
+                const base64Data = source.split(',')[1];
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                try {
+                    // Extract first frame of GIF
+                    const sharpImage = sharp(buffer, { animated: true });
+                    const pngBuffer = await sharpImage.toFormat('png').toBuffer();
+                    const pngBase64 = pngBuffer.toString('base64');
+                    const pngDataUri = `data:image/png;base64,${pngBase64}`;
+
+                    const img = await loadImage(pngDataUri);
+                    const canvas = createCanvas(img.width, img.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    return tf.browser.fromPixels(canvas);
+                } catch (gifError) {
+                    console.error("Error converting GIF base64:", gifError.message);
+                    const formatError = new Error("GIF processing error");
+                    formatError.code = 'GIF_ERROR';
+                    throw formatError;
+                }
+            }
+
+            // Normal processing for other base64 formats
             const img = await loadImage(source);
             const canvas = createCanvas(img.width, img.height);
             const ctx = canvas.getContext('2d');
@@ -2524,6 +2637,15 @@ async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds)
                 console.error(`Error processing specific image: ${image.substring(0, 100)}...`);
                 console.error(`Specific error: ${imageError.message}`);
 
+                // Check for specific error types
+                let errorCode = null;
+                if (imageError.status === 404) {
+                    errorCode = 404;
+                } else if (imageError.message.includes('unsupported image type') ||
+                    imageError.message.includes('Unsupported image type')) {
+                    errorCode = 'UNSUPPORTED_FORMAT';
+                }
+
                 predictionResults.push({
                     image: image,
                     predictions: [],
@@ -2531,7 +2653,8 @@ async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds)
                     error: {
                         message: imageError.message,
                         stack: imageError.stack,
-                        name: imageError.name
+                        name: imageError.name,
+                        code: errorCode
                     }
                 });
             }
@@ -2550,17 +2673,19 @@ async function checkImageForNSFW(images, nsfwThresholds = defaultNsfwThresholds)
             predictionResults,
             successCount: successfulResults.length,
             failCount: predictionResults.length - successfulResults.length,
-            allFailed
+            allFailed,
+            errorCodes: predictionResults
+                .filter(r => r.error && r.error.code)
+                .map(r => r.error.code)
         };
     } catch (error) {
         console.error('Fatal error in NSFW detection:', error);
         return {
             isNSFW: null,
             predictionResults,
-            error: {
-                message: error.message,
-                stack: error.stack
-            }
+            errorCodes: predictionResults
+                .filter(r => r.error && r.error.code)
+                .map(r => r.error.code)
         };
     }
 }
@@ -2579,7 +2704,7 @@ async function processCharacters() {
                 console.error(`${api} API quota exceeded. Halting execution.`);
                 process.exit(0);
             } else if (API_CONFIG[api].skipExecutionOnFail) {
-                console.warn(`    ${api} API quota exceeded. Skipping execution.`);	
+                console.warn(`    ${api} API quota exceeded. Skipping execution.`);
                 return null;
             } else {
                 console.warn(`    ${api} API quota exceeded.`);
@@ -2652,11 +2777,36 @@ async function processCharacter(folder, existingLinks) {
             try {
                 console.log(`-----\n    Processing file: ${item.fileId} with link: ${item.link}`);
 
+                /* - CHECK IF FOLDER WAS SKIPPED BEFORE DUE TO ANY PROBLEM AND SKIP IT AGAIN - */
+                // Check for missing generated avatar
+                if (await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'))) {
+                    console.log(`    Character have pending avatar generation. Skipping character.`)
+                    stats.pendingAvatar++;
+                    continue;
+                }
+                // Check for prohibited content
+                if (await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'))) {
+                    console.log(`    Character have pending prohibited content issues.`)
+                    // Move folder to manual review
+                    const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
+                    const destPath = path.join(path.dirname(CONFIG.SOURCE_PATH), CONFIG.PATHS.MANUAL_REVIEW, folder);
+                    console.log(`Flagging for Manual Review: moving ${currentPath} to ${destPath}.`);
+                    await FileHandler.move(
+                        currentPath,
+                        destPath,
+                    );
+                    console.log('Skipping character.')
+                    stats.pendingProhibitedContent++;
+                    continue;
+                }
+
+                /* ----------------------------- DUPLICATE CHECK ---------------------------- */
+
                 // Check if link or folder is a duplicate
                 const { duplicateType, duplicatePath } = await checkDuplicateLinksAndFolder(item, existingLinks, folder);
                 // duplicatePath: sfw/2B_and_A2 by f2956d4fbdec4339c178
 
-                // Check if link is duplicate
+                // Check if link is duplicate (same link)
                 if (duplicateType === 'link') {
                     console.log(`    Removing ${item.fileId} from folder ${folder} due to duplicate link.`);
                     await removeDuplicate(folder, duplicatePath, item);
@@ -2673,7 +2823,7 @@ async function processCharacter(folder, existingLinks) {
                 const { characterData, fileHash } = await extractCharacterData(folder, gzFile, existingLinks);
 
 
-                // Check if hash is duplicate
+                // Check if hash is duplicate (same file, different link)
                 if (characterData === 'duplicate') {
                     console.log(`    Removing ${item.fileId} from folder ${folder} due to duplicate hash.`);
                     await removeDuplicate(folder, null, item, fileHash);
@@ -2682,7 +2832,7 @@ async function processCharacter(folder, existingLinks) {
                     continue;
                 }
 
-                // Check if folder is duplicate
+                // Check if folder is duplicate (same folder and same content)
                 if (duplicateType === 'folder') {
                     console.log(`    Found existing folder ${duplicatePath} for ${item.characterName}.`);
                     // Check if is 
@@ -2693,6 +2843,8 @@ async function processCharacter(folder, existingLinks) {
                         totalItems--;
                         stats.duplicate++;
                         continue;
+                    } else {
+                        console.log(`    ${duplicateCheck.isUpdate ? 'Folder is an update ' : 'Necessary to perform more checking '} for ${item.characterName}.`);
                     }
                 }
 
@@ -2740,6 +2892,21 @@ async function processCharacter(folder, existingLinks) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
                     console.error(errMsg);
                     stats.errors.push({ folder, error: errMsg });
+                    continue;
+                } else if (aiAnalysis === 'PROHIBITED_CONTENT') {
+                    errMsg = `Character has induce a PROHIBITED_CONTENT response.`;
+                    console.error(errMsg);
+                    stats.errors.push({ folder, error: errMsg });
+
+                    // Move folder to manual review
+                    const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
+                    const destPath = path.join(path.dirname(CONFIG.SOURCE_PATH), CONFIG.PATHS.MANUAL_REVIEW, folder);
+                    console.log(`Flagging for Manual Review: moving ${currentPath} to ${destPath}.`);
+                    await FileHandler.move(
+                        currentPath,
+                        destPath,
+                    );
+                    console.log('Skipping character.')
                     continue;
                 }
 
@@ -2815,7 +2982,33 @@ async function processCharacter(folder, existingLinks) {
 
                 // Check for NSFW content in the images
                 const { isNSFW, predictionResults } = await checkImageForNSFW([avatarUrl, backgroundUrl]); // Use the original images to avoid having to download them again
-                if (isNSFW === null) {
+                // Check if there was an error with the first image specifically
+                const firstImageResult = predictionResults[0]; // This will be the result for the avatarUrl
+
+                if (firstImageResult && firstImageResult.error) {
+                    // First image had an error
+                    console.log(`Error in avatar image: ${firstImageResult.error.code || 'Unknown error'}`);
+                    console.log(`Error message: ${firstImageResult.error.message}`);
+
+                    // Check for specific error types in the first image
+                    if (firstImageResult.error.code === 404) {
+                        console.log("Avatar image not found (404). Generating _missingAvatar file and skipping character.");
+                        // Handle missing avatar case
+                        // Write missing avatar file
+                        FileHandler.writeJson(path.join(CONFIG.SOURCE_PATH, folder, '_missingAvatar.json'), await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, 'stableDiffusion'))
+                        stats.missingImage++;
+                        continue;
+                    } else if (firstImageResult.error.code === 'UNSUPPORTED_FORMAT' ||
+                        firstImageResult.error.code === 'GIF_ERROR') {
+                        // Handle format issues
+                        errMsg = `    Avatar image has format issues: ${firstImageResult.error.code}.`;
+                        console.error(errMsg);
+                        console.error('Skipping character.');
+                        stats.missingImage++;
+                        stats.errors.push({ folder, error: errMsg });
+                        continue;
+                    }
+                } else if (isNSFW === null) {
                     console.error("    NSFW detection failed. Skipping character.");
                     errMsg = `NSFW detection failed. Skipping character.`;
                     stats.errors.push({ folder, error: errMsg });
@@ -3103,6 +3296,8 @@ function printStats() {
     console.log(`Updated: ${stats.updated}`);
     console.log(`Forked: ${stats.forked}`);
     console.log(`Missing Image: ${stats.missingImage}`);
+    console.log(`Pending Avatar: ${stats.pendingAvatar}`);
+    console.log(`Pending Prohibited Content: ${stats.pendingProhibitedContent}`);
     console.log(`Errors: ${stats.errors.length}`);
 
     if (stats.errors.length > 0) {
