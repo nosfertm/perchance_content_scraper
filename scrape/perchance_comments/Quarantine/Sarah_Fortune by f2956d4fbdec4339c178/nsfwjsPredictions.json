@@ -1,0 +1,41 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741079335/scrape/perchance_comments/img_Sarah_Fortune_by_f2956d4fbdec4339c178.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.9740018844604492
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.025752829387784004
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.0001845984224928543
+      },
+      {
+        "className": "Porn",
+        "probability": 0.00004378788435133174
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.000016797324860817753
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  },
+  {
+    "image": "https://user-uploads.perchance.org/file/961fd8b2f8668da720de760494e12c16.mp4",
+    "predictions": [],
+    "containsNSFW": null,
+    "error": {
+      "message": "Expected image (BMP, JPEG, PNG, or GIF), but got unsupported image type",
+      "stack": "Error: Expected image (BMP, JPEG, PNG, or GIF), but got unsupported image type\n    at getImageType (/home/runner/work/perchance_content_scraper/perchance_content_scraper/node_modules/@tensorflow/tfjs-node/dist/image.js:353:15)\n    at Object.decodeImage (/home/runner/work/perchance_content_scraper/perchance_content_scraper/node_modules/@tensorflow/tfjs-node/dist/image.js:198:21)\n    at safeLoadImage (/home/runner/work/perchance_content_scraper/perchance_content_scraper/.github/scripts/process_scraped_characters.js:2467:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async checkImageForNSFW (/home/runner/work/perchance_content_scraper/perchance_content_scraper/.github/scripts/process_scraped_characters.js:2606:32)\n    at async processCharacter (/home/runner/work/perchance_content_scraper/perchance_content_scraper/.github/scripts/process_scraped_characters.js:2984:55)\n    at async processCharacters (/home/runner/work/perchance_content_scraper/perchance_content_scraper/.github/scripts/process_scraped_characters.js:2725:30)\n    at async main (/home/runner/work/perchance_content_scraper/perchance_content_scraper/.github/scripts/process_scraped_characters.js:3335:9)",
+      "name": "Error",
+      "code": "UNSUPPORTED_FORMAT"
+    }
+  }
+]
