@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 
 // Define version to show on console.log
-const scriptVersion = '3.0';
+const scriptVersion = '3.1';
 
 // Configuration variables
 const CONFIG = {
@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 50,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 10,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -1580,7 +1580,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         ### **Validation Criteria**
         1. **Rating (rating)**:
         - **Type**: string (enum: "sfw" | "nsfw")
-        - **Purpose**: Indicates whether the character is Safe for Work (SFW) or Not Safe for Work (NSFW).
+        - **Purpose**: Indicates whether the character is Safe for Work (SFW) or Not Safe for Work (NSFW). This is not the same as the category rating.
         
         2. **Character State (charState)**:
         - **Type**: string (enum: "valid" | "invalid" | "quarantine")
@@ -1608,6 +1608,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         - **Purpose**: Each category name is a key, and its value is an array of matching tags.
         - **Rules**:
             - Always in lower case
+            - Here, you can use an array of tags on the rating category
             - Use multiple tags from each category as needed.
             - Categories marked (required: true) must always be present.
             - Categories marked (nsfw_only: true) apply only to NSFW characters.
@@ -1645,6 +1646,11 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         Available categories:
         ${JSON.stringify(categoriesMap, null, 2)}
         `;
+    }
+
+    // An easy way to get the prompt
+    if (output === 'prompt') {
+        return prompt
     }
 
     let responseText;
@@ -2928,15 +2934,81 @@ async function processCharacter(folder, existingLinks) {
                     // Move folder to manual review
                     const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
                     const destPath = path.join(path.dirname(CONFIG.SOURCE_PATH), CONFIG.PATHS.MANUAL_REVIEW, folder);
-                    console.log(`Flagging for Manual Review: moving ${currentPath} to ${destPath}.`);
-                    await FileHandler.move(
-                        currentPath,
-                        destPath,
-                    );
-                    console.log('Skipping character.')
+                    const isPromptGenerated = await FileHandler.existsFile(path.join(currentPath, '_aiPrompt.txt'));
+
+                    // Skip if prompt is generated
+                    if (isPromptGenerated) {
+                        console.log(`Flagging for Manual Review: moving ${currentPath} to ${destPath}.`);
+                        await FileHandler.move(
+                            currentPath,
+                            destPath,
+                        );
+                        console.log('Skipping character.');
+                        stats.pendingProhibitedContent++;
+                        continue;
+                    } else {
+                        console.log('Necessary to generate _aiPrompt.txt and _manifest.json file before skipping.')
+                    }
+                }
+
+                /* -------------------------- ACCESS CHARACTER DATA ------------------------- */
+
+                // Access or download gzfile to extract data to perform more checks
+                // Get Gz fileId
+                const gzFile = item.fileId;
+
+                // Extract Gz content or download if corrupted / missing
+                const { characterData, fileHash } = await extractCharacterData(folder, gzFile, existingLinks);
+
+                // Read capturedMessage.json
+                const message = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE));
+
+                const characterName = characterData?.addCharacter?.name || '';
+                const userCharacterName = characterData?.userCharacter?.name || '';
+                const roleInstruction = characterData?.addCharacter?.roleInstruction || '';
+                const reminder = characterData?.addCharacter?.reminderMessage || '';
+                const userRole = characterData?.userCharacter?.roleInstruction || '';
+                const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
+                const backgroundUrl = characterData?.addCharacter?.scene?.background?.url || "";
+                const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
+
+                // Generate prompt and manifest structure for PROHIBITED CONTENT characters
+                if (isProhibitedContent && !isPromptGenerated) {
+                    console.log('Generating _aiPrompt.txt and _manifest.json file.')
+                    const prompt = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, 'prompt');
+                    FileHandler.writeFile(path.join(currentPath, '_aiPrompt.txt'), prompt);
+
+                    const manifest = {
+                        name: characterData?.addCharacter?.name || '',
+                        description: 'MISSING',
+                        author: message.username || message.userNickname || 'Anonymous',
+                        authorId: message.publicId,
+                        source: 'SCRAPER',
+                        imageUrl: avatarUrl || '',
+                        shareUrl: item.link,
+                        shareLinkFileHash: fileHash || '',
+                        downloadPath: downloadPath,
+                        forkedFrom: 'UNCHECKED',
+                        shapeShifter_Pulls: 0,
+                        galleryChat_Clicks: 0,
+                        galleryDownload_Clicks: 0,
+                        groupSettings: {
+                            requires: [],
+                            recommends: []
+                        },
+                        features: {
+                            customCode: [],
+                            assets: []
+                        },
+                        categories: []
+                    }
+
+                    FileHandler.writeJson(path.join(currentPath, '_manifes.json'), manifest);
+
+                    console.log('Skipping character.');
                     stats.pendingProhibitedContent++;
                     continue;
-                }
+                };
 
                 /* ----------------------------- DUPLICATE CHECK ---------------------------- */
 
@@ -2952,14 +3024,6 @@ async function processCharacter(folder, existingLinks) {
                     stats.duplicate++;
                     continue;
                 }
-
-                // Access or download gzfile to extract data to perform more checks
-                // Get Gz fileId
-                const gzFile = item.fileId;
-
-                // Extract Gz content or download if corrupted / missing
-                const { characterData, fileHash } = await extractCharacterData(folder, gzFile, existingLinks);
-
 
                 // Check if hash is duplicate (same file, different link)
                 if (characterData === 'duplicate') {
@@ -3012,17 +3076,7 @@ async function processCharacter(folder, existingLinks) {
                     stats.forked++;
                 }
 
-                // Read capturedMessage.json
-                const message = await FileHandler.readJson(path.join(CONFIG.SOURCE_PATH, folder, CONFIG.MESSAGE_FILE));
-
-                const characterName = characterData?.addCharacter?.name || '';
-                const userCharacterName = characterData?.userCharacter?.name || '';
-                const roleInstruction = characterData?.addCharacter?.roleInstruction || '';
-                const reminder = characterData?.addCharacter?.reminderMessage || '';
-                const userRole = characterData?.userCharacter?.roleInstruction || '';
-                const categories = await FileHandler.readJson(FILE_OPS.CATEGORIES_FILE);
-                const backgroundUrl = characterData?.addCharacter?.scene?.background?.url || "";
-                const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
+                /* ---------------------------- AI CLASSIFICATION --------------------------- */
 
                 //const aiAnalysis = await analyzeCharacterWithAI(characterData);
                 const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, avatarUrl || avatarFiles.length > 0 ? 'default' : 'stableDiffusion')
@@ -3047,6 +3101,8 @@ async function processCharacter(folder, existingLinks) {
                     console.log('Skipping character.')
                     continue;
                 }
+
+                /* -------------------- IMAGE HANDLING AND NSFW FLAGGING -------------------- */
 
                 // Variable to check character image condition
                 let finalImage, finalBackground;
@@ -3166,13 +3222,13 @@ async function processCharacter(folder, existingLinks) {
                     }
                 }
 
+                /* ------------------------------- WRITE FILES ------------------------------ */
+
                 // Determine destination path based on aiAnalysis and NSFW image analysis
                 const destinationPath = determineDestinationPath(aiAnalysis, isNSFW);
 
                 // Create character structure in destination
                 await createCharacterStructure(folder, item, message, characterData, aiAnalysis, destinationPath, finalImage, finalBackground, fileHash, forkAnalysis);
-
-                /* ------------------------------- WRITE FILES ------------------------------ */
 
                 //Copy capturedMessage.json
                 await fs.copyFile(
