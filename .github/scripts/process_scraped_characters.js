@@ -2437,34 +2437,76 @@ async function safeLoadImage(source) {
                 // Get the content type from headers
                 const contentType = response.headers['content-type'];
 
-                // Treat webp format
+                // Create image buffer
                 let finalData = response.data;
+                let processed = false;
 
-                if (contentType === 'image/webp' || source.includes('.webp')) {
-                    // Use Sharp to convert WebP to PNG format
-                    const sharpImage = sharp(new Uint8Array(response.data));
-                    const pngBuffer = await sharpImage.png().toBuffer();
-                    finalData = pngBuffer;
+                // Check for WebP format
+                if (contentType === 'image/webp' || source.toLowerCase().includes('.webp')) {
+                    try {
+                        // Use Sharp to convert WebP to PNG format
+                        const sharpImage = sharp(new Uint8Array(response.data));
+                        const pngBuffer = await sharpImage.png().toBuffer();
+                        finalData = pngBuffer;
+                        processed = true;
+                        console.log("Successfully converted WebP image to PNG");
+                    } catch (webpError) {
+                        console.error("Error converting WebP image:", webpError.message);
+                        // Continue with original data if conversion fails
+                    }
                 }
 
-                // For URLs that are GIFs or content that is identified as GIFs
-                if (source.includes('.gif') || contentType === 'image/gif') {
+                // Check for GIF format
+                if ((source.toLowerCase().includes('.gif') || contentType === 'image/gif') && !processed) {
                     try {
                         // Use Sharp to extract the first frame of the GIF and convert to PNG
                         const sharpImage = sharp(new Uint8Array(response.data), { animated: true });
                         // Extract first frame
                         const firstFrame = await sharpImage.toFormat('png').toBuffer();
                         finalData = firstFrame;
+                        processed = true;
+                        console.log("Successfully extracted first frame from GIF");
                     } catch (gifError) {
                         console.error("Error processing GIF:", gifError.message);
-                        const formatError = new Error("GIF processing error");
-                        formatError.code = 'GIF_ERROR';
-                        throw formatError;
+                        // Continue with original data if conversion fails
                     }
                 }
 
-                // For TensorFlow.js we can use the buffer directly
-                return tf.node.decodeImage(new Uint8Array(finalData), 3);
+                // If not processed by specific format handlers, try general conversion
+                if (!processed) {
+                    try {
+                        const sharpImage = sharp(new Uint8Array(response.data));
+                        const metadata = await sharpImage.metadata();
+                        console.log(`Original image format: ${metadata.format}`);
+
+                        // Only convert if not already in a standard format
+                        if (!['jpeg', 'png'].includes(metadata.format)) {
+                            const pngBuffer = await sharpImage.toFormat('png').toBuffer();
+                            finalData = pngBuffer;
+                            console.log("Converted image to PNG format for compatibility");
+                        }
+                    } catch (convError) {
+                        console.error("General conversion error:", convError.message);
+                        // Continue with original data if conversion fails
+                    }
+                }
+
+                // For TensorFlow.js we can use the processed buffer
+                try {
+                    return tf.node.decodeImage(new Uint8Array(finalData), 3);
+                } catch (tfError) {
+                    console.error("TensorFlow decode error:", tfError.message);
+
+                    // Last resort: try one more time with a guaranteed PNG conversion
+                    try {
+                        const lastResortImage = sharp(new Uint8Array(finalData));
+                        const pngBuffer = await lastResortImage.png().toBuffer();
+                        return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                    } catch (lastError) {
+                        console.error("Last resort conversion failed:", lastError.message);
+                        throw new Error(`Unable to process image after multiple attempts: ${tfError.message}`);
+                    }
+                }
             } catch (error) {
                 // Check specifically for 404 errors
                 if (error.response && error.response.status === 404) {
@@ -2493,16 +2535,23 @@ async function safeLoadImage(source) {
                     const sharpImage = sharp(buffer);
                     const pngBuffer = await sharpImage.png().toBuffer();
 
-                    // Create a new PNG base64 data URI
-                    const pngBase64 = pngBuffer.toString('base64');
-                    const pngDataUri = `data:image/png;base64,${pngBase64}`;
+                    // Try both methods for maximum compatibility
+                    try {
+                        // Direct TensorFlow decoding (preferred)
+                        return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                    } catch (tfError) {
+                        console.error("TensorFlow WebP decode error:", tfError.message);
 
-                    // Load the converted PNG image
-                    const img = await loadImage(pngDataUri);
-                    const canvas = createCanvas(img.width, img.height);
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    return tf.browser.fromPixels(canvas);
+                        // Fallback to canvas method
+                        const pngBase64 = pngBuffer.toString('base64');
+                        const pngDataUri = `data:image/png;base64,${pngBase64}`;
+
+                        const img = await loadImage(pngDataUri);
+                        const canvas = createCanvas(img.width, img.height);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        return tf.browser.fromPixels(canvas);
+                    }
                 } catch (webpError) {
                     console.error("Error converting WebP base64:", webpError.message);
                     throw new Error("Unsupported image type: WebP base64 conversion failed");
@@ -2518,14 +2567,24 @@ async function safeLoadImage(source) {
                     // Extract first frame of GIF
                     const sharpImage = sharp(buffer, { animated: true });
                     const pngBuffer = await sharpImage.toFormat('png').toBuffer();
-                    const pngBase64 = pngBuffer.toString('base64');
-                    const pngDataUri = `data:image/png;base64,${pngBase64}`;
 
-                    const img = await loadImage(pngDataUri);
-                    const canvas = createCanvas(img.width, img.height);
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    return tf.browser.fromPixels(canvas);
+                    // Try both methods for maximum compatibility
+                    try {
+                        // Direct TensorFlow decoding (preferred)
+                        return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                    } catch (tfError) {
+                        console.error("TensorFlow GIF decode error:", tfError.message);
+
+                        // Fallback to canvas method
+                        const pngBase64 = pngBuffer.toString('base64');
+                        const pngDataUri = `data:image/png;base64,${pngBase64}`;
+
+                        const img = await loadImage(pngDataUri);
+                        const canvas = createCanvas(img.width, img.height);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        return tf.browser.fromPixels(canvas);
+                    }
                 } catch (gifError) {
                     console.error("Error converting GIF base64:", gifError.message);
                     const formatError = new Error("GIF processing error");
@@ -2534,18 +2593,91 @@ async function safeLoadImage(source) {
                 }
             }
 
-            // Normal processing for other base64 formats
-            const img = await loadImage(source);
-            const canvas = createCanvas(img.width, img.height);
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            return tf.browser.fromPixels(canvas);
+            // For other base64 formats, try a more robust approach
+            try {
+                // Extract the base64 data
+                const base64Data = source.split(',')[1];
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                // Use Sharp to normalize to PNG
+                const sharpImage = sharp(buffer);
+                const pngBuffer = await sharpImage.toFormat('png').toBuffer();
+
+                // Try direct TensorFlow decoding
+                try {
+                    return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                } catch (tfError) {
+                    // Fallback to canvas method
+                    const pngBase64 = pngBuffer.toString('base64');
+                    const pngDataUri = `data:image/png;base64,${pngBase64}`;
+
+                    const img = await loadImage(pngDataUri);
+                    const canvas = createCanvas(img.width, img.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    return tf.browser.fromPixels(canvas);
+                }
+            } catch (error) {
+                // If everything else fails, try the original method
+                try {
+                    const img = await loadImage(source);
+                    const canvas = createCanvas(img.width, img.height);
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    return tf.browser.fromPixels(canvas);
+                } catch (canvasError) {
+                    console.error("All image processing methods failed:", canvasError.message);
+                    throw new Error(`Unable to process base64 image after multiple attempts: ${error.message}`);
+                }
+            }
         }
         // For file paths
         else {
             //console.log(`Loading image from file: ${source}`);
-            const data = await fs.readFile(source);
-            return tf.node.decodeImage(new Uint8Array(data), 3);
+            try {
+                const data = await fs.readFile(source);
+
+                // Try to determine file format from file extension
+                const fileExtension = source.split('.').pop().toLowerCase();
+
+                // Special handling for WebP
+                if (fileExtension === 'webp') {
+                    try {
+                        const sharpImage = sharp(data);
+                        const pngBuffer = await sharpImage.png().toBuffer();
+                        return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                    } catch (webpError) {
+                        console.error("WebP file conversion error:", webpError.message);
+                        // Fall through to default handling
+                    }
+                }
+
+                // Special handling for GIF (extract first frame)
+                if (fileExtension === 'gif') {
+                    try {
+                        const sharpImage = sharp(data, { animated: true });
+                        const pngBuffer = await sharpImage.toFormat('png').toBuffer();
+                        return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                    } catch (gifError) {
+                        console.error("GIF file conversion error:", gifError.message);
+                        // Fall through to default handling
+                    }
+                }
+
+                // Try standard decoding first
+                try {
+                    return tf.node.decodeImage(new Uint8Array(data), 3);
+                } catch (decodeError) {
+                    // If standard decoding fails, try to normalize through Sharp
+                    console.error("Standard decode failed, trying conversion:", decodeError.message);
+                    const sharpImage = sharp(data);
+                    const pngBuffer = await sharpImage.toFormat('png').toBuffer();
+                    return tf.node.decodeImage(new Uint8Array(pngBuffer), 3);
+                }
+            } catch (error) {
+                console.error(`Error processing file ${source}:`, error.message);
+                throw error;
+            }
         }
     } catch (error) {
         // Create a detailed error log
@@ -2786,7 +2918,6 @@ async function processCharacter(folder, existingLinks) {
 
                 if (isMissingAvatar && avatarFiles.length === 0) {
                     console.log(`    Character have pending avatar generation. Skipping character.`)
-                    console.log(`isMissingAvatar: ${isMissingAvatar}. avatarFiles: ${avatarFiles}`)
                     stats.pendingAvatar++;
                     continue;
                 }
@@ -2894,7 +3025,7 @@ async function processCharacter(folder, existingLinks) {
                 const avatarUrl = characterData?.addCharacter?.avatar?.url || "";
 
                 //const aiAnalysis = await analyzeCharacterWithAI(characterData);
-                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, avatarUrl || avatarFiles.length > 0  ? 'default' : 'stableDiffusion')
+                const aiAnalysis = await classifyCharacter(roleInstruction, reminder, userRole, characterName, userCharacterName, categories, folder, avatarUrl || avatarFiles.length > 0 ? 'default' : 'stableDiffusion')
                 if (!aiAnalysis) {
                     errMsg = `Variable aiAnalysis is blank. Data is needed to continue.\nSkipping character processing.`;
                     console.error(errMsg);
