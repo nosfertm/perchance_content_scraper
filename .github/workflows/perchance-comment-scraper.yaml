@@ -5,6 +5,10 @@ on:
     # Runs at minute 0 and 30 of every hour (*/30)
     - cron: '0 */2 * * *'
   workflow_dispatch:  # Maintains ability to run manually
+
+permissions:
+  contents: write  # Allows pushing commits
+  pull-requests: write  # Allows creating and modifying PRs
   
 jobs:
   scrape:
@@ -39,14 +43,14 @@ jobs:
         
       - name: Run Scraper
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET_BRANCH: perchance_comments
         run: node .github/scripts/perchance_comment_scraper.js
 
       - name: Trigger Processor
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'nosfertm',

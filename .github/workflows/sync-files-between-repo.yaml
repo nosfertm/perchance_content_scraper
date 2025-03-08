@@ -36,7 +36,7 @@ jobs:
           # Determine target repository based on which one triggered the workflow
           repository: ${{ github.repository == 'nosfertm/perchance-character-database' && 'nosfertm/perchance_content_scraper' || 'nosfertm/perchance-character-database' }}
           path: target-repo
-          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           
       # Step 3: Copy files from source to target
       - name: Copy files
@@ -83,14 +83,14 @@ jobs:
             echo "'automated-pr' label already exists"
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Step 5: Create Pull Request with changes
       - name: Create Pull Request
         id: create-pr
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           path: target-repo
           commit-message: 'sync: Update shared files from ${{ github.repository }}'
           title: 'Sync: Update shared files'
