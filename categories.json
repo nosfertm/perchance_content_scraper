@@ -1,7 +1,7 @@
 [
     {
         "name": "Rating",
-        "description": "Content maturity level",
+        "description": "Content maturity level and explanation of why it's NSFW",
         "tags": {
             "general": [
                 "SFW",

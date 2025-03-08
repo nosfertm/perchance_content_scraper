@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 20,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -1586,8 +1586,8 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         - **Type**: string (enum: "valid" | "invalid" | "quarantine")
         - **Purpose**:
             - "valid": Default. Character has complete, appropriate, and coherent data.
-            - "invalid": Character is nonsensical, trolling, or otherwise unusable.
-            - "quarantine": Character contains ILLEGAL content (distinct from merely immoral or NSFW content).
+            - "invalid": Character is nonsensical, trolling, incomplete or otherwise unusable.
+            - "quarantine": Character contains ILLEGAL content (distinct from merely immoral, NSFW, explicit, lewd or even potentially harmingSe o content).
 
         3. **Description (description)**:
         - **Type**: string
@@ -1600,7 +1600,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         5. **Manual Review (needsManualReview)**:
         - **Type**: boolean
         - **Purpose**: 
-            - true: The character **lacks sufficient data** to be processed.
+            - true: The character is valid but **lacks sufficient data** to be properly evaluated or the IA confidence level to it's answer is not satisfactory.
             - false: Default value.
 
         6. **Categories (categories)**:
@@ -1608,7 +1608,7 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
         - **Purpose**: Each category name is a key, and its value is an array of matching tags.
         - **Rules**:
             - Always in lower case
-            - Here, you can use an array of tags on the rating category
+            - Here you can use an array of tags on the rating category
             - Use multiple tags from each category as needed.
             - Categories marked (required: true) must always be present.
             - Categories marked (nsfw_only: true) apply only to NSFW characters.
@@ -1617,7 +1617,8 @@ async function classifyCharacter(roleInstruction = '', reminder = '', userRole =
 
         ### **ATTENTION:**
         - **DO NOT** include Markdown, extra formatting, explanations, or anything outside the JSON response.
-        - Your analysis must be rely on legality rather than morality.
+        - Your analysis must rely only on legality rather than morality.
+        - Lewdness, explicit, violent content are allowed under proper categorization.
 
         ### **Return Format**:
         - Return a **pure stringified JSON** object with the following structure:
@@ -1923,23 +1924,26 @@ async function removeDuplicate(folder, existingPath, metadata, fileHash = null) 
         if (fileHash && !existingPath) {
             referenceContent = {
                 originPath: sourcePath,
-                existingHash: fileHash,
                 destinationPath: duplicatePath,
+                type: 'fileHash',                
+                existingHash: fileHash,
                 duplicateDate: new Date().toISOString()
             };
         } else if (!fileHash && existingPath) {
             referenceContent = {
                 originPath: sourcePath,
-                existingPath: existingPath,
                 destinationPath: duplicatePath,
+                type: 'path',           
+                existingPath: existingPath,
                 duplicateDate: new Date().toISOString()
             }
         } else {
             referenceContent = {
                 originPath: sourcePath,
+                destinationPath: duplicatePath,
+                type: 'path and fileHash',          
                 existingPath: existingPath,
                 existingHash: fileHash,
-                destinationPath: duplicatePath,
                 duplicateDate: new Date().toISOString()
             }
         }
