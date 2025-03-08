@@ -90,7 +90,7 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
           path: target-repo
           commit-message: 'sync: Update shared files from ${{ github.repository }}'
           title: 'Sync: Update shared files'
