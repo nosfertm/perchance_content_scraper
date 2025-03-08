@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "67cba35da115bd4811475004",
-    "time": 1741398877550,
-    "messagesAnalyzed_Total": 200913,
-    "messagesAnalyzed_lastRun": 200,
+    "messageId": "67cba720a115bd4811475769",
+    "time": 1741399840565,
+    "messagesAnalyzed_Total": 201035,
+    "messagesAnalyzed_lastRun": 122,
     "charactersFound_Total": 159,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
@@ -12,7 +12,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 43
+    "deltaMinutes": 16
   },
   "chill": {
     "messageId": "67cb5ec4a115bd481146dd32",
@@ -30,10 +30,10 @@
     "deltaMinutes": 0
   },
   "rp": {
-    "messageId": "67cba352a115bd4811474fec",
-    "time": 1741398866762,
-    "messagesAnalyzed_Total": 45621,
-    "messagesAnalyzed_lastRun": 60,
+    "messageId": "67cba557a115bd481147538f",
+    "time": 1741399383187,
+    "messagesAnalyzed_Total": 45637,
+    "messagesAnalyzed_lastRun": 16,
     "charactersFound_Total": 16,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,13 +42,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 43
+    "deltaMinutes": 9
   },
   "spam": {
-    "messageId": "67cb91faa115bd481147318e",
-    "time": 1741394426847,
-    "messagesAnalyzed_Total": 6809,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "67cba633a115bd481147556b",
+    "time": 1741399603963,
+    "messagesAnalyzed_Total": 6811,
+    "messagesAnalyzed_lastRun": 2,
     "charactersFound_Total": 230,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -57,13 +57,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 86
   },
   "vent": {
     "messageId": "67cb9b02a115bd481147415a",
     "time": 1741396738831,
     "messagesAnalyzed_Total": 17330,
-    "messagesAnalyzed_lastRun": 1,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 9,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -72,7 +72,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 61
+    "deltaMinutes": 0
   },
   "share": {
     "messageId": "67cb9214a115bd48114731bc",
