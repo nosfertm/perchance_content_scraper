@@ -1,6 +1,7 @@
 {
   "originPath": "scrape/perchance_comments/Raw/thing by be187b49bf8fcb353ea5",
-  "existingHash": "cefeac977e17677136d66ac800432abfaca86448f149484e2535a0760a3909ec",
   "destinationPath": "scrape/perchance_comments/Discarded/Duplicated/thing by be187b49bf8fcb353ea5",
-  "duplicateDate": "2025-03-06T19:01:24.891Z"
+  "type": "fileHash",
+  "existingHash": "cefeac977e17677136d66ac800432abfaca86448f149484e2535a0760a3909ec",
+  "duplicateDate": "2025-03-08T02:12:21.168Z"
 }
