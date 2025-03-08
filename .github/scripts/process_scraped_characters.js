@@ -2932,12 +2932,12 @@ async function processCharacter(folder, existingLinks) {
                     continue;
                 }
                 // Check for prohibited content
+                const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
                 const isProhibitedContent = await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'));
                 const isPromptGenerated = await FileHandler.existsFile(path.join(currentPath, '_aiPrompt.txt'));
                 if (isProhibitedContent) {
                     console.log(`    Character have pending prohibited content issues.`)
                     // Move folder to manual review
-                    const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
                     const destPath = path.join(path.dirname(CONFIG.SOURCE_PATH), CONFIG.PATHS.MANUAL_REVIEW, folder);
 
                     // Skip if prompt is generated
