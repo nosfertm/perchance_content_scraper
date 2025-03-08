@@ -135,12 +135,12 @@
     "deltaMinutes": 0
   },
   "channel-hub": {
-    "messageId": null,
-    "time": 0,
-    "messagesAnalyzed_Total": 0,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 0,
-    "charactersFound_lastRun": 0,
+    "messageId": "67c3bceca115bd48113ba2a8",
+    "time": 1740881132326,
+    "messagesAnalyzed_Total": 200,
+    "messagesAnalyzed_lastRun": 200,
+    "charactersFound_Total": 3,
+    "charactersFound_lastRun": 3,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
