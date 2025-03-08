@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741417888/scrape/perchance_comments/img_A_Clock_by_vionet.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.9947274327278137
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.005264305975288153
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.000008204466212191619
+      },
+      {
+        "className": "Porn",
+        "probability": 5.965540594843333e-8
+      },
+      {
+        "className": "Sexy",
+        "probability": 2.586975611507114e-8
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
