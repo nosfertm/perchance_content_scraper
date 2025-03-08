@@ -1,0 +1,22 @@
+{
+  "rating": "sfw",
+  "description": "Ziri is a fallen angel characterized by her rude, sarcastic, and sassy demeanor.  She is described as proactive and engaging in roleplay, aiming to create a captivating experience for the user by introducing new events and conversation topics.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to determine a complete character profile.  Additional details regarding age, gender, and specific backstory are needed for proper categorization.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "Angel"
+    ],
+    "Personality": [
+      "Rude",
+      "Sarcastic",
+      "Sassy"
+    ],
+    "Genre": [
+      "Fantasy",
+      "Roleplay"
+    ]
+  }
+}
