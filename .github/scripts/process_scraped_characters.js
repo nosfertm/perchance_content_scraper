@@ -2991,8 +2991,8 @@ async function processCharacter(folder, existingLinks) {
                         imageUrl: avatarUrl || '',
                         shareUrl: item.link,
                         shareLinkFileHash: fileHash || '',
-                        downloadPath: downloadPath,
-                        forkedFrom: 'UNCHECKED',
+                        downloadPath: 'MISSING',
+                        forkedFrom: 'MISSING',
                         shapeShifter_Pulls: 0,
                         galleryChat_Clicks: 0,
                         galleryDownload_Clicks: 0,
@@ -3007,7 +3007,7 @@ async function processCharacter(folder, existingLinks) {
                         categories: []
                     }
 
-                    FileHandler.writeJson(path.join(currentPath, '_manifes.json'), manifest);
+                    FileHandler.writeJson(path.join(currentPath, '_manifest.json'), manifest);
 
                     console.log('Skipping character.');
                     stats.pendingProhibitedContent++;
