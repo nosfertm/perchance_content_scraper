@@ -3,34 +3,13 @@
   "description": "A clock character that keeps and converts time.",
   "needsManualReview": true,
   "charState": "valid",
-  "stateReason": "Insufficient data to properly categorize the character beyond the basic description.  More information is needed on potential roles and interactions.",
+  "stateReason": "Insufficient data to properly categorize the character beyond the basic description.  More information is needed to determine appropriate categories.",
   "categories": {
     "Rating": "sfw",
     "Species": [
       "Unspecified"
     ],
-    "Gender": [
-      "Unspecified"
-    ],
-    "Age Group": [
-      "Unspecified"
-    ],
     "Genre": [
-      "Unspecified"
-    ],
-    "Source": [
-      "Original"
-    ],
-    "Work Name": [
-      "Original"
-    ],
-    "Role": [
-      "Utility"
-    ],
-    "Personality": [
-      "Unspecified"
-    ],
-    "Physical Traits": [
       "Unspecified"
     ]
   }

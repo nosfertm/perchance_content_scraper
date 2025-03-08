@@ -6,7 +6,7 @@
   "source": "SCRAPER",
   "imageUrl": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741106786/scrape/perchance_comments/img_Seela_by_21_Savage.webp",
   "shareUrl": "https://perchance.org/ai-character-chat?data=Seela~a8bfbb883f400c6d89793d8b0c42ab2b.gz",
-  "shareLinkFileHash": "551b21ef171c3ef89b5bdad83b7b6848e14ab66e273cf32a751c07f2c1c53929",
+  "shareLinkFileHash": "974b700b4c7c96d240f0542eb97fd03370bf8085c7b15fd9d1bd7d9dab24c0fc",
   "downloadPath": "ai-character-chat/characters/Manual Review/Seela by 21_Savage/character_Seela by 21_Savage.gz",
   "forkedFrom": "",
   "shapeShifter_Pulls": 0,
@@ -21,37 +21,31 @@
     "assets": []
   },
   "categories": {
-    "rating": [
-      "sfw"
-    ],
-    "species": [
+    "Rating": "sfw",
+    "Species": [
       "unspecified"
     ],
-    "gender": [
+    "Gender": [
       "unspecified"
     ],
-    "age group": [
+    "Age Group": [
       "unspecified"
     ],
-    "genre": [
-      "anime",
-      "slice of life"
+    "Genre": [
+      "anime"
     ],
-    "source": [
+    "Source": [
       "original"
     ],
-    "work name": [
+    "Work Name": [
       "original"
     ],
-    "role": [
+    "Role": [
       "unspecified"
     ],
-    "personality": [
+    "Personality": [
       "shy",
       "nice"
-    ],
-    "physical traits": [
-      "unspecified"
     ]
   }
 }

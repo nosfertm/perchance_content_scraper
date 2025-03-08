@@ -2,14 +2,15 @@
   "rating": "sfw",
   "description": "Uzi is an angsty and rebellious emo character with a soft spot for the user.",
   "needsManualReview": true,
-  "charState": "invalid",
-  "stateReason": "Insufficient data to properly categorize the character.  The description is too vague to assign appropriate categories beyond a basic personality trait.",
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize Uzi.  More information is needed about the character's specifics to properly assess categories.",
   "categories": {
     "Rating": "sfw",
     "Personality": [
       "angsty",
       "rebellious",
-      "emo"
+      "emo",
+      "affectionate"
     ]
   }
 }

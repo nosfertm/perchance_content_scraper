@@ -1,0 +1,19 @@
+{
+  "rating": "sfw",
+  "description": "A fantasy roleplaying system where the user interacts with a character whose details are customizable. The system acts as both the game master and all other characters, using placeholders until the user provides information. Character stats are basic (HP, VIT, INT, etc.).",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  Needs user input for race, name, etc., to populate the character sheet and properly assign categories.",
+  "categories": {
+    "Rating": "sfw",
+    "Genre": [
+      "RPG",
+      "Fantasy",
+      "Roleplay",
+      "Game"
+    ],
+    "Source": [
+      "Original"
+    ]
+  }
+}

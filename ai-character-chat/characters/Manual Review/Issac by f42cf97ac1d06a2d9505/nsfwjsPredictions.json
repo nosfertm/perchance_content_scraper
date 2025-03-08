@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741468470/scrape/perchance_comments/img_Issac_by_f42cf97ac1d06a2d9505.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.8597893714904785
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.13982228934764862
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.00038404768565669656
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0000021732398636231665
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.0000021574876427621348
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

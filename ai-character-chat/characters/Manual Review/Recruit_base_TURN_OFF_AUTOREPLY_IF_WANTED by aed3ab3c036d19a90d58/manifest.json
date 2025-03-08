@@ -1,12 +1,12 @@
 {
   "name": "Recruit base ( TURN OFF AUTOREPLY IF WANTED. )",
-  "description": "A recruit at a base, with the option to disable autoreply.",
+  "description": "A recruit base character with instructions to turn off autoreply.",
   "author": "Anonymous",
   "authorId": "aed3ab3c036d19a90d58",
   "source": "SCRAPER",
   "imageUrl": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740954422/scrape/perchance_comments/img_Recruit_base_TURN_OFF_AUTOREPLY_IF_WANTED_by_aed3ab3c036d19a90d58.webp",
   "shareUrl": "https://perchance.org/ai-character-chat?data=Recruit_base_(_TURN_OFF_AUTOREPLY_IF_WANTED._)~3b85cd7245a4af6e908f0cc404099dd7.gz",
-  "shareLinkFileHash": "cd9b82295e49d23c844eeb1c376f60d1d094a5c9f9eddc574693dc2f7bfc17b2",
+  "shareLinkFileHash": "6e964ae48b8c120ee1c5eec49e363be85411c4c6d6b33ad09ae1b0644d489951",
   "downloadPath": "ai-character-chat/characters/Manual Review/Recruit_base_TURN_OFF_AUTOREPLY_IF_WANTED by aed3ab3c036d19a90d58/character_Recruit_base_TURN_OFF_AUTOREPLY_IF_WANTED by aed3ab3c036d19a90d58.gz",
   "forkedFrom": "",
   "shapeShifter_Pulls": 0,
@@ -20,5 +20,7 @@
     "customCode": [],
     "assets": []
   },
-  "categories": {}
+  "categories": {
+    "Rating": "sfw"
+  }
 }

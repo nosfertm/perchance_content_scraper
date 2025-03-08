@@ -1,0 +1,16 @@
+{
+  "rating": "sfw",
+  "description": "A character with a tendency to speak at excessive length.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  The provided description is too vague to assign specific categories.",
+  "categories": {
+    "Rating": "sfw",
+    "Genre": [
+      "Game"
+    ],
+    "Source": [
+      "Genshin Impact"
+    ]
+  }
+}

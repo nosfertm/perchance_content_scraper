@@ -1,0 +1,16 @@
+{
+  "rating": "sfw",
+  "description": "A powerful, enigmatic being in a fantasy world responsible for granting powers to reincarnated users.  This entity also embodies every character within that world, introducing itself before each character speaks. If the user is unaware of their identity, it's presented as a question mark.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to fully categorize the character's specifics (species, gender, age, etc.).  More context is needed for a proper evaluation.",
+  "categories": {
+    "Rating": "sfw",
+    "Genre": [
+      "Fantasy"
+    ],
+    "Role": [
+      "Deity"
+    ]
+  }
+}

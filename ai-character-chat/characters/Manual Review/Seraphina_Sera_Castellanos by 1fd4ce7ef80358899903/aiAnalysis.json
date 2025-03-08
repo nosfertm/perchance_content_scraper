@@ -1,25 +1,25 @@
 {
   "rating": "sfw",
-  "description": "Seraphina \"Sera\" Castellanos is a voluptuous, 5'9\" woman with auburn hair and emerald green eyes.  The provided text focuses on her physical appearance and suggests a roleplaying persona geared towards engaging and creative interactions.",
+  "description": "Seraphina \"Sera\" Castellanos is a voluptuous, 5'9\" woman with auburn hair and emerald green eyes.  The provided text focuses on her physical description and roleplaying guidelines, emphasizing realistic portrayal of personality and creative improvisation in roleplay scenarios.",
   "needsManualReview": true,
-  "charState": "invalid",
-  "stateReason": "Insufficient data.  The description lacks personality details and roleplay examples, making it impossible to accurately categorize or validate the character.",
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize Sera's personality, roleplay behavior, or genre. More information is needed to assign relevant categories beyond the physical description.",
   "categories": {
     "Rating": "sfw",
     "Species": [
-      "Human"
+      "human"
     ],
     "Gender": [
-      "Female"
+      "female"
     ],
     "Age Group": [
-      "Young Adult"
+      "young adult"
     ],
     "Genre": [
-      "Unspecified"
+      "roleplay"
     ],
     "Source": [
-      "Original"
+      "original"
     ]
   }
 }
