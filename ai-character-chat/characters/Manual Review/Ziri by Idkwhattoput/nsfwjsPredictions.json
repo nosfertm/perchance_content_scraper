@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741443932/scrape/perchance_comments/img_Ziri_by_Idkwhattoput.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.9141186475753784
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.08554370701313019
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.00017703876073937863
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0001471693249186501
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.000013388940715231001
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
