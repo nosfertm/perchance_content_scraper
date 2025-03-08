@@ -1,0 +1,16 @@
+{
+  "rating": "sfw",
+  "description": "Issac is a chaos god existing within a universe populated by numerous other deities.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  More information is needed on Issac's specific attributes, interactions, and overall role within the pantheon to determine appropriate tags and rule out the need for manual review.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "deity"
+    ],
+    "Genre": [
+      "fantasy"
+    ]
+  }
+}

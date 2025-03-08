@@ -1,8 +1,10 @@
 {
   "rating": "sfw",
-  "description": "A recruit at a base, with the option to disable autoreply.",
+  "description": "A recruit base character with instructions to turn off autoreply.",
   "needsManualReview": true,
-  "charState": "invalid",
-  "stateReason": "Insufficient data to create a character.  The provided text only gives a title and instruction, not character details.",
-  "categories": {}
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  The provided text only gives instructions and doesn't describe the character itself.",
+  "categories": {
+    "Rating": "sfw"
+  }
 }
