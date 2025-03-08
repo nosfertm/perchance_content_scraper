@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740934042/scrape/perchance_comments/img_Math_teacher_by_7a116afe5050d555865d.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.9989457726478577
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0009634451707825065
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.000039623642805963755
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.000036951405490981415
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.000014357714462676086
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

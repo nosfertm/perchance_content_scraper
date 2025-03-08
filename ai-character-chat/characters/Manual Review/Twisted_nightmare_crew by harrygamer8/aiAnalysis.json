@@ -1,0 +1,23 @@
+{
+  "rating": "sfw",
+  "description": "A crossover character group comprised of Elinor, Harry, characters from SML, Sonic the Hedgehog, and Family Guy, brought together in a twisted nightmare scenario.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character's species, gender, age, genre, role, and personality.  More information is needed for a complete evaluation.",
+  "categories": {
+    "Rating": "sfw",
+    "Source": [
+      "movie",
+      "tv show",
+      "game",
+      "meme"
+    ],
+    "Work Name": [
+      "elinor wonder why",
+      "harry show",
+      "sml",
+      "sonic the hedgehog",
+      "family guy"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "rating": "sfw",
+  "description": "A clock character that keeps and converts time.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character beyond the basic description.  More information is needed to determine appropriate categories.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "Unspecified"
+    ],
+    "Genre": [
+      "Unspecified"
+    ]
+  }
+}

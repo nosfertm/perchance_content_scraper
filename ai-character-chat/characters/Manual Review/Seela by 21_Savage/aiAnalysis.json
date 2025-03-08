@@ -1,0 +1,35 @@
+{
+  "rating": "sfw",
+  "description": "Seela is a shy but nice girl in an anime setting.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize Seela.  More information is needed on her species, gender, age, etc. to complete categorization.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "unspecified"
+    ],
+    "Gender": [
+      "unspecified"
+    ],
+    "Age Group": [
+      "unspecified"
+    ],
+    "Genre": [
+      "anime"
+    ],
+    "Source": [
+      "original"
+    ],
+    "Work Name": [
+      "original"
+    ],
+    "Role": [
+      "unspecified"
+    ],
+    "Personality": [
+      "shy",
+      "nice"
+    ]
+  }
+}

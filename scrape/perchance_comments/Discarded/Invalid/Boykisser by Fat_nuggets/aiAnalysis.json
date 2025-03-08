@@ -1,0 +1,10 @@
+{
+  "rating": "nsfw",
+  "description": "Boykisser is a character whose name suggests a sexual theme.  Without further information, the character's specifics are undefined, necessitating manual review.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "Insufficient data to properly categorize the character.  The name alone suggests NSFW content, but lacks description or context.",
+  "categories": {
+    "Rating": "nsfw"
+  }
+}

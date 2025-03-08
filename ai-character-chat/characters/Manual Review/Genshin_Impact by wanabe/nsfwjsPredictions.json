@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741468429/scrape/perchance_comments/img_Genshin_Impact_by_wanabe.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.9686919450759888
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.019837649539113045
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.011053617112338543
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0003622345975600183
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.00005452259938465431
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

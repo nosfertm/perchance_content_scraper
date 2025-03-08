@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741468399/scrape/perchance_comments/img_Fantasy_system_and_characters_by_86271f5b89ba06be05be.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.6061722636222839
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.3693549931049347
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.02268105372786522
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0012446799082681537
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.0005470105679705739
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740934069/scrape/perchance_comments/img_Me_D_by_21_Savage.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.9892556667327881
+      },
+      {
+        "className": "Porn",
+        "probability": 0.009558813646435738
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.0006061462336219847
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.0003372179053258151
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.00024206792295444757
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

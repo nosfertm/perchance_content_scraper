@@ -1,0 +1,10 @@
+{
+  "rating": "sfw",
+  "description": "A recruit base character with instructions to turn off autoreply.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  The provided text only gives instructions and doesn't describe the character itself.",
+  "categories": {
+    "Rating": "sfw"
+  }
+}

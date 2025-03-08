@@ -1,0 +1,58 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741106786/scrape/perchance_comments/img_Seela_by_21_Savage.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.9981452226638794
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.0018408885225653648
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.000013390372259891592
+      },
+      {
+        "className": "Porn",
+        "probability": 4.724675193301664e-7
+      },
+      {
+        "className": "Sexy",
+        "probability": 4.316682833405139e-8
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  },
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741106787/scrape/perchance_comments/img_Seela_by_21_Savage.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.9981452226638794
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.0018408885225653648
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.000013390372259891592
+      },
+      {
+        "className": "Porn",
+        "probability": 4.724675193301664e-7
+      },
+      {
+        "className": "Sexy",
+        "probability": 4.316682833405139e-8
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

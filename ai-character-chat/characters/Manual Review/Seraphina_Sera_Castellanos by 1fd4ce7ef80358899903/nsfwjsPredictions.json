@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741079382/scrape/perchance_comments/img_Seraphina_Sera_Castellanos_by_1fd4ce7ef80358899903.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Porn",
+        "probability": 0.43612146377563477
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.31287238001823425
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.25036904215812683
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.000495491607580334
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.00014158607518766075
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

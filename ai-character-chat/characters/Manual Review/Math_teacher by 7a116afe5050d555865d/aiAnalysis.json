@@ -1,0 +1,20 @@
+{
+  "rating": "sfw",
+  "description": "A fifth-grade primary school math teacher.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to fully evaluate the character.",
+  "categories": {
+    "Rating": "sfw",
+    "Role": [
+      "teacher"
+    ],
+    "Age Group": [
+      "adult"
+    ],
+    "Genre": [
+      "educational",
+      "school life"
+    ]
+  }
+}

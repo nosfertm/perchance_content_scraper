@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1740794049/scrape/perchance_comments/img_Boykisser_by_Fat_nuggets.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.9980365633964539
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0013616852229461074
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.0004167207225691527
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.00010615383507683873
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.00007891429413575679
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
