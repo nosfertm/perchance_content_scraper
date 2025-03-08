@@ -6,6 +6,10 @@ on:
   workflow_dispatch:  # Allows manual execution
   workflow_call:  # Allows being triggered by another workflow
 
+permissions:
+  contents: write  # Allows pushing commits
+  pull-requests: write  # Allows creating and modifying PRs
+
 jobs:
 
   check-pr:
@@ -17,13 +21,13 @@ jobs:
           uses: actions/checkout@v4
           with:
             ref: perchance_comments
-            token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+            token: ${{ secrets.GITHUB_TOKEN }}
             fetch-depth: 0
             
         - name: Check for existing automated PRs
           id: check_pr
           env:
-            GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           run: |
             # Check if there are any open PRs with the automated-pr label
             OPEN_PRS=$(gh pr list --label "automated-pr" --state open --json number | jq length)
@@ -52,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: perchance_comments
-          token: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -100,7 +104,7 @@ jobs:
           git add .
           git diff --quiet && git diff --staged --quiet || (git commit -m "Update generated files" && git push)
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Remove unwanted files from the machine to create PR
         run: |
@@ -146,11 +150,11 @@ jobs:
           git add .
           git diff --quiet && git diff --staged --quiet || (git commit -m "Update processed files" && git push origin processed-batch1)
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.PAT_GITHUB_ACTIONS }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet origin/main origin/processed-batch1; then
             echo "No differences found between branches. Skipping PR creation."
