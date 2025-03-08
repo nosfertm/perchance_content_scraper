@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "67cbab7da115bd4811476079",
-    "time": 1741400957905,
-    "messagesAnalyzed_Total": 201168,
-    "messagesAnalyzed_lastRun": 133,
+    "messageId": "67cbe1dca115bd481147ba6d",
+    "time": 1741414876708,
+    "messagesAnalyzed_Total": 201568,
+    "messagesAnalyzed_lastRun": 200,
     "charactersFound_Total": 159,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
@@ -12,7 +12,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 19
+    "deltaMinutes": 123
   },
   "chill": {
     "messageId": "67cb5ec4a115bd481146dd32",
@@ -30,10 +30,10 @@
     "deltaMinutes": 0
   },
   "rp": {
-    "messageId": "67cbab6ba115bd4811476054",
-    "time": 1741400939752,
-    "messagesAnalyzed_Total": 45662,
-    "messagesAnalyzed_lastRun": 25,
+    "messageId": "67cbe14fa115bd481147b9c7",
+    "time": 1741414735501,
+    "messagesAnalyzed_Total": 45952,
+    "messagesAnalyzed_lastRun": 90,
     "charactersFound_Total": 16,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,7 +42,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 26
+    "deltaMinutes": 121
   },
   "spam": {
     "messageId": "67cba633a115bd481147556b",
@@ -60,10 +60,10 @@
     "deltaMinutes": 0
   },
   "vent": {
-    "messageId": "67cb9b02a115bd481147415a",
-    "time": 1741396738831,
-    "messagesAnalyzed_Total": 17330,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "67cbd5b7a115bd481147ad00",
+    "time": 1741411767954,
+    "messagesAnalyzed_Total": 17341,
+    "messagesAnalyzed_lastRun": 2,
     "charactersFound_Total": 9,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -72,14 +72,14 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 78
   },
   "share": {
-    "messageId": "67cb9214a115bd48114731bc",
-    "time": 1741394452832,
-    "messagesAnalyzed_Total": 7414,
+    "messageId": "67cbc165a115bd4811478c54",
+    "time": 1741406565382,
+    "messagesAnalyzed_Total": 7417,
     "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 1359,
+    "charactersFound_Total": 1360,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 7,
     "charactersIgnored_lastRun": 0,

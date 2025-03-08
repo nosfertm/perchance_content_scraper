@@ -1,0 +1,55 @@
+{
+  "name": "A Clock",
+  "description": "A clock character that keeps and converts time.",
+  "author": "vionet",
+  "authorId": "657360957b7c88a8f876",
+  "source": "SCRAPER",
+  "imageUrl": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741417888/scrape/perchance_comments/img_A_Clock_by_vionet.webp",
+  "shareUrl": "https://perchance.org/ai-character-chat?data=A_Clock~f0c58441aa38550456abfd2ac2f5f31b.gz",
+  "shareLinkFileHash": "00080c5dedff5efd3928c2f4ef013ca33e7b3bc76036cc784499cb4922e8c1be",
+  "downloadPath": "ai-character-chat/characters/Manual Review/A_Clock by vionet/character_A_Clock by vionet.gz",
+  "forkedFrom": "",
+  "shapeShifter_Pulls": 0,
+  "galleryChat_Clicks": 0,
+  "galleryDownload_Clicks": 0,
+  "groupSettings": {
+    "requires": [],
+    "recommends": []
+  },
+  "features": {
+    "customCode": [
+      "ai-character-chat/characters/Manual Review/A_Clock by vionet/src/customCode.js"
+    ],
+    "assets": []
+  },
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "Unspecified"
+    ],
+    "Gender": [
+      "Unspecified"
+    ],
+    "Age Group": [
+      "Unspecified"
+    ],
+    "Genre": [
+      "Unspecified"
+    ],
+    "Source": [
+      "Original"
+    ],
+    "Work Name": [
+      "Original"
+    ],
+    "Role": [
+      "Utility"
+    ],
+    "Personality": [
+      "Unspecified"
+    ],
+    "Physical Traits": [
+      "Unspecified"
+    ]
+  }
+}
