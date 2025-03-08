@@ -9,7 +9,7 @@
 const scriptVersion = '3.9';
 
 const CONFIG = {
-    channels: ["chat", "chill", "rp", "spam", "vent", "share"],
+    channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
     maxMessagesPerChannel: 5200,
     baseApiUrl: "https://comments-plugin.perchance.org/api/getMessages",
     timestampFile: "last_processed.json",
