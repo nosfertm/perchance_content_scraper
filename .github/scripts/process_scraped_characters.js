@@ -21,7 +21,7 @@ const CONFIG = {
     },
 
     // Processing limits
-    MAX_CHARACTERS_PER_RUN: 20,  // Maximum number of characters to process in one run
+    MAX_CHARACTERS_PER_RUN: 100,  // Maximum number of characters to process in one run
 
     // File patterns
     METADATA_FILE: "metadata.json",
@@ -2933,12 +2933,12 @@ async function processCharacter(folder, existingLinks) {
                 }
                 // Check for prohibited content
                 const isProhibitedContent = await FileHandler.existsFile(path.join(CONFIG.SOURCE_PATH, folder, '_prohibitedContent.json'));
+                const isPromptGenerated = await FileHandler.existsFile(path.join(currentPath, '_aiPrompt.txt'));
                 if (isProhibitedContent) {
                     console.log(`    Character have pending prohibited content issues.`)
                     // Move folder to manual review
                     const currentPath = path.join(CONFIG.SOURCE_PATH, folder);
                     const destPath = path.join(path.dirname(CONFIG.SOURCE_PATH), CONFIG.PATHS.MANUAL_REVIEW, folder);
-                    const isPromptGenerated = await FileHandler.existsFile(path.join(currentPath, '_aiPrompt.txt'));
 
                     // Skip if prompt is generated
                     if (isPromptGenerated) {
@@ -3050,7 +3050,7 @@ async function processCharacter(folder, existingLinks) {
                         stats.duplicate++;
                         continue;
                     } else {
-                        console.log(`    ${duplicateCheck.isUpdate ? 'Folder is an update ' : 'Necessary to perform more checking '} for ${item.characterName}.`);
+                        console.log(`    ${duplicateCheck.isUpdate ? 'Folder is an update ' : duplicateCheck.isFork ? 'Folder is an fork' : 'Necessary to perform more checking'} for ${item.characterName}.`);
                     }
                 }
 
