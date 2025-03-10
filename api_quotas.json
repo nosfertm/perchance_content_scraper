@@ -1,8 +1,8 @@
 {
   "gemini": {
-    "dailyCalls": 10,
+    "dailyCalls": 17,
     "lastReset": "2025-03-10T01:16:19.602Z",
-    "lastCall": "2025-03-10T10:20:29.298Z"
+    "lastCall": "2025-03-10T16:25:16.245Z"
   },
   "pigimage": {
     "dailyCalls": 1,
@@ -15,8 +15,8 @@
     "lastCall": "2025-02-25T15:45:14.978Z"
   },
   "cloudinary": {
-    "dailyCalls": 8,
+    "dailyCalls": 9,
     "lastReset": "2025-03-10T01:16:26.210Z",
-    "lastCall": "2025-03-10T10:20:30.858Z"
+    "lastCall": "2025-03-10T16:25:17.714Z"
   }
 }
