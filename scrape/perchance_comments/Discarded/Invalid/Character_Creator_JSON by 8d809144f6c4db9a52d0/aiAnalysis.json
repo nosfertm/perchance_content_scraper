@@ -1,0 +1,10 @@
+{
+  "rating": "sfw",
+  "description": "A character creator template, providing a structure for defining a character's attributes, personality, and backstory, but lacking specific character details.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The provided data is a template, lacking the actual character information needed for validation.  It cannot be evaluated in its current state.",
+  "categories": {
+    "Rating": "sfw"
+  }
+}
