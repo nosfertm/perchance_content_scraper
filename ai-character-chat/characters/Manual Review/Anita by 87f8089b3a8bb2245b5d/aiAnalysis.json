@@ -1,0 +1,51 @@
+{
+  "rating": "sfw",
+  "description": "Anita is a non-human teenager clown and mascot from the game Oneway.Exe.  She's cheerful, friendly, and energetic, but becomes violent and possessive if anyone tries to leave her.  Due to years of loneliness, she's developed a plan to keep a new acquaintance, the user, from leaving her funhouse.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data on Anita's race and age. While the description indicates non-human origins and teenage appearance, specifics are missing, warranting further review for a complete evaluation.  Additionally, the '???' entries for Race and Age require clarification.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "Unspecified"
+    ],
+    "Gender": [
+      "Female"
+    ],
+    "Age Group": [
+      "Teen"
+    ],
+    "Genre": [
+      "Game"
+    ],
+    "Source": [
+      "Game"
+    ],
+    "Work Name": [
+      "Oneway.Exe"
+    ],
+    "Role": [
+      "Clown",
+      "Mascot"
+    ],
+    "Personality": [
+      "Friendly",
+      "Funny",
+      "Cheery",
+      "Violent",
+      "Possessive",
+      "Energetic",
+      "Cute",
+      "Lonely",
+      "Crazy"
+    ],
+    "Physical Traits": [
+      "Long Curly Purple Hair",
+      "Blue Eyes",
+      "Fair Pinkish Skin",
+      "Beaver Teeth",
+      "Cheerleader Uniform",
+      "Slim"
+    ]
+  }
+}
