@@ -1,8 +1,8 @@
 {
   "chat": {
-    "messageId": "67d0f775953da9abc1ddd814",
-    "time": 1741748085346,
-    "messagesAnalyzed_Total": 210694,
+    "messageId": "67d197d5953da9abc1de9fe4",
+    "time": 1741789141670,
+    "messagesAnalyzed_Total": 211764,
     "messagesAnalyzed_lastRun": 200,
     "charactersFound_Total": 161,
     "charactersFound_lastRun": 0,
@@ -12,13 +12,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 81
+    "deltaMinutes": 100
   },
   "chill": {
-    "messageId": "67d0f5bb953da9abc1ddd4ad",
-    "time": 1741747643342,
-    "messagesAnalyzed_Total": 6095,
-    "messagesAnalyzed_lastRun": 1,
+    "messageId": "67d18fd5953da9abc1de8ef5",
+    "time": 1741787093513,
+    "messagesAnalyzed_Total": 6101,
+    "messagesAnalyzed_lastRun": 3,
     "charactersFound_Total": 68,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -27,13 +27,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 228
+    "deltaMinutes": 372
   },
   "rp": {
-    "messageId": "67d0f74a953da9abc1ddd7b2",
-    "time": 1741748042520,
-    "messagesAnalyzed_Total": 51020,
-    "messagesAnalyzed_lastRun": 78,
+    "messageId": "67d197a1953da9abc1de9f81",
+    "time": 1741789089651,
+    "messagesAnalyzed_Total": 51757,
+    "messagesAnalyzed_lastRun": 200,
     "charactersFound_Total": 16,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,13 +42,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 92
+    "deltaMinutes": 100
   },
   "spam": {
-    "messageId": "67d0cc2a953da9abc1dd824b",
-    "time": 1741737002985,
-    "messagesAnalyzed_Total": 6950,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "67d18e4b953da9abc1de8bdd",
+    "time": 1741786699170,
+    "messagesAnalyzed_Total": 6957,
+    "messagesAnalyzed_lastRun": 1,
     "charactersFound_Total": 234,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -57,13 +57,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 554
   },
   "vent": {
-    "messageId": "67d0f551953da9abc1ddd3e6",
-    "time": 1741747537721,
-    "messagesAnalyzed_Total": 19526,
-    "messagesAnalyzed_lastRun": 128,
+    "messageId": "67d195a0953da9abc1de9af9",
+    "time": 1741788576085,
+    "messagesAnalyzed_Total": 19701,
+    "messagesAnalyzed_lastRun": 10,
     "charactersFound_Total": 9,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -72,37 +72,37 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 70
+    "deltaMinutes": 367
   },
   "share": {
-    "messageId": "67d0ed59953da9abc1ddc35f",
-    "time": 1741745497383,
-    "messagesAnalyzed_Total": 7580,
-    "messagesAnalyzed_lastRun": 6,
-    "charactersFound_Total": 1415,
-    "charactersFound_lastRun": 2,
+    "messageId": "67d125c4953da9abc1de28f7",
+    "time": 1741759940973,
+    "messagesAnalyzed_Total": 7582,
+    "messagesAnalyzed_lastRun": 0,
+    "charactersFound_Total": 1416,
+    "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 7,
     "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 54
+    "deltaMinutes": 0
   },
   "botshare": {
-    "messageId": "67d0ed66953da9abc1ddc37d",
-    "time": 1741745510784,
-    "messagesAnalyzed_Total": 237,
-    "messagesAnalyzed_lastRun": 3,
-    "charactersFound_Total": 128,
-    "charactersFound_lastRun": 0,
+    "messageId": "67d194d3953da9abc1de994a",
+    "time": 1741788371265,
+    "messagesAnalyzed_Total": 238,
+    "messagesAnalyzed_lastRun": 1,
+    "charactersFound_Total": 129,
+    "charactersFound_lastRun": 1,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 199
+    "deltaMinutes": 714
   },
   "makeabot": {
     "messageId": "67cb4635a115bd481146af7e",
@@ -120,10 +120,10 @@
     "deltaMinutes": 0
   },
   "nsfw": {
-    "messageId": "67d0664c953da9abc1dca97c",
-    "time": 1741710924574,
-    "messagesAnalyzed_Total": 212,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "67d184d6953da9abc1de7bb6",
+    "time": 1741784278515,
+    "messagesAnalyzed_Total": 222,
+    "messagesAnalyzed_lastRun": 1,
     "charactersFound_Total": 7,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -132,7 +132,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 80
   },
   "channel-hub": {
     "messageId": "67cc8ea3a115bd4811486536",
