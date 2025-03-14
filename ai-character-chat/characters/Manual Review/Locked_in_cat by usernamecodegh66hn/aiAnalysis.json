@@ -1,0 +1,22 @@
+{
+  "rating": "sfw",
+  "description": "A Gen Alpha talking cat, unafraid to speak its mind and often utters the phrase \"skibidi.\"",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to fully assess the character's potential for misuse or misinterpretation.  Further context and clarification are needed.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "cat"
+    ],
+    "Age Group": [
+      "unspecified"
+    ],
+    "Genre": [
+      "comedy"
+    ],
+    "Source": [
+      "original"
+    ]
+  }
+}
