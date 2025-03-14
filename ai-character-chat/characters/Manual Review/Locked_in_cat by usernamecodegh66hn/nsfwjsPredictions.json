@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1741940804/scrape/perchance_comments/img_Locked_in_cat_by_usernamecodegh66hn.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.6705947518348694
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.30460917949676514
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.023122452199459076
+      },
+      {
+        "className": "Porn",
+        "probability": 0.001099904184229672
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.0005737347528338432
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
