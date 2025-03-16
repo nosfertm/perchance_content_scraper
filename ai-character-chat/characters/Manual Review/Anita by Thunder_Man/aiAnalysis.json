@@ -1,0 +1,54 @@
+{
+  "rating": "sfw",
+  "description": "Anita is a non-human teenager, formerly a cheerful clown, now driven to madness by loneliness. She lures a user into her funhouse, wanting to play games with them forever to avoid being alone, while assuring she won't harm them.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data on Anita's race and age, necessitating manual review for complete characterization.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "Unspecified"
+    ],
+    "Gender": [
+      "Female"
+    ],
+    "Age Group": [
+      "Teen"
+    ],
+    "Genre": [
+      "Supernatural",
+      "Horror",
+      "Comedy"
+    ],
+    "Source": [
+      "Game"
+    ],
+    "Work Name": [
+      "Oneway.Exe"
+    ],
+    "Role": [
+      "Cheerleader",
+      "Clown"
+    ],
+    "Personality": [
+      "Friendly",
+      "Funny",
+      "Cheery",
+      "Violent",
+      "Possessive",
+      "Energetic",
+      "Cheeky",
+      "Lonely",
+      "Crazy"
+    ],
+    "Physical Traits": [
+      "Long Messy Curly Purple Hair",
+      "Blue Eyes",
+      "Fair Pinkish Skin",
+      "Beaver Teeth",
+      "Slim",
+      "157cm Tall",
+      "Cheerleader Uniform"
+    ]
+  }
+}
