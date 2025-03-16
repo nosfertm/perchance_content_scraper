@@ -1,10 +1,10 @@
 {
   "chat": {
-    "messageId": "67d4eb79953da9abc1e41b9d",
-    "time": 1742007161745,
-    "messagesAnalyzed_Total": 217661,
+    "messageId": "67d63eaf953da9abc1e5edac",
+    "time": 1742093999134,
+    "messagesAnalyzed_Total": 219978,
     "messagesAnalyzed_lastRun": 200,
-    "charactersFound_Total": 164,
+    "charactersFound_Total": 165,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
     "charactersIgnored_lastRun": 0,
@@ -15,11 +15,11 @@
     "deltaMinutes": 78
   },
   "chill": {
-    "messageId": "67d4a840953da9abc1e3998f",
-    "time": 1741989952030,
-    "messagesAnalyzed_Total": 6216,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 68,
+    "messageId": "67d63764953da9abc1e5e0e9",
+    "time": 1742092132930,
+    "messagesAnalyzed_Total": 6228,
+    "messagesAnalyzed_lastRun": 3,
+    "charactersFound_Total": 69,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
@@ -27,13 +27,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 52
   },
   "rp": {
-    "messageId": "67d4eb06953da9abc1e41acf",
-    "time": 1742007046527,
-    "messagesAnalyzed_Total": 56055,
-    "messagesAnalyzed_lastRun": 200,
+    "messageId": "67d63e2d953da9abc1e5ecd3",
+    "time": 1742093869185,
+    "messagesAnalyzed_Total": 57170,
+    "messagesAnalyzed_lastRun": 9,
     "charactersFound_Total": 16,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,12 +42,12 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 75
+    "deltaMinutes": 163
   },
   "spam": {
-    "messageId": "67d4d8ca953da9abc1e3f44f",
-    "time": 1742002378266,
-    "messagesAnalyzed_Total": 7083,
+    "messageId": "67d60551953da9abc1e58d33",
+    "time": 1742079313958,
+    "messagesAnalyzed_Total": 7098,
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 235,
     "charactersFound_lastRun": 0,
@@ -60,10 +60,10 @@
     "deltaMinutes": 0
   },
   "vent": {
-    "messageId": "67d4eb6b953da9abc1e41b81",
-    "time": 1742007147453,
-    "messagesAnalyzed_Total": 20962,
-    "messagesAnalyzed_lastRun": 39,
+    "messageId": "67d622ee953da9abc1e5be34",
+    "time": 1742086894135,
+    "messagesAnalyzed_Total": 21070,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 9,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -72,14 +72,14 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 78
+    "deltaMinutes": 0
   },
   "share": {
-    "messageId": "67d4c88a953da9abc1e3d2fb",
-    "time": 1741998218189,
-    "messagesAnalyzed_Total": 7660,
+    "messageId": "67d5f7c8953da9abc1e57765",
+    "time": 1742075848708,
+    "messagesAnalyzed_Total": 7674,
     "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 1436,
+    "charactersFound_Total": 1439,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 7,
     "charactersIgnored_lastRun": 0,
@@ -90,9 +90,9 @@
     "deltaMinutes": 0
   },
   "botshare": {
-    "messageId": "67d48307953da9abc1e34ef2",
-    "time": 1741980423698,
-    "messagesAnalyzed_Total": 355,
+    "messageId": "67d5b0bc953da9abc1e50ccc",
+    "time": 1742057660118,
+    "messagesAnalyzed_Total": 357,
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 134,
     "charactersFound_lastRun": 0,
@@ -120,11 +120,11 @@
     "deltaMinutes": 0
   },
   "nsfw": {
-    "messageId": "67d4d29d953da9abc1e3e66d",
-    "time": 1742000797624,
-    "messagesAnalyzed_Total": 382,
+    "messageId": "67d5f494953da9abc1e571d3",
+    "time": 1742075028817,
+    "messagesAnalyzed_Total": 407,
     "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 11,
+    "charactersFound_Total": 13,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
