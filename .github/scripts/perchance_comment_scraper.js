@@ -665,14 +665,19 @@ async function processMessages() {
 
             } catch (error) {
                 console.error(`Error processing ${channel}:`, error);
-                
-                // Check if there's a message to show
+            
+                // Check if the error is an HTTP 403
+                if (error.message.includes("HTTP Error: 403")) {
+                    throw new Error("Access Forbidden (403): Check API authentication or permissions.");
+                }
+            
+                // Check if 'message' exists before logging
                 if (typeof message !== "undefined") {
                     console.error(`Current message: ${JSON.stringify(message)}`);
                 } else {
                     console.error("No current message available.");
                 }
-                
+            
                 break;
             }
         }
