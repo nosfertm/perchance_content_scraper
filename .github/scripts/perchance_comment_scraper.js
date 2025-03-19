@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '3.9';
+const scriptVersion = '4.0';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
@@ -665,7 +665,14 @@ async function processMessages() {
 
             } catch (error) {
                 console.error(`Error processing ${channel}:`, error);
-                console.error(`Current message ${JSON.stringify(message)}:`, error);
+                
+                // Check if there's a message to show
+                if (typeof message !== "undefined") {
+                    console.error(`Current message: ${JSON.stringify(message)}`);
+                } else {
+                    console.error("No current message available.");
+                }
+                
                 break;
             }
         }
