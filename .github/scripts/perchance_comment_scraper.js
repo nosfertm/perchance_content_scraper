@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '4.0';
+const scriptVersion = '4.1';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
