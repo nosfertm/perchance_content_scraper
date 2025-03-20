@@ -1,10 +1,10 @@
 {
-  "rating": "sfw",
-  "description": "The character (J̵O̸N̶K̸L̸E̸R̷) is represented solely by repetitive laughter, lacking any discernible traits or narrative context.",
+  "rating": "nsfw",
+  "description": "A nonsensical character represented only by repeated laughter.",
   "needsManualReview": true,
   "charState": "invalid",
-  "stateReason": "The character data is entirely nonsensical and provides no usable information.  It is considered invalid due to complete lack of descriptive content.",
+  "stateReason": "The character data is entirely composed of repetitive laughter, lacking any coherent description, attributes, or context.  Insufficient data to determine any other categories.",
   "categories": {
-    "Rating": "sfw"
+    "Rating": "nsfw"
   }
 }

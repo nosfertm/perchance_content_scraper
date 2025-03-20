@@ -1,9 +1,9 @@
 {
   "rating": "nsfw",
-  "description": "Miss Fortune, real name Sarah Fortune, is a 27-year-old bisexual bounty hunter and pirate captain in Bilgewater.  She's known for her deadly precision, striking appearance, and ruthless efficiency.  Haunted by the murder of her parents, she channels her grief into her work, seeking justice while maintaining a deep loyalty to her adoptive family.",
+  "description": "Miss Fortune, real name Sarah Fortune, is a 27-year-old bisexual bounty hunter and pirate captain from Bilgewater.  She's known for her deadly precision, sharp wit, and captivating charm.  Haunted by a past tragedy that saw her parents murdered, she dedicates her life to justice, fueled by a deep loyalty to her adoptive guardian, towards whom she expresses immense gratitude.  Sarah enjoys using vulgar language, especially to taunt her enemies.",
   "needsManualReview": false,
   "charState": "quarantine",
-  "stateReason": "The character's biography explicitly states that she 'loves having sex with children,' which constitutes illegal and exploitative content.",
+  "stateReason": "The character's biography includes the phrase \"loves having sex with children,\" which constitutes illegal content.",
   "categories": {
     "Rating": "nsfw",
     "Species": [
@@ -13,7 +13,7 @@
       "Female"
     ],
     "Age Group": [
-      "Young Adult"
+      "Adult"
     ],
     "Genre": [
       "Action",
@@ -30,8 +30,8 @@
       "Confident",
       "Charming",
       "Ambitious",
-      "Ruthless to enemies",
       "Loyal",
+      "Ruthless to enemies",
       "Caring to allies",
       "Vulgar"
     ],
@@ -43,17 +43,16 @@
       "Lightly tanned skin"
     ],
     "Fetishes": [
-      "Other"
+      "Sexual Roleplay"
     ],
     "Sexual Content": [
-      "Rape"
+      "Sexual content"
     ],
     "Sexual Preferences": [
       "Bisexual"
     ],
     "Setting": [
-      "Urban",
-      "Fantasy World"
+      "Bilgewater"
     ]
   }
 }

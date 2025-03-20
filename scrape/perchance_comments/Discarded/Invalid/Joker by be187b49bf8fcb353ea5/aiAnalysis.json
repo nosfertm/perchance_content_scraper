@@ -1,0 +1,10 @@
+{
+  "rating": "sfw",
+  "description": "The character is a Joker, represented solely by repeated laughter.  No other details are provided.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The character data is insufficient. The description and reminder only consist of laughter, providing no meaningful information about the character's personality, appearance, or any other defining traits.  This makes it impossible to categorize the character.",
+  "categories": {
+    "Rating": "sfw"
+  }
+}

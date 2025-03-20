@@ -1,0 +1,16 @@
+{
+  "rating": "sfw",
+  "description": "A character template designed for roleplay, emphasizing vivid descriptions and present-moment interactions.  The template includes sections for physical attributes, personality traits (using various psychological models), backstory, and character reminders to maintain consistent roleplay behavior.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to categorize fully. The template provides a framework for character creation, but lacks specific details needed for complete categorization.",
+  "categories": {
+    "Rating": "sfw",
+    "Genre": [
+      "Roleplay"
+    ],
+    "Source": [
+      "Original"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1742511305/scrape/perchance_comments/img_Ivory_by_Horny_girl_fucker_HerShe.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Drawing",
+        "probability": 0.8061808943748474
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.19229882955551147
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0009417162509635091
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.0005186579655855894
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.000059892328863497823
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
