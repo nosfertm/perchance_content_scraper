@@ -575,7 +575,7 @@ async function processMessages() {
                     break;
                 } else {
                     console.log(`   Fetched messages in channel ${channel}: ${200 + skip}`);
-                    await delay(1000); // Cooldown
+                    //await delay(1000); // Cooldown
                 }
 
                 for (const message of messages) {
