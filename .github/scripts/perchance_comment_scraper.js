@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '4.1';
+const scriptVersion = '4.2';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
@@ -574,7 +574,7 @@ async function processMessages() {
                     console.log(`No more messages in channel: ${channel}`);
                     break;
                 } else {
-                    console.log(`   Fetched messages in channel ${channel}: ${200 + skip}`);
+                    console.log(`   Fetched messages in channel ${channel}: ${messages.length + skip}`);
                     //await delay(1000); // Cooldown
                 }
 
