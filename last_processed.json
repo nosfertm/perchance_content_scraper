@@ -1,7 +1,7 @@
 {
   "chat": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 228316,
     "messagesAnalyzed_lastRun": 200,
     "charactersFound_Total": 170,
@@ -16,7 +16,7 @@
   },
   "chill": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 6796,
     "messagesAnalyzed_lastRun": 200,
     "charactersFound_Total": 75,
@@ -31,7 +31,7 @@
   },
   "rp": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 63045,
     "messagesAnalyzed_lastRun": 200,
     "charactersFound_Total": 16,
@@ -46,7 +46,7 @@
   },
   "spam": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 7316,
     "messagesAnalyzed_lastRun": 32,
     "charactersFound_Total": 240,
@@ -61,7 +61,7 @@
   },
   "vent": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 21769,
     "messagesAnalyzed_lastRun": 165,
     "charactersFound_Total": 9,
@@ -76,7 +76,7 @@
   },
   "share": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 7790,
     "messagesAnalyzed_lastRun": 31,
     "charactersFound_Total": 1677,
@@ -91,7 +91,7 @@
   },
   "botshare": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 384,
     "messagesAnalyzed_lastRun": 11,
     "charactersFound_Total": 139,
@@ -106,7 +106,7 @@
   },
   "makeabot": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 16,
     "messagesAnalyzed_lastRun": 1,
     "charactersFound_Total": 0,
@@ -121,7 +121,7 @@
   },
   "nsfw": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 435,
     "messagesAnalyzed_lastRun": 10,
     "charactersFound_Total": 19,
@@ -136,7 +136,7 @@
   },
   "channel-hub": {
     "messageId": "",
-    "time": ,
+    "time": 0,
     "messagesAnalyzed_Total": 203,
     "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 3,
