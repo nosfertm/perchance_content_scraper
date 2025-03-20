@@ -27,7 +27,7 @@ const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?]+\.gz)/;
 /* -------------------------------------------------------------------------- */
 
 import { Octokit } from '@octokit/rest';
-import fetch from 'node-fetch';
+//import fetch from 'node-fetch';
 import path, { dirname } from 'path';
 import crypto from 'crypto';
 import { promises as fs } from 'fs';
@@ -548,6 +548,7 @@ async function processMessages() {
     console.log('Starting message processing...');
     const lastProcessed = await getLastProcessedState();
     const existingLinks = await getLinksFromIndex();
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
     for (const channel of CONFIG.channels) {
         console.log("\n");
@@ -574,8 +575,8 @@ async function processMessages() {
                     break;
                 } else {
                     console.log(`   Fetched messages in channel ${channel}: ${200 + skip}`);
+                    await delay(1000); // Cooldown
                 }
-
 
                 for (const message of messages) {
                     // Store the very first message of this batch as latest
