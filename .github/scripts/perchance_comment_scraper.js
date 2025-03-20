@@ -658,10 +658,10 @@ async function processMessages() {
                         }
                     }
 
-                    // Skip to the next batch
-                    skip += messages.length;
-
                 }
+
+                // Skip to the next batch
+                skip += messages.length;
 
 
             } catch (error) {
