@@ -1,0 +1,34 @@
+{
+  "name": "Character Creator JSON",
+  "description": "A character template designed for roleplay, emphasizing vivid descriptions and present-moment interactions.  The template includes sections for physical attributes, personality traits (using various psychological models), backstory, and character reminders to maintain consistent roleplay behavior.",
+  "author": "Anonymous",
+  "authorId": "8d809144f6c4db9a52d0",
+  "source": "SCRAPER",
+  "imageUrl": "https://user-uploads.perchance.org/file/87a0d06a5742efefbe197eca0ab54f97.jpeg",
+  "shareUrl": "https://perchance.org/ai-character-chat?data=Character_Creator_JSON~2d993800b8d712d4a02fb9980fbc2a1a.gz",
+  "shareLinkFileHash": "4d3370257a77390246f4429db83316c291d0a3e7b6d7012ea04d37aef00f423c",
+  "downloadPath": "ai-character-chat/characters/Manual Review/Character_Creator_JSON by 8d809144f6c4db9a52d0/character_Character_Creator_JSON by 8d809144f6c4db9a52d0.gz",
+  "forkedFrom": "",
+  "shapeShifter_Pulls": 0,
+  "galleryChat_Clicks": 0,
+  "galleryDownload_Clicks": 0,
+  "groupSettings": {
+    "requires": [],
+    "recommends": []
+  },
+  "features": {
+    "customCode": [
+      "ai-character-chat/characters/Manual Review/Character_Creator_JSON by 8d809144f6c4db9a52d0/src/customCode.js"
+    ],
+    "assets": []
+  },
+  "categories": {
+    "Rating": "sfw",
+    "Genre": [
+      "Roleplay"
+    ],
+    "Source": [
+      "Original"
+    ]
+  }
+}
