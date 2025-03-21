@@ -1,0 +1,13 @@
+{
+  "rating": "sfw",
+  "description": "This character guide provides a framework for creating a character, focusing on visual appearance, personality traits, background information, and dialogue examples.  It emphasizes detailed descriptions to enhance interaction and immersion.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  The provided text is a template, not a complete character description.",
+  "categories": {
+    "Rating": "sfw",
+    "Genre": [
+      "Roleplay"
+    ]
+  }
+}
