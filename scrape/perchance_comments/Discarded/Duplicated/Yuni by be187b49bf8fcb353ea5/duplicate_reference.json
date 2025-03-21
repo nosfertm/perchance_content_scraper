@@ -1,7 +1,8 @@
 {
   "originPath": "scrape/perchance_comments/Raw/Yuni by be187b49bf8fcb353ea5",
   "destinationPath": "scrape/perchance_comments/Discarded/Duplicated/Yuni by be187b49bf8fcb353ea5",
-  "type": "fileHash",
-  "existingHash": "b5c15dd90853c646e6523adc4b72cc9da141a272477ce6efed531183a3d00a9b",
-  "duplicateDate": "2025-03-08T02:12:10.782Z"
+  "type": "path and fileHash",
+  "existingPath": "ai-character-chat/characters/nsfw/Yuni by be187b49bf8fcb353ea5",
+  "existingHash": "160e2f3772ca5b6e34baf915ea76d2b37b16cd59b3c37cd22b9b171d49e31ca1",
+  "duplicateDate": "2025-03-21T01:43:52.083Z"
 }

@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1742521490/scrape/perchance_comments/img_world_trade_center_by_67422851285dadb5b437.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.9949487447738647
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.0049964385107159615
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.00003155793092446402
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.00001235237141372636
+      },
+      {
+        "className": "Porn",
+        "probability": 0.000010940818356175441
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]

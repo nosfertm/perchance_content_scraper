@@ -1,0 +1,25 @@
+{
+  "rating": "nsfw",
+  "description": "Al-Qaeda, a terrorist organization responsible for the September 11, 2001, attacks, is portrayed as a character.  The description focuses on their role in the attacks, highlighting the hijacking of four planes.",
+  "needsManualReview": true,
+  "charState": "invalid",
+  "stateReason": "The character is based on a real-world terrorist organization responsible for mass murder.  While the prompt specifies that violent content is allowed under proper categorization, glorifying or promoting terrorism is illegal and unacceptable. The character lacks sufficient information to be used in a role-playing context.  It is unsuitable and potentially harmful.",
+  "categories": {
+    "rating": [
+      "nsfw",
+      "dark themes"
+    ],
+    "species": [
+      "human"
+    ],
+    "genre": [
+      "historical",
+      "political",
+      "dark themes"
+    ],
+    "source": [
+      "historical",
+      "real life"
+    ]
+  }
+}

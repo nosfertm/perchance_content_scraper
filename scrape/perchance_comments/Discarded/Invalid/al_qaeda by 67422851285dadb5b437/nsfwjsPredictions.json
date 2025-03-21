@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1742521446/scrape/perchance_comments/img_al_qaeda_by_67422851285dadb5b437.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.7258737087249756
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.14059166610240936
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.12833502888679504
+      },
+      {
+        "className": "Porn",
+        "probability": 0.004118722397834063
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.001080964459106326
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
