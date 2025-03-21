@@ -3,8 +3,35 @@
   "description": "A recruit base character with instructions to turn off autoreply.",
   "needsManualReview": true,
   "charState": "valid",
-  "stateReason": "Insufficient data to properly categorize the character.  The provided text only gives instructions and doesn't describe the character itself.",
+  "stateReason": "Insufficient data to properly categorize the character.  The provided description is too vague.",
   "categories": {
-    "Rating": "sfw"
+    "Rating": "sfw",
+    "Species": [
+      "Unspecified"
+    ],
+    "Gender": [
+      "Unspecified"
+    ],
+    "Age Group": [
+      "Unspecified"
+    ],
+    "Genre": [
+      "Unspecified"
+    ],
+    "Source": [
+      "Original"
+    ],
+    "Work Name": [
+      "Original"
+    ],
+    "Role": [
+      "Unspecified"
+    ],
+    "Personality": [
+      "Unspecified"
+    ],
+    "Physical Traits": [
+      "Unspecified"
+    ]
   }
 }

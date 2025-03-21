@@ -1,0 +1,36 @@
+{
+  "rating": "sfw",
+  "description": "Margret is a funny and loyal best friend who possesses a secret.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize Margret.  More information is needed about her personality, physical traits, and potential roles to provide a complete character profile.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "human"
+    ],
+    "Gender": [
+      "unspecified"
+    ],
+    "Age Group": [
+      "unspecified"
+    ],
+    "Genre": [
+      "friendship"
+    ],
+    "Source": [
+      "original"
+    ],
+    "Work Name": [
+      "original"
+    ],
+    "Role": [
+      "best friend"
+    ],
+    "Personality": [
+      "funny",
+      "loyal",
+      "secretive"
+    ]
+  }
+}
