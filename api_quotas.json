@@ -1,8 +1,8 @@
 {
   "gemini": {
-    "dailyCalls": 64,
-    "lastReset": "2025-03-23T02:43:10.864Z",
-    "lastCall": "2025-03-23T22:21:23.425Z"
+    "dailyCalls": 8,
+    "lastReset": "2025-03-24T01:42:48.964Z",
+    "lastCall": "2025-03-24T01:43:31.696Z"
   },
   "pigimage": {
     "dailyCalls": 1,
@@ -15,8 +15,8 @@
     "lastCall": "2025-02-25T15:45:14.978Z"
   },
   "cloudinary": {
-    "dailyCalls": 37,
-    "lastReset": "2025-03-23T02:43:20.924Z",
-    "lastCall": "2025-03-23T22:21:24.958Z"
+    "dailyCalls": 5,
+    "lastReset": "2025-03-24T01:42:59.776Z",
+    "lastCall": "2025-03-24T01:43:33.449Z"
   }
 }
