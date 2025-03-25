@@ -1,0 +1,22 @@
+{
+  "rating": "nsfw",
+  "description": "Freakiest Tiger is a furry character who enjoys being freaky.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character's specific fetishes and sexual content.  More information is needed.",
+  "categories": {
+    "Rating": "nsfw",
+    "Species": [
+      "furry"
+    ],
+    "Genre": [
+      "furry"
+    ],
+    "Personality": [
+      "freaky"
+    ],
+    "Physical Traits": [
+      "anthropomorphic"
+    ]
+  }
+}

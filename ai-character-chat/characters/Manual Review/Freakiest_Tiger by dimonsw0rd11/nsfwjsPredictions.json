@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1742876826/scrape/perchance_comments/img_Freakiest_Tiger_by_dimonsw0rd11.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Neutral",
+        "probability": 0.9978972673416138
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.0012412412324920297
+      },
+      {
+        "className": "Porn",
+        "probability": 0.0006181739154271781
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.00012779023381881416
+      },
+      {
+        "className": "Hentai",
+        "probability": 0.00011546789755811915
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
