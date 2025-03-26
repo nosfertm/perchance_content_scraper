@@ -1,0 +1,21 @@
+{
+  "rating": "sfw",
+  "description": "Freaky Tiger is an anthropomorphic tiger character.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  More information is needed about Freaky Tiger's personality, gender, age, role, and any other relevant details.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "anthropomorphic",
+      "feline",
+      "tiger"
+    ],
+    "Genre": [
+      "original"
+    ],
+    "Work Name": [
+      "original"
+    ]
+  }
+}
