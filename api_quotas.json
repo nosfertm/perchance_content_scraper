@@ -1,13 +1,13 @@
 {
   "gemini": {
-    "dailyCalls": 17,
-    "lastReset": "2025-03-25T04:26:36.121Z",
-    "lastCall": "2025-03-25T04:28:05.406Z"
+    "dailyCalls": 20,
+    "lastReset": "2025-03-26T04:25:08.680Z",
+    "lastCall": "2025-03-26T04:26:56.986Z"
   },
   "pigimage": {
     "dailyCalls": 1,
-    "lastReset": "2025-03-25T04:26:55.777Z",
-    "lastCall": "2025-03-25T04:26:58.479Z"
+    "lastReset": "2025-03-26T04:25:11.755Z",
+    "lastCall": "2025-03-26T04:25:14.382Z"
   },
   "freeimage": {
     "dailyCalls": 68,
@@ -15,8 +15,8 @@
     "lastCall": "2025-02-25T15:45:14.978Z"
   },
   "cloudinary": {
-    "dailyCalls": 11,
-    "lastReset": "2025-03-25T04:26:46.671Z",
-    "lastCall": "2025-03-25T04:28:06.840Z"
+    "dailyCalls": 13,
+    "lastReset": "2025-03-26T04:25:14.388Z",
+    "lastCall": "2025-03-26T04:26:58.442Z"
   }
 }
