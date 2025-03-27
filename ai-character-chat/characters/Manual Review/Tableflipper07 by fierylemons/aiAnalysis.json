@@ -1,0 +1,16 @@
+{
+  "rating": "sfw",
+  "description": "Tableflipper07 is a character who is known for their tendency to flip tables.  No other information is available.",
+  "needsManualReview": true,
+  "charState": "valid",
+  "stateReason": "Insufficient data to properly categorize the character.  The description is extremely limited.",
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "unspecified"
+    ],
+    "Genre": [
+      "meme"
+    ]
+  }
+}
