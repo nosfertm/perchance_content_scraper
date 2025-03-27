@@ -1,0 +1,30 @@
+[
+  {
+    "image": "https://res.cloudinary.com/dh9pnsajm/image/upload/v1743100241/scrape/perchance_comments/img_Son_Goku_by_7f73cc3d215a12661c5a.webp",
+    "fileType": "webp",
+    "predictions": [
+      {
+        "className": "Hentai",
+        "probability": 0.6939334869384766
+      },
+      {
+        "className": "Drawing",
+        "probability": 0.2997090816497803
+      },
+      {
+        "className": "Porn",
+        "probability": 0.004803771618753672
+      },
+      {
+        "className": "Neutral",
+        "probability": 0.0014235663693398237
+      },
+      {
+        "className": "Sexy",
+        "probability": 0.00013011648843530566
+      }
+    ],
+    "containsNSFW": false,
+    "error": null
+  }
+]
