@@ -90,10 +90,10 @@
     "deltaMinutes": 168
   },
   "botshare": {
-    "messageId": "67f3f8fa256c9e5b34d25cc2",
-    "time": 1744042234506,
-    "messagesAnalyzed_Total": 1662,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "67f4857f256c9e5b34d375db",
+    "time": 1744078207526,
+    "messagesAnalyzed_Total": 1663,
+    "messagesAnalyzed_lastRun": 1,
     "charactersFound_Total": 417,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -102,7 +102,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 600
   },
   "makeabot": {
     "messageId": "67ecfa27256c9e5b34c826c7",
