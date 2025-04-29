@@ -92,17 +92,17 @@
   "botshare": {
     "messageId": "6810f52580c839f98af9ef26",
     "time": 1745941797539,
-    "messagesAnalyzed_Total": 1787,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 431,
-    "charactersFound_lastRun": 0,
+    "messagesAnalyzed_Total": 1915,
+    "messagesAnalyzed_lastRun": 128,
+    "charactersFound_Total": 452,
+    "charactersFound_lastRun": 21,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 205
+    "deltaMinutes": 0
   },
   "makeabot": {
     "messageId": "6810c56380c839f98af99f02",
