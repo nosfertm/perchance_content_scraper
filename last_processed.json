@@ -122,17 +122,17 @@
   "nsfw": {
     "messageId": "6810d43a80c839f98af9b270",
     "time": 1745933370358,
-    "messagesAnalyzed_Total": 4570,
-    "messagesAnalyzed_lastRun": 0,
-    "charactersFound_Total": 269,
-    "charactersFound_lastRun": 0,
+    "messagesAnalyzed_Total": 4727,
+    "messagesAnalyzed_lastRun": 157,
+    "charactersFound_Total": 304,
+    "charactersFound_lastRun": 35,
     "charactersIgnored_Total": 0,
     "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 64
+    "deltaMinutes": 0
   },
   "channel-hub": {
     "messageId": "680fbede80c839f98af84763",
