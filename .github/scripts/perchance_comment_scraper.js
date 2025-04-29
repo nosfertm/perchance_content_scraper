@@ -21,6 +21,7 @@ const CONFIG = {
 };
 
 const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?]+\.gz)/;
+const fullProcessing = process.env.FULL_PROCESSING === 'true';
 
 /* -------------------------------------------------------------------------- */
 /*                                DEPENDENCIES                                */
@@ -578,9 +579,12 @@ async function saveCharacterData(characterInfo, message, existingLinks) {
 
 /**
  * Main message processing function
+ * @param {boolean} fullProcessing - When true, processes all messages up to maxMessagesPerChannel limit
+ *                                  ignoring previously processed messages
  */
-async function processMessages() {
+async function processMessages(fullProcessing = false) {
     console.log('Starting message processing...');
+    console.log(`Processing mode: ${fullProcessing ? 'FULL' : 'AUTOMATIC'}`);
     const lastProcessed = await getLastProcessedState();
     const existingLinks = await getLinksFromIndex();
     const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -623,8 +627,9 @@ async function processMessages() {
                             Math.round((message.time - lastProcessed[channel].time) / (1000 * 60)) : 0;
                     }
 
-                    // Stop if we reach a message we've already processed
-                    if (message.time <= lastProcessed[channel].time) {
+                    // In automatic mode (default), stop if we reach a message we've already processed
+                    // In full processing mode, continue processing all messages
+                    if (!fullProcessing && message.time <= lastProcessed[channel].time) {
                         console.log(`   Reached previously processed message in ${channel}. Time:${lastProcessed[channel].time}`);
                         continueProcessing = false;
                         break;
@@ -863,7 +868,7 @@ function generateProcessingSummary(state) {
 
 // Main execution
 console.log(`Starting Perchance Comment Scraper ${scriptVersion}...`);
-processMessages()
+processMessages(fullProcessing)
     .then((lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
 

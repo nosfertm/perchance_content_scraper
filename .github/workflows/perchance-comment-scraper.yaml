@@ -5,6 +5,15 @@ on:
     # Runs at minute 0 and 30 of every hour (*/30)
     - cron: '0 */2 * * *'
   workflow_dispatch:  # Maintains ability to run manually
+    inputs:
+      processing_mode:
+        description: 'Processing mode'
+        required: true
+        default: 'automatic'
+        type: choice
+        options:
+          - automatic
+          - full
 
 permissions:
   contents: write  # Allows pushing commits
@@ -45,6 +54,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TARGET_BRANCH: perchance_comments
+          FULL_PROCESSING: ${{ github.event.inputs.processing_mode == 'full' }}
         run: node .github/scripts/perchance_comment_scraper.js
 
       - name: Trigger Processor
@@ -58,4 +68,3 @@ jobs:
               workflow_id: 'process-scraped-characters.yaml',
               ref: '${{ github.ref }}'
             })
-
