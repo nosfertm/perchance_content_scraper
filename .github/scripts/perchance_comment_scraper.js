@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '4.2';
+const scriptVersion = '4.3';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
@@ -113,73 +113,108 @@ async function getGithubFile(path) {
 }
 
 /**
- * Creates or updates a file in GitHub repository
+ * Creates or updates a file in GitHub repository with retry logic
  * @param {string} filePath - Path to file
  * @param {string} content - File content
  * @param {string} message - Commit message
- * @param {boolean} log - Whether to log success messages (default: true)
  * @param {boolean} append - Whether to append content to existing file (default: false)
+ * @param {boolean} log - Whether to log success messages (default: true)
+ * @param {number} maxRetries - Maximum number of retry attempts (default: 3)
  */
-async function createOrUpdateFile(filePath, content, message, append = false, log = true) {
-    try {
-        // Check if file exists and get its content if in append mode
-        let sha;
-        let existingContent;
+async function createOrUpdateFile(filePath, content, message, append = false, log = true, maxRetries = 3) {
+    let retryCount = 0;
+    let lastError = null;
+    
+    // Exponential backoff delay calculation
+    const getBackoffDelay = (retryCount) => Math.min(1000 * Math.pow(2, retryCount), 10000);
+    
+    while (retryCount <= maxRetries) {
         try {
-            const file = await octokit.repos.getContent({
+            // Check if file exists and get its content if in append mode
+            let sha;
+            let existingContent;
+            
+            try {
+                // Get the latest version of the file
+                const file = await octokit.repos.getContent({
+                    owner: CONFIG.owner,
+                    repo: CONFIG.repo,
+                    path: filePath,
+                    ref: CONFIG.targetBranch
+                });
+                sha = file.data.sha;
+
+                // If append mode and it's a .json file, get existing content
+                if (append && path.extname(filePath) === '.json') {
+                    existingContent = Buffer.from(file.data.content, 'base64').toString('utf8');
+                }
+            } catch (error) {
+                if (error.status !== 404) throw error;
+                // If file doesn't exist, we'll create it (no SHA needed)
+            }
+
+            // Handle content merging for JSON files in append mode
+            let contentToUpload = content;
+            if (append && existingContent && path.extname(filePath) === '.json') {
+                // Parse existing and new content
+                const existingData = JSON.parse(existingContent);
+                const newData = JSON.parse(content);
+
+                // Ensure both are arrays
+                const existingArray = Array.isArray(existingData) ? existingData : [existingData];
+                const newArray = Array.isArray(newData) ? newData : [newData];
+
+                // Combine arrays and convert back to string
+                contentToUpload = JSON.stringify([...existingArray, ...newArray], null, 2);
+            }
+
+            // Convert final content to base64
+            const contentBuffer = Buffer.isBuffer(contentToUpload) ? contentToUpload : Buffer.from(contentToUpload);
+            const contentBase64 = contentBuffer.toString('base64');
+
+            // Create or update file
+            await octokit.repos.createOrUpdateFileContents({
                 owner: CONFIG.owner,
                 repo: CONFIG.repo,
                 path: filePath,
-                ref: CONFIG.targetBranch
+                message: message,
+                content: contentBase64,
+                branch: CONFIG.targetBranch,
+                sha: sha
             });
-            sha = file.data.sha;
 
-            // If append mode and it's a .json file, get existing content
-            if (append && path.extname(filePath) === '.json') {
-                existingContent = Buffer.from(file.data.content, 'base64').toString('utf8');
+            if (log) {
+                const action = sha ? (append ? 'appended to' : 'updated') : 'created';
+                console.log(`           Successfully ${action} ${filePath}`);
             }
+            
+            // If we get here, the operation was successful
+            return;
+            
         } catch (error) {
-            if (error.status !== 404) throw error;
+            lastError = error;
+            
+            // If it's a 409 conflict error, retry with exponential backoff
+            if (error.status === 409) {
+                retryCount++;
+                
+                if (retryCount <= maxRetries) {
+                    const delay = getBackoffDelay(retryCount);
+                    console.log(`           File conflict detected for ${filePath}. Retrying in ${delay/1000} seconds... (Attempt ${retryCount}/${maxRetries})`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    continue;
+                }
+            } else {
+                // For other errors, throw immediately
+                console.error(`Error creating/updating file ${filePath}:`, error);
+                throw error;
+            }
         }
-
-        // Handle content merging for JSON files in append mode
-        let contentToUpload = content;
-        if (append && existingContent && path.extname(filePath) === '.json') {
-            // Parse existing and new content
-            const existingData = JSON.parse(existingContent);
-            const newData = JSON.parse(content);
-
-            // Ensure both are arrays
-            const existingArray = Array.isArray(existingData) ? existingData : [existingData];
-            const newArray = Array.isArray(newData) ? newData : [newData];
-
-            // Combine arrays and convert back to string
-            contentToUpload = JSON.stringify([...existingArray, ...newArray], null, 2);
-        }
-
-        // Convert final content to base64
-        const contentBuffer = Buffer.isBuffer(contentToUpload) ? contentToUpload : Buffer.from(contentToUpload);
-        const contentBase64 = contentBuffer.toString('base64');
-
-        // Create or update file
-        await octokit.repos.createOrUpdateFileContents({
-            owner: CONFIG.owner,
-            repo: CONFIG.repo,
-            path: filePath,
-            message: message,
-            content: contentBase64,
-            branch: CONFIG.targetBranch,
-            sha: sha
-        });
-
-        if (log) {
-            const action = sha ? (append ? 'appended to' : 'updated') : 'created';
-            console.log(`           Successfully ${action} ${filePath}`);
-        }
-    } catch (error) {
-        console.error(`Error creating/updating file ${filePath}:`, error);
-        throw error;
     }
+    
+    // If we've exhausted retries, throw the last error
+    console.error(`Failed to create/update file ${filePath} after ${maxRetries} attempts:`, lastError);
+    throw lastError;
 }
 
 /* -------------------------------------------------------------------------- */
