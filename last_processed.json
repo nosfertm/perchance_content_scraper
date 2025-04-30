@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "6812868d80c839f98afc6a00",
-    "time": 1746044557307,
-    "messagesAnalyzed_Total": 617306,
-    "messagesAnalyzed_lastRun": 2411,
+    "messageId": "6812a1e580c839f98afca355",
+    "time": 1746051557768,
+    "messagesAnalyzed_Total": 618476,
+    "messagesAnalyzed_lastRun": 1170,
     "charactersFound_Total": 476,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
@@ -12,13 +12,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 236
+    "deltaMinutes": 117
   },
   "chill": {
-    "messageId": "6812849680c839f98afc65ce",
-    "time": 1746044054046,
-    "messagesAnalyzed_Total": 23887,
-    "messagesAnalyzed_lastRun": 4,
+    "messageId": "6812419780c839f98afbe8be",
+    "time": 1746026903793,
+    "messagesAnalyzed_Total": 23883,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 107,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -27,13 +27,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 286
+    "deltaMinutes": 679
   },
   "rp": {
-    "messageId": "6812869c80c839f98afc6a1a",
-    "time": 1746044572236,
-    "messagesAnalyzed_Total": 157872,
-    "messagesAnalyzed_lastRun": 493,
+    "messageId": "68124e7d80c839f98afc0018",
+    "time": 1746030205767,
+    "messagesAnalyzed_Total": 157379,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 29,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,13 +42,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 239
+    "deltaMinutes": 135
   },
   "spam": {
-    "messageId": "68126f6a80c839f98afc3b1c",
-    "time": 1746038634656,
-    "messagesAnalyzed_Total": 18121,
-    "messagesAnalyzed_lastRun": 1,
+    "messageId": "6811c09880c839f98afb5b76",
+    "time": 1745993880326,
+    "messagesAnalyzed_Total": 18120,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 735,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -57,7 +57,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 746
+    "deltaMinutes": 0
   },
   "vent": {
     "messageId": "68122ad480c839f98afbb841",
