@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "681b348780c839f98a095bd7",
-    "time": 1746613383947,
-    "messagesAnalyzed_Total": 677986,
-    "messagesAnalyzed_lastRun": 152,
+    "messageId": "681b6c6280c839f98a099ea0",
+    "time": 1746627682342,
+    "messagesAnalyzed_Total": 679088,
+    "messagesAnalyzed_lastRun": 1102,
     "charactersFound_Total": 511,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
@@ -12,7 +12,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 114
+    "deltaMinutes": 238
   },
   "chill": {
     "messageId": "681af6f180c839f98a0935af",
@@ -60,10 +60,10 @@
     "deltaMinutes": 0
   },
   "vent": {
-    "messageId": "681b27aa80c839f98a09564c",
-    "time": 1746610090792,
-    "messagesAnalyzed_Total": 45008,
-    "messagesAnalyzed_lastRun": 1,
+    "messageId": "681b054480c839f98a094406",
+    "time": 1746601284505,
+    "messagesAnalyzed_Total": 45007,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 16,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -72,7 +72,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 147
+    "deltaMinutes": 31
   },
   "share": {
     "messageId": "681ad3af80c839f98a0900ee",
