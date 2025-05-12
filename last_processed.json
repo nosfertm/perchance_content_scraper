@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "682195d0ca830f56775b5361",
-    "time": 1747031504910,
-    "messagesAnalyzed_Total": 724362,
-    "messagesAnalyzed_lastRun": 676,
+    "messageId": "6821ca06ca830f56775b812a",
+    "time": 1747044870226,
+    "messagesAnalyzed_Total": 724977,
+    "messagesAnalyzed_lastRun": 615,
     "charactersFound_Total": 519,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
@@ -12,13 +12,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 126
+    "deltaMinutes": 223
   },
   "chill": {
     "messageId": "68217d90ca830f56775b30bc",
     "time": 1747025296948,
     "messagesAnalyzed_Total": 25378,
-    "messagesAnalyzed_lastRun": 2,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 108,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -30,10 +30,10 @@
     "deltaMinutes": 173
   },
   "rp": {
-    "messageId": "68218eccca830f56775b4b22",
-    "time": 1747029708357,
-    "messagesAnalyzed_Total": 195652,
-    "messagesAnalyzed_lastRun": 373,
+    "messageId": "68217861ca830f56775b261c",
+    "time": 1747023969003,
+    "messagesAnalyzed_Total": 195279,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 36,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,13 +42,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 96
+    "deltaMinutes": 72
   },
   "spam": {
-    "messageId": "68218059ca830f56775b3679",
-    "time": 1747026009235,
-    "messagesAnalyzed_Total": 18553,
-    "messagesAnalyzed_lastRun": 1,
+    "messageId": "68213dc4ca830f56775aacf0",
+    "time": 1747008964896,
+    "messagesAnalyzed_Total": 18552,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 740,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -57,7 +57,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 284
+    "deltaMinutes": 0
   },
   "vent": {
     "messageId": "68217867ca830f56775b2629",
