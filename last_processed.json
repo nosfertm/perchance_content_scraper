@@ -1,24 +1,24 @@
 {
   "chat": {
-    "messageId": "68248f9aca830f56775ffaa6",
-    "time": 1747226522625,
-    "messagesAnalyzed_Total": 746433,
-    "messagesAnalyzed_lastRun": 530,
-    "charactersFound_Total": 526,
-    "charactersFound_lastRun": 0,
+    "messageId": "6824a6ecca830f5677601f20",
+    "time": 1747232492623,
+    "messagesAnalyzed_Total": 746768,
+    "messagesAnalyzed_lastRun": 335,
+    "charactersFound_Total": 527,
+    "charactersFound_lastRun": 1,
     "charactersIgnored_Total": 1,
     "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 145
+    "deltaMinutes": 99
   },
   "chill": {
-    "messageId": "68248943ca830f56775ff345",
-    "time": 1747224899708,
-    "messagesAnalyzed_Total": 27363,
-    "messagesAnalyzed_lastRun": 2,
+    "messageId": "68243a5fca830f56775fbf39",
+    "time": 1747204703042,
+    "messagesAnalyzed_Total": 27361,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 108,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -27,13 +27,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 337
+    "deltaMinutes": 0
   },
   "rp": {
-    "messageId": "68248fc5ca830f56775ffae4",
-    "time": 1747226565577,
-    "messagesAnalyzed_Total": 203831,
-    "messagesAnalyzed_lastRun": 194,
+    "messageId": "68243ab1ca830f56775fbfb6",
+    "time": 1747204785921,
+    "messagesAnalyzed_Total": 203637,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 37,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -42,7 +42,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 363
+    "deltaMinutes": 0
   },
   "spam": {
     "messageId": "68244220ca830f56775fc773",
