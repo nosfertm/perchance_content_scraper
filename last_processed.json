@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "6829ec11ca830f567767e561",
-    "time": 1747577873566,
-    "messagesAnalyzed_Total": 778195,
-    "messagesAnalyzed_lastRun": 243,
+    "messageId": "682a0987ca830f56776813f2",
+    "time": 1747585415484,
+    "messagesAnalyzed_Total": 778605,
+    "messagesAnalyzed_lastRun": 410,
     "charactersFound_Total": 660,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 1,
@@ -12,13 +12,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 99
+    "deltaMinutes": 126
   },
   "chill": {
     "messageId": "6829ec14ca830f567767e566",
     "time": 1747577876301,
     "messagesAnalyzed_Total": 32226,
-    "messagesAnalyzed_lastRun": 521,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 108,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -33,7 +33,7 @@
     "messageId": "6829eb2eca830f567767e416",
     "time": 1747577646294,
     "messagesAnalyzed_Total": 215754,
-    "messagesAnalyzed_lastRun": 29,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 42,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -63,7 +63,7 @@
     "messageId": "6829e8b1ca830f567767e01b",
     "time": 1747577009762,
     "messagesAnalyzed_Total": 47292,
-    "messagesAnalyzed_lastRun": 4,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 16,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -78,7 +78,7 @@
     "messageId": "6829ea25ca830f567767e2b3",
     "time": 1747577381230,
     "messagesAnalyzed_Total": 13451,
-    "messagesAnalyzed_lastRun": 3,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 2816,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 11,
@@ -102,7 +102,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 2650
   },
   "makeabot": {
     "messageId": "6816534380c839f98a01dcd8",
