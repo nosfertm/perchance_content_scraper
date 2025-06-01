@@ -105,10 +105,10 @@
     "deltaMinutes": 512
   },
   "makeabot": {
-    "messageId": "68394a3e6e4e3951172bc432",
-    "time": 1748585022955,
-    "messagesAnalyzed_Total": 125,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "683cb6cd64b09f6b83956977",
+    "time": 1748809421938,
+    "messagesAnalyzed_Total": 126,
+    "messagesAnalyzed_lastRun": 1,
     "charactersFound_Total": 18,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -117,7 +117,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 3740
   },
   "nsfw": {
     "messageId": "683b857464b09f6b839302d7",
