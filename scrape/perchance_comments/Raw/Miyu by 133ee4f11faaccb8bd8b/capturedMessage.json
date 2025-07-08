@@ -1,10 +1,14 @@
 {
   "folderName": "ai-character-chat+chat",
-  "message": "https://perchance.org/ai-character-chat?data=Miyu~aca64ad7ff824e8695016d572fbcae41.gz",
-  "messageId": "686b37b077661ecb7adb0a81",
+  "message": "https://perchance.org/ai-character-chat?data=Miyu~088d1e79113a7c9efe0068b1a935d6db.gz",
+  "messageId": "686c5e7f77661ecb7add6db3",
   "publicId": "133ee4f11faaccb8bd8b",
-  "selfDeclaredHistorialPublicIds": [],
-  "time": 1751857072037,
+  "selfDeclaredHistorialPublicIds": [
+    "c9b2f00ede5e700452bf",
+    "d31a47d76eac763124d8"
+  ],
+  "time": 1751932543528,
   "userNickname": null,
-  "userAvatarUrl": null
+  "userAvatarUrl": null,
+  "shouldHide": true
 }
