@@ -12153,5 +12153,16 @@
     "authorAvatar": "https://user-uploads.perchance.org/file/f3f799e2a2071112dfa4f0d5b24bbe8f.webp",
     "messageTime": 1755016776577,
     "channel": "ai-character-chat+nsfw"
+  },
+  {
+    "path": "scrape/perchance_comments/Raw/u_got_spammed by sheher",
+    "name": "u_got_spammed",
+    "shareUrl": "https://perchance.org/ai-character-chat?data=u_got_spammed~27405de688cc8dd113e912e414226ac0.gz",
+    "authorId": "c97356833e00d8a60228",
+    "shareLinkFileHash": "82c5502aa88001e9edda998d550a125e9a24fe54f23118b884289b70006f79dd",
+    "authorName": "she/her",
+    "authorAvatar": "https://user.uploads.dev/file/f2ea12f8baeac377c7b8329c8584a09f.jpg",
+    "messageTime": 1755030510836,
+    "channel": "ai-character-chat+spam"
   }
 ]
