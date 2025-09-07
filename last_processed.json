@@ -1,9 +1,9 @@
 {
   "chat": {
-    "messageId": "68bd593e4f05049f4f046618",
-    "time": 1757239614857,
-    "messagesAnalyzed_Total": 1639434,
-    "messagesAnalyzed_lastRun": 311,
+    "messageId": "68bd7c864f05049f4f048887",
+    "time": 1757248646707,
+    "messagesAnalyzed_Total": 1639980,
+    "messagesAnalyzed_lastRun": 546,
     "charactersFound_Total": 5392,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 2,
@@ -12,13 +12,13 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 104
+    "deltaMinutes": 151
   },
   "chill": {
     "messageId": "68bd50fe4f05049f4f045e05",
     "time": 1757237502873,
     "messagesAnalyzed_Total": 73912,
-    "messagesAnalyzed_lastRun": 1,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 119,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -78,11 +78,11 @@
     "messageId": "68bd50ac4f05049f4f045daf",
     "time": 1757237420733,
     "messagesAnalyzed_Total": 19550,
-    "messagesAnalyzed_lastRun": 2,
+    "messagesAnalyzed_lastRun": 0,
     "charactersFound_Total": 3403,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 32,
-    "charactersIgnored_lastRun": 1,
+    "charactersIgnored_lastRun": 0,
     "duplicatedCharacterLink_Total": 0,
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
