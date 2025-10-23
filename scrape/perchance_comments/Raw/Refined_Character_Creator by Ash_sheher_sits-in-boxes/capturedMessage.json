@@ -1,7 +1,7 @@
 {
-  "folderName": "ai-character-chat+share",
-  "message": "Just a small qol update for my Refined Character Creator: https://perchance.org/ai-character-chat?data=Refined_Character_Creator~c011a2ebf90777702a3dc092326cad47.gz\n\nRemoved a single criteria that was, effectively, a holdover from its former life 😅\n\nIts just slightly more wholesome now ☺️\n\nAnyway, provide a URL or just a character name (or any amount of details you want) and it generates the entire character in a much more detailed and easy to edit format than the default \"Unknown\" character provided on the homepage. ",
-  "messageId": "68fa0b914576572d81ba66df",
+  "folderName": "ai-character-chat+botshare",
+  "message": "It has special code to allow it to read the contents of a URL you provide - it still knows a lot without the URL, but you're quite right, I think, in that it kinda just uses its training data set to determine if it knows a character otherwise. Thanks! I'll probably refine it further in that case!\n\nAlso, here's a slightly updated link, in case anybody is interested (it still has the wikipedia/Fandom blurb for the moment, but I'll get around to it shorty ☺️)\n\nperchance.org/ai-character-chat?data=Refined_Character_Creator~f6ed69d4fbdccb5fb632786be108677b.gz",
+  "messageId": "68fa07244576572d81ba5e59",
   "publicId": "875fe60203676b24eea1",
   "selfDeclaredHistorialPublicIds": [
     "22f1f65136b329c64484",
@@ -9,7 +9,8 @@
     "d5732320ad5633c4fea1",
     "7e4de05eb0b2542965bd"
   ],
-  "time": 1761217425160,
+  "time": 1761216292485,
   "userNickname": "Ash (she/her, sits-in-boxes)",
-  "userAvatarUrl": "https://user.uploads.dev/file/97ca3d4ad043ac663db1cc7f2d88aa49.jpg"
+  "userAvatarUrl": "https://user.uploads.dev/file/97ca3d4ad043ac663db1cc7f2d88aa49.jpg",
+  "replyingTo": "68f8be1a4576572d81b665a6"
 }
