@@ -1,7 +1,7 @@
 {
   "folderName": "ai-character-chat+share",
-  "message": "After intense coding (lie) I've finally updated Kemura's AI to support both her ElevenLabs custom voice and TTS in one update. Here is the newest link: https://perchance.org/ai-character-chat?data=Kemura_Paige~7d6ff41c1d00e9d45bb7bb7209c6a8d5.gz\n\n[Patch Notes]: Kemura can now interact with web urls sent in chat. TTS voicing is now supported. A custom \"canon\" voice option is now available via ElevenLabs AI integration with a credit limit. (It will work until the credit pool is used up on a monthly basis.) Extensive lorebooks were added. The text font has been adjusted and sized down to 90% of the original. Borders were adjusted to 3px. Image generation outputs singular images per use unless instructed to generate more than one. [Mobile users are advised to play this patch in landscape mode.] The initial message from Samuel has been changed. Patch supports NSFW and SFW interaction.",
-  "messageId": "69050740519c37cb94ee35c0",
+  "message": "So, I just noticed the music link was downed and I had to fix it. Here's the fully functional version of Kemura: https://perchance.org/ai-character-chat?data=Kemura_Paige~87bedec7e8423ecc7d03f16b241d914d.gz",
+  "messageId": "69040bb1519c37cb94eb8c1f",
   "publicId": "4e54e001c8d3d1c96740",
   "selfDeclaredHistorialPublicIds": [
     "7f2c9cabcb2090308904",
@@ -9,7 +9,7 @@
     "9b1de9083c9ebcd2b7b3",
     "46986126fb7851a47981"
   ],
-  "time": 1761937216370,
+  "time": 1761872817532,
   "userNickname": "Satire God",
   "userAvatarUrl": "https://user.uploads.dev/file/b8bd5e719c1989e6ec37c02b175fb426.jpg",
   "username": "kinoko246"
