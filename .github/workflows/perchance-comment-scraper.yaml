@@ -36,18 +36,39 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
+
+      - name: Install Puppeteer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3 \
+            libatk1.0-0 \
+            libatk-bridge2.0-0 \
+            libcups2 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libgbm1 \
+            libpango-1.0-0 \
+            libcairo2 \
+            libasound2
+
       - name: Create package.json
         run: |
           echo '{
             "name": "perchance-scraper",
             "type": "module",
             "dependencies": {
-              "@octokit/rest": "^20.0.2",
-              "node-fetch": "^3.3.2"
+              "@octokit/rest": "^22.0.1",
+              "puppeteer": "^24.31.0",
+              "puppeteer-extra": "^3.3.6",
+              "puppeteer-extra-plugin-stealth": "^2.11.2"
             }
           }' > package.json
-          
+
       - run: npm install
         
       - name: Run Scraper

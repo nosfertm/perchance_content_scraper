@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '4.3';
+const scriptVersion = '4.5';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
@@ -20,6 +20,11 @@ const CONFIG = {
     repo: process.env.GITHUB_REPOSITORY?.split('/')[1]
 };
 
+// Headers for Puppeteer requests (optional, Puppeteer handles most headers automatically)
+const BROWSER_HEADERS = {
+    'Accept-Language': 'en-US,en;q=0.9'
+};
+
 const LINK_PATTERN = /perchance\.org\/(.+?)\?data=([^~]+)~([^?]+\.gz)/;
 const fullProcessing = process.env.FULL_PROCESSING === 'true';
 
@@ -28,15 +33,102 @@ const fullProcessing = process.env.FULL_PROCESSING === 'true';
 /* -------------------------------------------------------------------------- */
 
 import { Octokit } from '@octokit/rest';
-//import fetch from 'node-fetch';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import path, { dirname } from 'path';
 import crypto from 'crypto';
 import { promises as fs } from 'fs';
+
+// Use stealth plugin to avoid detection
+puppeteer.use(StealthPlugin());
 
 
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
+
+// Global browser instance to be reused
+let browserInstance = null;
+
+/**
+ * Get or create a Puppeteer browser instance
+ * @returns {Promise<Browser>} Puppeteer browser instance
+ */
+async function getBrowser() {
+    if (!browserInstance) {
+        console.log('   Launching browser instance...');
+        browserInstance = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gpu',
+                '--disable-blink-features=AutomationControlled'
+            ]
+        });
+    }
+    return browserInstance;
+}
+
+/**
+ * Fetch URL using Puppeteer to bypass Cloudflare protection
+ * @param {string} url - URL to fetch
+ * @param {Object} options - Fetch options (headers, etc.)
+ * @returns {Promise<Object>} Response-like object with ok, status, json(), text(), arrayBuffer()
+ */
+async function fetchWithPuppeteer(url, options = {}) {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+
+    try {
+        // Set viewport
+        await page.setViewport({ width: 1920, height: 1080 });
+
+        // Set extra headers if provided
+        if (options.headers) {
+            await page.setExtraHTTPHeaders(options.headers);
+        }
+
+        // Navigate to URL
+        const response = await page.goto(url, {
+            waitUntil: 'networkidle2',
+            timeout: 30000
+        });
+
+        const status = response.status();
+        const ok = status >= 200 && status < 300;
+
+        // Get response body
+        let bodyText = '';
+        try {
+            const bodyHandle = await page.$('body');
+            if (bodyHandle) {
+                bodyText = await page.evaluate(body => body.textContent, bodyHandle);
+                await bodyHandle.dispose();
+            }
+        } catch (e) {
+            bodyText = await page.content();
+        }
+
+        // Return fetch-like response object
+        return {
+            ok,
+            status,
+            statusText: response.statusText(),
+            json: async () => JSON.parse(bodyText),
+            text: async () => bodyText,
+            arrayBuffer: async () => {
+                const buffer = await response.buffer();
+                return buffer;
+            }
+        };
+
+    } finally {
+        await page.close();
+    }
+}
 
 /* -------------------------------------------------------------------------- */
 /*                             AUXILIARY FUNCTIONS                            */
@@ -439,7 +531,7 @@ async function downloadFile(url) {
     try {
         const download_url = `https://user-uploads.perchance.org/file/${url}`
         console.log(`           Downloading: ${download_url}`);
-        const response = await fetch(download_url);
+        const response = await fetchWithPuppeteer(download_url, { headers: BROWSER_HEADERS });
 
         // Check if download was successful
         if (!response.ok) {
@@ -605,7 +697,7 @@ async function processMessages(fullProcessing = false) {
             const url = `${CONFIG.baseApiUrl}?folderName=ai-character-chat+${channel}&skip=${skip}`;
 
             try {
-                const response = await fetch(url);
+                const response = await fetchWithPuppeteer(url, { headers: BROWSER_HEADERS });
                 if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
                 const messages = await response.json();
@@ -869,7 +961,7 @@ function generateProcessingSummary(state) {
 // Main execution
 console.log(`Starting Perchance Comment Scraper ${scriptVersion}...`);
 processMessages(fullProcessing)
-    .then((lastProcessed) => {
+    .then(async (lastProcessed) => {
         const summary = generateProcessingSummary(lastProcessed);
 
         console.log('\n=== Processing Summary ===');
@@ -894,8 +986,21 @@ processMessages(fullProcessing)
         });
 
         console.log('\nProcessing completed successfully');
+
+        // Close browser instance
+        if (browserInstance) {
+            console.log('Closing browser instance...');
+            await browserInstance.close();
+        }
     })
-    .catch(error => {
+    .catch(async (error) => {
         console.error('Processing failed:', error);
+
+        // Close browser instance on error
+        if (browserInstance) {
+            console.log('Closing browser instance...');
+            await browserInstance.close();
+        }
+
         process.exit(1);
     });
