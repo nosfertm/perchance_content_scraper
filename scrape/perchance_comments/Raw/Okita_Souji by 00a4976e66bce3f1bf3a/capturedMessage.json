@@ -1,10 +1,10 @@
 {
   "folderName": "ai-character-chat+share",
-  "message": "https://perchance.org/ai-character-chat?data=Okita_Souji~c9fe4230c97e240b6d5fbb67ff1271da.gz\nUpdate for Okita (Fate), managed to get her cold/cheery sides working (at least from my testing with Yvette and on her own)\nSome things I figured out that might be helpful:\n- 'Banned tokens: \"practiced\", etc.' in the character reminder works really well in making the AI avoid the words completely\n- Characters added to a chat have a significantly lower token limit (~700?) than the main character\nI have this minor but weird issue where I have to click twice to allow background music",
-  "messageId": "692114bf5b394d9ecc20f233",
+  "message": "https://perchance.org/ai-character-chat?data=Okita_Souji~73d048192a4a55e100c62f668b3d0ce6.gz",
+  "messageId": "691fe1f6bb724313146b8eee",
   "publicId": "00a4976e66bce3f1bf3a",
   "selfDeclaredHistorialPublicIds": [],
-  "time": 1763775679346,
+  "time": 1763697142742,
   "userNickname": null,
   "userAvatarUrl": null
 }
