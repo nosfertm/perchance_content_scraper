@@ -6,7 +6,7 @@
 /*                                   CONFIG                                   */
 /* -------------------------------------------------------------------------- */
 
-const scriptVersion = '4.5';
+const scriptVersion = '4.6';
 
 const CONFIG = {
     channels: ["chat", "chill", "rp", "spam", "vent", "share", "botshare", "makeabot", "nsfw", "channel-hub"],
@@ -93,32 +93,23 @@ async function fetchWithPuppeteer(url, options = {}) {
 
         // Navigate to URL
         const response = await page.goto(url, {
-            waitUntil: 'networkidle2',
+            waitUntil: 'domcontentloaded',
             timeout: 30000
         });
 
         const status = response.status();
         const ok = status >= 200 && status < 300;
 
-        // Get response body
-        let bodyText = '';
-        try {
-            const bodyHandle = await page.$('body');
-            if (bodyHandle) {
-                bodyText = await page.evaluate(body => body.textContent, bodyHandle);
-                await bodyHandle.dispose();
-            }
-        } catch (e) {
-            bodyText = await page.content();
-        }
+        // Get the response text directly from the HTTP response (not from DOM)
+        const responseText = await response.text();
 
         // Return fetch-like response object
         return {
             ok,
             status,
             statusText: response.statusText(),
-            json: async () => JSON.parse(bodyText),
-            text: async () => bodyText,
+            json: async () => JSON.parse(responseText),
+            text: async () => responseText,
             arrayBuffer: async () => {
                 const buffer = await response.buffer();
                 return buffer;
@@ -531,7 +522,13 @@ async function downloadFile(url) {
     try {
         const download_url = `https://user-uploads.perchance.org/file/${url}`
         console.log(`           Downloading: ${download_url}`);
-        const response = await fetchWithPuppeteer(download_url, { headers: BROWSER_HEADERS });
+
+        // Use regular fetch for file downloads (user-uploads.perchance.org doesn't have Cloudflare protection)
+        const response = await fetch(download_url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+            }
+        });
 
         // Check if download was successful
         if (!response.ok) {
@@ -582,9 +579,12 @@ async function saveCharacterData(characterInfo, message, existingLinks) {
     // Object to store all files that need to be created/updated
     const filesToCreate = {};
 
+    // Declare charName outside try block so it's available in catch
+    let charName = 'Unknown';
+
     try {
         // Sanitize character and author names for safe filesystem usage
-        const charName = sanitizeString(characterInfo.character) || 'Unnamed';
+        charName = sanitizeString(characterInfo.character) || 'Unnamed';
         console.log(`           Character's name: ${charName}`);
 
         const authorName = sanitizeString(message.username || message.userNickname || message.publicId || 'Anonymous');
