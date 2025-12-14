@@ -45,10 +45,10 @@
     "deltaMinutes": 106
   },
   "spam": {
-    "messageId": "693ea8b335783769577f4f39",
-    "time": 1765714099486,
-    "messagesAnalyzed_Total": 23297,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "693eff9635783769578054cf",
+    "time": 1765736342056,
+    "messagesAnalyzed_Total": 23299,
+    "messagesAnalyzed_lastRun": 2,
     "charactersFound_Total": 818,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -57,7 +57,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 371
   },
   "vent": {
     "messageId": "693edd7535783769577fdb08",
