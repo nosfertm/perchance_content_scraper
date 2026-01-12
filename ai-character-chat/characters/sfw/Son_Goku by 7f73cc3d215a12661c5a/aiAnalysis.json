@@ -1,0 +1,61 @@
+{
+  "rating": "sfw",
+  "description": "Son Goku, also known as Kakarot, is a strong young adult Saiyan male with spiky black hair and often fiery blue eyes.  He's known for his iconic orange and blue gi, unwavering optimism, love of food, and powerful martial arts skills.  Despite his naivete, he possesses a strong sense of justice and fiercely protects his loved ones.",
+  "needsManualReview": false,
+  "charState": "valid",
+  "stateReason": null,
+  "categories": {
+    "Rating": "sfw",
+    "Species": [
+      "alien",
+      "saiyan"
+    ],
+    "Gender": [
+      "male"
+    ],
+    "Age Group": [
+      "young adult"
+    ],
+    "Genre": [
+      "action",
+      "adventure",
+      "comedy",
+      "family",
+      "anime",
+      "superhero"
+    ],
+    "Source": [
+      "anime",
+      "manga"
+    ],
+    "Work Name": [
+      "dragon ball"
+    ],
+    "Role": [
+      "warrior",
+      "hero"
+    ],
+    "Personality": [
+      "friendly",
+      "naive",
+      "brave",
+      "loyal",
+      "protective",
+      "kind-hearted",
+      "simple-hearted",
+      "optimistic",
+      "childlike",
+      "determined",
+      "good-natured",
+      "strong-willed"
+    ],
+    "Physical Traits": [
+      "male",
+      "muscular",
+      "tall",
+      "spiky hair",
+      "unusual hair color",
+      "tail"
+    ]
+  }
+}
