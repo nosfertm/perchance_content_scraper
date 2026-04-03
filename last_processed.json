@@ -135,10 +135,10 @@
     "deltaMinutes": 0
   },
   "channel-hub": {
-    "messageId": "69cfe56cadcae3c3b6809c22",
-    "time": 1775232364968,
-    "messagesAnalyzed_Total": 2275,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "69cffa82adcae3c3b6813636",
+    "time": 1775237762567,
+    "messagesAnalyzed_Total": 2277,
+    "messagesAnalyzed_lastRun": 2,
     "charactersFound_Total": 19,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 0,
@@ -147,6 +147,6 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 1672
+    "deltaMinutes": 90
   }
 }
