@@ -120,10 +120,10 @@
     "deltaMinutes": 0
   },
   "nsfw": {
-    "messageId": "6a64b2ef60d1edb1ccc9c2cc",
-    "time": 1784984303252,
-    "messagesAnalyzed_Total": 27586,
-    "messagesAnalyzed_lastRun": 0,
+    "messageId": "6a64eba38dafaad59d5c25ce",
+    "time": 1784998819708,
+    "messagesAnalyzed_Total": 27608,
+    "messagesAnalyzed_lastRun": 22,
     "charactersFound_Total": 1356,
     "charactersFound_lastRun": 0,
     "charactersIgnored_Total": 2,
@@ -132,7 +132,7 @@
     "duplicatedCharacterLink_lastRun": 0,
     "duplicatedCharacterHash_Total": 0,
     "duplicatedCharacterHash_lastRun": 0,
-    "deltaMinutes": 0
+    "deltaMinutes": 242
   },
   "channel-hub": {
     "messageId": "6a5888fa67853b9fad22664a",
